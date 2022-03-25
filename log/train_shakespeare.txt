@@ -1,0 +1,376 @@
+Number of Parameters = 242244
+CharLM(
+  (rnn): LSTM(68, 128, num_layers=2, batch_first=True, dropout=0.3)
+  (out_transform): Linear(in_features=128, out_features=68, bias=True)
+  (loss_func): CrossEntropyLoss()
+)
+E=1, Avg [T] Loss: 4.2229
+E=1, Avg [T] Loss: 3.2827
+E=1, Avg [T] Loss: 2.9305
+E=1, Avg [T] Loss: 2.7122
+E=1, Avg [T] Loss: 2.5660
+E=1, Avg [T] Loss: 2.4565
+E=1, Avg [T] Loss: 2.3704
+E=1, Avg [T] Loss: 2.3014
+E=1, Avg [T] Loss: 2.2432
+E=1, Avg [T] Loss: 2.1941
+E=1, Avg [T] Loss: 2.1559
+
+VALIDATION: E=1, Avg [T] Loss: 2.1559
+
+E=2, Avg [T] Loss: 1.7650
+E=2, Avg [T] Loss: 1.7419
+E=2, Avg [T] Loss: 1.7327
+E=2, Avg [T] Loss: 1.7241
+E=2, Avg [T] Loss: 1.7154
+E=2, Avg [T] Loss: 1.7074
+E=2, Avg [T] Loss: 1.7007
+E=2, Avg [T] Loss: 1.6945
+E=2, Avg [T] Loss: 1.6882
+E=2, Avg [T] Loss: 1.6821
+E=2, Avg [T] Loss: 1.6770
+E=2, Avg [T] Loss: 1.5911
+E=2, Avg [T] Loss: 1.6483
+E=2, Avg [T] Loss: 1.6864
+E=2, Avg [T] Loss: 1.6772
+E=2, Avg [T] Loss: 1.6703
+E=2, Avg [T] Loss: 1.6530
+E=2, Avg [T] Loss: 1.6429
+E=2, Avg [T] Loss: 1.6369
+E=2, Avg [T] Loss: 1.6391
+
+VALIDATION: E=2, Avg [T] Loss: 1.6348
+
+E=3, Avg [T] Loss: 1.6699
+E=3, Avg [T] Loss: 1.6208
+E=3, Avg [T] Loss: 1.6151
+E=3, Avg [T] Loss: 1.6112
+E=3, Avg [T] Loss: 1.6072
+E=3, Avg [T] Loss: 1.6037
+E=3, Avg [T] Loss: 1.6020
+E=3, Avg [T] Loss: 1.6000
+E=3, Avg [T] Loss: 1.5982
+E=3, Avg [T] Loss: 1.5956
+E=3, Avg [T] Loss: 1.5932
+
+VALIDATION: E=3, Avg [T] Loss: 1.5932
+
+E=4, Avg [T] Loss: 1.5611
+E=4, Avg [T] Loss: 1.5687
+E=4, Avg [T] Loss: 1.5655
+E=4, Avg [T] Loss: 1.5644
+E=4, Avg [T] Loss: 1.5627
+E=4, Avg [T] Loss: 1.5606
+E=4, Avg [T] Loss: 1.5596
+E=4, Avg [T] Loss: 1.5582
+E=4, Avg [T] Loss: 1.5562
+E=4, Avg [T] Loss: 1.5552
+E=4, Avg [T] Loss: 1.5544
+E=4, Avg [T] Loss: 1.5051
+E=4, Avg [T] Loss: 1.5678
+E=4, Avg [T] Loss: 1.6060
+E=4, Avg [T] Loss: 1.5987
+E=4, Avg [T] Loss: 1.5887
+E=4, Avg [T] Loss: 1.5737
+E=4, Avg [T] Loss: 1.5632
+E=4, Avg [T] Loss: 1.5570
+E=4, Avg [T] Loss: 1.5608
+
+VALIDATION: E=4, Avg [T] Loss: 1.5564
+
+E=5, Avg [T] Loss: 1.5259
+E=5, Avg [T] Loss: 1.5422
+E=5, Avg [T] Loss: 1.5410
+E=5, Avg [T] Loss: 1.5387
+E=5, Avg [T] Loss: 1.5382
+E=5, Avg [T] Loss: 1.5361
+E=5, Avg [T] Loss: 1.5339
+E=5, Avg [T] Loss: 1.5329
+E=5, Avg [T] Loss: 1.5323
+E=5, Avg [T] Loss: 1.5318
+E=5, Avg [T] Loss: 1.5310
+
+VALIDATION: E=5, Avg [T] Loss: 1.5310
+
+E=6, Avg [T] Loss: 1.5202
+E=6, Avg [T] Loss: 1.5203
+E=6, Avg [T] Loss: 1.5206
+E=6, Avg [T] Loss: 1.5199
+E=6, Avg [T] Loss: 1.5191
+E=6, Avg [T] Loss: 1.5187
+E=6, Avg [T] Loss: 1.5180
+E=6, Avg [T] Loss: 1.5169
+E=6, Avg [T] Loss: 1.5161
+E=6, Avg [T] Loss: 1.5155
+E=6, Avg [T] Loss: 1.5149
+E=6, Avg [T] Loss: 1.4629
+E=6, Avg [T] Loss: 1.5417
+E=6, Avg [T] Loss: 1.5856
+E=6, Avg [T] Loss: 1.5762
+E=6, Avg [T] Loss: 1.5649
+E=6, Avg [T] Loss: 1.5492
+E=6, Avg [T] Loss: 1.5376
+E=6, Avg [T] Loss: 1.5309
+E=6, Avg [T] Loss: 1.5353
+
+VALIDATION: E=6, Avg [T] Loss: 1.5303
+
+E=7, Avg [T] Loss: 1.4841
+E=7, Avg [T] Loss: 1.5057
+E=7, Avg [T] Loss: 1.5088
+E=7, Avg [T] Loss: 1.5077
+E=7, Avg [T] Loss: 1.5064
+E=7, Avg [T] Loss: 1.5067
+E=7, Avg [T] Loss: 1.5060
+E=7, Avg [T] Loss: 1.5053
+E=7, Avg [T] Loss: 1.5049
+E=7, Avg [T] Loss: 1.5044
+E=7, Avg [T] Loss: 1.5040
+
+VALIDATION: E=7, Avg [T] Loss: 1.5040
+
+E=8, Avg [T] Loss: 1.4238
+E=8, Avg [T] Loss: 1.5024
+E=8, Avg [T] Loss: 1.5012
+E=8, Avg [T] Loss: 1.4997
+E=8, Avg [T] Loss: 1.5002
+E=8, Avg [T] Loss: 1.4991
+E=8, Avg [T] Loss: 1.4983
+E=8, Avg [T] Loss: 1.4978
+E=8, Avg [T] Loss: 1.4970
+E=8, Avg [T] Loss: 1.4967
+E=8, Avg [T] Loss: 1.4964
+E=8, Avg [T] Loss: 1.4496
+E=8, Avg [T] Loss: 1.5287
+E=8, Avg [T] Loss: 1.5721
+E=8, Avg [T] Loss: 1.5645
+E=8, Avg [T] Loss: 1.5526
+E=8, Avg [T] Loss: 1.5358
+E=8, Avg [T] Loss: 1.5236
+E=8, Avg [T] Loss: 1.5160
+E=8, Avg [T] Loss: 1.5211
+
+VALIDATION: E=8, Avg [T] Loss: 1.5163
+
+E=9, Avg [T] Loss: 1.4947
+E=9, Avg [T] Loss: 1.4928
+E=9, Avg [T] Loss: 1.4904
+E=9, Avg [T] Loss: 1.4903
+E=9, Avg [T] Loss: 1.4891
+E=9, Avg [T] Loss: 1.4887
+E=9, Avg [T] Loss: 1.4880
+E=9, Avg [T] Loss: 1.4885
+E=9, Avg [T] Loss: 1.4891
+E=9, Avg [T] Loss: 1.4888
+E=9, Avg [T] Loss: 1.4886
+
+VALIDATION: E=9, Avg [T] Loss: 1.4886
+
+E=10, Avg [T] Loss: 1.4884
+E=10, Avg [T] Loss: 1.4860
+E=10, Avg [T] Loss: 1.4856
+E=10, Avg [T] Loss: 1.4841
+E=10, Avg [T] Loss: 1.4848
+E=10, Avg [T] Loss: 1.4829
+E=10, Avg [T] Loss: 1.4822
+E=10, Avg [T] Loss: 1.4823
+E=10, Avg [T] Loss: 1.4829
+E=10, Avg [T] Loss: 1.4831
+E=10, Avg [T] Loss: 1.4831
+E=10, Avg [T] Loss: 1.4320
+E=10, Avg [T] Loss: 1.5157
+E=10, Avg [T] Loss: 1.5607
+E=10, Avg [T] Loss: 1.5536
+E=10, Avg [T] Loss: 1.5412
+E=10, Avg [T] Loss: 1.5268
+E=10, Avg [T] Loss: 1.5153
+E=10, Avg [T] Loss: 1.5089
+E=10, Avg [T] Loss: 1.5132
+
+VALIDATION: E=10, Avg [T] Loss: 1.5094
+
+E=11, Avg [T] Loss: 1.4561
+E=11, Avg [T] Loss: 1.4798
+E=11, Avg [T] Loss: 1.4779
+E=11, Avg [T] Loss: 1.4779
+E=11, Avg [T] Loss: 1.4790
+E=11, Avg [T] Loss: 1.4794
+E=11, Avg [T] Loss: 1.4779
+E=11, Avg [T] Loss: 1.4783
+E=11, Avg [T] Loss: 1.4789
+E=11, Avg [T] Loss: 1.4790
+E=11, Avg [T] Loss: 1.4789
+
+VALIDATION: E=11, Avg [T] Loss: 1.4789
+
+E=12, Avg [T] Loss: 1.4914
+E=12, Avg [T] Loss: 1.4730
+E=12, Avg [T] Loss: 1.4744
+E=12, Avg [T] Loss: 1.4739
+E=12, Avg [T] Loss: 1.4744
+E=12, Avg [T] Loss: 1.4750
+E=12, Avg [T] Loss: 1.4749
+E=12, Avg [T] Loss: 1.4750
+E=12, Avg [T] Loss: 1.4747
+E=12, Avg [T] Loss: 1.4745
+E=12, Avg [T] Loss: 1.4745
+E=12, Avg [T] Loss: 1.4323
+E=12, Avg [T] Loss: 1.5086
+E=12, Avg [T] Loss: 1.5505
+E=12, Avg [T] Loss: 1.5452
+E=12, Avg [T] Loss: 1.5332
+E=12, Avg [T] Loss: 1.5188
+E=12, Avg [T] Loss: 1.5068
+E=12, Avg [T] Loss: 1.4994
+E=12, Avg [T] Loss: 1.5050
+
+VALIDATION: E=12, Avg [T] Loss: 1.5012
+
+E=13, Avg [T] Loss: 1.4488
+E=13, Avg [T] Loss: 1.4761
+E=13, Avg [T] Loss: 1.4708
+E=13, Avg [T] Loss: 1.4695
+E=13, Avg [T] Loss: 1.4689
+E=13, Avg [T] Loss: 1.4687
+E=13, Avg [T] Loss: 1.4693
+E=13, Avg [T] Loss: 1.4699
+E=13, Avg [T] Loss: 1.4702
+E=13, Avg [T] Loss: 1.4705
+E=13, Avg [T] Loss: 1.4702
+
+VALIDATION: E=13, Avg [T] Loss: 1.4702
+
+E=14, Avg [T] Loss: 1.4791
+E=14, Avg [T] Loss: 1.4652
+E=14, Avg [T] Loss: 1.4653
+E=14, Avg [T] Loss: 1.4642
+E=14, Avg [T] Loss: 1.4631
+E=14, Avg [T] Loss: 1.4643
+E=14, Avg [T] Loss: 1.4661
+E=14, Avg [T] Loss: 1.4662
+E=14, Avg [T] Loss: 1.4664
+E=14, Avg [T] Loss: 1.4671
+E=14, Avg [T] Loss: 1.4672
+E=14, Avg [T] Loss: 1.4120
+E=14, Avg [T] Loss: 1.5002
+E=14, Avg [T] Loss: 1.5465
+E=14, Avg [T] Loss: 1.5378
+E=14, Avg [T] Loss: 1.5251
+E=14, Avg [T] Loss: 1.5107
+E=14, Avg [T] Loss: 1.4992
+E=14, Avg [T] Loss: 1.4923
+E=14, Avg [T] Loss: 1.4979
+
+VALIDATION: E=14, Avg [T] Loss: 1.4938
+
+E=15, Avg [T] Loss: 1.4230
+E=15, Avg [T] Loss: 1.4677
+E=15, Avg [T] Loss: 1.4669
+E=15, Avg [T] Loss: 1.4672
+E=15, Avg [T] Loss: 1.4646
+E=15, Avg [T] Loss: 1.4634
+E=15, Avg [T] Loss: 1.4639
+E=15, Avg [T] Loss: 1.4645
+E=15, Avg [T] Loss: 1.4643
+E=15, Avg [T] Loss: 1.4648
+E=15, Avg [T] Loss: 1.4645
+
+VALIDATION: E=15, Avg [T] Loss: 1.4645
+
+E=16, Avg [T] Loss: 1.4080
+E=16, Avg [T] Loss: 1.4675
+E=16, Avg [T] Loss: 1.4656
+E=16, Avg [T] Loss: 1.4648
+E=16, Avg [T] Loss: 1.4629
+E=16, Avg [T] Loss: 1.4639
+E=16, Avg [T] Loss: 1.4635
+E=16, Avg [T] Loss: 1.4626
+E=16, Avg [T] Loss: 1.4623
+E=16, Avg [T] Loss: 1.4617
+E=16, Avg [T] Loss: 1.4621
+E=16, Avg [T] Loss: 1.4086
+E=16, Avg [T] Loss: 1.4962
+E=16, Avg [T] Loss: 1.5353
+E=16, Avg [T] Loss: 1.5308
+E=16, Avg [T] Loss: 1.5178
+E=16, Avg [T] Loss: 1.5031
+E=16, Avg [T] Loss: 1.4913
+E=16, Avg [T] Loss: 1.4841
+E=16, Avg [T] Loss: 1.4887
+
+VALIDATION: E=16, Avg [T] Loss: 1.4844
+
+E=17, Avg [T] Loss: 1.4508
+E=17, Avg [T] Loss: 1.4625
+E=17, Avg [T] Loss: 1.4573
+E=17, Avg [T] Loss: 1.4573
+E=17, Avg [T] Loss: 1.4583
+E=17, Avg [T] Loss: 1.4588
+E=17, Avg [T] Loss: 1.4590
+E=17, Avg [T] Loss: 1.4594
+E=17, Avg [T] Loss: 1.4593
+E=17, Avg [T] Loss: 1.4590
+E=17, Avg [T] Loss: 1.4590
+
+VALIDATION: E=17, Avg [T] Loss: 1.4590
+
+E=18, Avg [T] Loss: 1.4413
+E=18, Avg [T] Loss: 1.4566
+E=18, Avg [T] Loss: 1.4538
+E=18, Avg [T] Loss: 1.4546
+E=18, Avg [T] Loss: 1.4561
+E=18, Avg [T] Loss: 1.4574
+E=18, Avg [T] Loss: 1.4573
+E=18, Avg [T] Loss: 1.4572
+E=18, Avg [T] Loss: 1.4570
+E=18, Avg [T] Loss: 1.4572
+E=18, Avg [T] Loss: 1.4574
+E=18, Avg [T] Loss: 1.4173
+E=18, Avg [T] Loss: 1.4991
+E=18, Avg [T] Loss: 1.5417
+E=18, Avg [T] Loss: 1.5352
+E=18, Avg [T] Loss: 1.5228
+E=18, Avg [T] Loss: 1.5074
+E=18, Avg [T] Loss: 1.4943
+E=18, Avg [T] Loss: 1.4864
+E=18, Avg [T] Loss: 1.4908
+
+VALIDATION: E=18, Avg [T] Loss: 1.4859
+
+E=19, Avg [T] Loss: 1.5194
+E=19, Avg [T] Loss: 1.4569
+E=19, Avg [T] Loss: 1.4556
+E=19, Avg [T] Loss: 1.4550
+E=19, Avg [T] Loss: 1.4552
+E=19, Avg [T] Loss: 1.4547
+E=19, Avg [T] Loss: 1.4548
+E=19, Avg [T] Loss: 1.4547
+E=19, Avg [T] Loss: 1.4542
+E=19, Avg [T] Loss: 1.4548
+E=19, Avg [T] Loss: 1.4553
+
+VALIDATION: E=19, Avg [T] Loss: 1.4553
+
+E=20, Avg [T] Loss: 1.5065
+E=20, Avg [T] Loss: 1.4631
+E=20, Avg [T] Loss: 1.4599
+E=20, Avg [T] Loss: 1.4587
+E=20, Avg [T] Loss: 1.4566
+E=20, Avg [T] Loss: 1.4560
+E=20, Avg [T] Loss: 1.4560
+E=20, Avg [T] Loss: 1.4560
+E=20, Avg [T] Loss: 1.4553
+E=20, Avg [T] Loss: 1.4549
+E=20, Avg [T] Loss: 1.4545
+E=20, Avg [T] Loss: 1.3966
+E=20, Avg [T] Loss: 1.4848
+E=20, Avg [T] Loss: 1.5303
+E=20, Avg [T] Loss: 1.5248
+E=20, Avg [T] Loss: 1.5128
+E=20, Avg [T] Loss: 1.4987
+E=20, Avg [T] Loss: 1.4864
+E=20, Avg [T] Loss: 1.4787
+E=20, Avg [T] Loss: 1.4850
+
+VALIDATION: E=20, Avg [T] Loss: 1.4811
+
