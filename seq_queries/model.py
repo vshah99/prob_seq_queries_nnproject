@@ -191,13 +191,20 @@ def get_model(args):
     )
 
     if args.masked_lm:
-        raise NotImplementedError
-    else:
-        return CausalLM(
+        model = MaskedLM(
             vocab_size=args.vocab_size,
             embed_dim=args.hidden_size,
             rnn=rnn,
         )
+    else:
+        model = CausalLM(
+            vocab_size=args.vocab_size,
+            embed_dim=args.hidden_size,
+            rnn=rnn,
+        )
+
+    model.to(args.device)
+    return model
 
 
 #################################################################################

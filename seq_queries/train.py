@@ -92,9 +92,6 @@ def set_random_seed(args):
 
 def setup_model_and_optim(args, epoch_len):
     model = get_model(args)
-
-    model.to(args.device)
-
     optimizer = get_optimizer(model, args)
     lr_scheduler = get_lr_scheduler(optimizer, args, epoch_len)
 
