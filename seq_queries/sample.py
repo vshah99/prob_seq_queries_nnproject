@@ -774,13 +774,11 @@ def sample(
         args.sample_args['coverage_type'] == "fixed_width"
                       else mc_sample_random_list),
         "mc_importance": mc_sample_importance,
-    }; sampler = roster[args.sample_type]
-    if (not args.sample_args['coverage_type'] == "fixed_width"):
-        args.effective_num_seqs = args.beam_widths
-    else: args.effective_num_seqs = args.num_seqs
-    args.model = model
-
+    };
+    sampler = roster[args.sample_type]
+    args.model = model;
     output = {"settings":vars(args)}
+
     all_seqs = []; all_probs = []; all_beam = []; all_covs = []
     for dbatch in dataloader:
         batched = False
@@ -791,10 +789,7 @@ def sample(
         data_batch = torch.stack(data_batch, dim = 0).cpu()
         kwargs = vars(args)
         # del kwargs['vocab_size']
-        seqs, probs, beams_covs = sampler(
-            data_batch,
-            **kwargs,
-        )
+        seqs, probs, beams_covs = sampler(data_batch,**kwargs)
 
         #Tensors
         # print(probs[0].shape)
