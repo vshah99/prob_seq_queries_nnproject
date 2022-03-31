@@ -29,6 +29,7 @@ from .model import CausalLM, MaskedLM
 #   Monte carlo random sampling (batch and variable)
 #################################################################################
 
+
 def mc_sample_random_batch(
     histories,
     vocab_size,
