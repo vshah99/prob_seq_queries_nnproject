@@ -305,22 +305,6 @@ def mc_sample_importance(
 #######################################################################
 # Beam Search helper functions
 #######################################################################
-def _tuple_cpu(
-    tup,
-):
-    """TODO: Docstring for _tuple_cpu.
-
-    :tup: TODO
-    :: TODO
-    :returns: TODO
-
-    """
-    if isinstance(tup, torch.Tensor):
-        return tup.cpu()
-    new_tup = []
-    for i in range(len(tup)):
-        new_tup.append(_tuple_cpu(tup[i]))
-    return new_tup
 
 @torch.no_grad()
 def get_beam_width(
