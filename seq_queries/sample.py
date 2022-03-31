@@ -786,7 +786,7 @@ def sample(
             args.hist_len = [args.hist_len]*dbatch.shape[0]
             batched = True
         data_batch =[dbatch[i,:args.hist_len[i]] for i in range(dbatch.shape[0])]
-        data_batch = torch.stack(data_batch, dim = 0).cpu()
+        if batched: data_batch = torch.stack(data_batch, dim = 0).cpu()
         kwargs = vars(args)
         # del kwargs['vocab_size']
         seqs, probs, beams_covs = sampler(data_batch,**kwargs)
