@@ -226,6 +226,8 @@ def main():
 
     # General parameters
     sample = next(iter(train_stacks))
+    print(type(sample))
+    sys.exit(1)
     num_hists = len(sample)
     num_seqs = 50
     beam_width_dynamic = 0.50

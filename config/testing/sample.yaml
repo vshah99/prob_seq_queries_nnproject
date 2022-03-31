@@ -14,11 +14,19 @@ hidden_size: 128
 dropout: 0.3
 num_layers: 2
 masked_lm: false
-checkpoint_path: models/shakespeare/shakespeare_model.pt
+checkpoint_path: models/shakespeare/
+vocab_size: 68
+
+# Data args
+data_path: data/shakespeare_input.txt
 
 # Training args not needed here
 # Evaluation arguments not needed here
 # Sampling arguments are provided by the testing script explicitly
 disable_tqdm: false
+
+# Sampling args
+sample_type: "beam_search"
+sample_args: {"coverage_type":"backoff"}
 
 

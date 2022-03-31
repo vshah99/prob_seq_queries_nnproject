@@ -3,8 +3,6 @@ import random
 import pickle as pkl
 import numpy as np
 
-from .sample import sample_beam_search
-
 random.seed(0)
 
 def load_text(file_name):

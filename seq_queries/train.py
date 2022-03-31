@@ -138,10 +138,11 @@ def load_checkpoint(args, model):
         #model.cuda(torch.cuda.current_device())
         model.to(args.device)
     print_log("Loaded model from {}".format(file_path))
-    return int(latest_model.replace("model_", "").replace(".pt", "")) + 1
+    try: return int(latest_model.replace("model_", "").replace(".pt", "")) + 1
+    except: return 0
 
 def report_model_stats(model):
-    total = 0 
+    total = 0
 
     for name, param in model.named_parameters():
         total += param.numel()
@@ -157,7 +158,7 @@ def main(args):
     print_log("Setting up dataloaders.")
     text_dict = load_text(args.data_path)
     train_dataloader, valid_dataloader, test_dataloader = process_data(text_dict, args)
-    
+
     print_log("Setting up model, optimizer, and learning rate scheduler.")
     model, optimizer, lr_scheduler = setup_model_and_optim(args, len(train_dataloader))
 
@@ -181,9 +182,9 @@ def main(args):
 
         if ((epoch+1) % args.save_epochs == 0):
             save_checkpoint(args, model, optimizer, lr_scheduler, epoch)
-        
+
         epoch += 1
-        
+
     if args.save_epochs > 0 and original_epoch != epoch:
         save_checkpoint(args, model, optimizer, lr_scheduler, epoch)
 

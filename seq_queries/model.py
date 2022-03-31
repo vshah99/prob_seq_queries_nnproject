@@ -152,7 +152,6 @@ class CausalLM(LM, nn.Module):
             assert(char_to_id is not None)
             src = torch.full((batch_size, 1), char_to_id["<BOS>"])
             src = src.to(next(self.parameters()).device)
-        batch_size = x.shape[0]
 
         samples = [src]
         step_input = src

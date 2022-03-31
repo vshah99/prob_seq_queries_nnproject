@@ -25,6 +25,8 @@ from tqdm import tqdm
 from .data import load_text, process_data
 from .model import CausalLM, MaskedLM
 
+from .arguments import get_args
+
 #################################################################################
 #   Monte carlo random sampling (batch and variable)
 #################################################################################
@@ -34,9 +36,10 @@ def mc_sample_random_batch(
     histories,
     vocab_size,
     num_seqs,
-    total_seq_len,
+    total_seq_lens,
     excluded = [],
     device = 'cpu',
+    **kwargs,
 ):
     """Monte-carlo sampling, where each sequence is
     chosen randomly from the vocabulary. Assumes that each
@@ -54,7 +57,7 @@ def mc_sample_random_batch(
     # Set weights to make random choice
     # from only valid tokens
     num_hists, hist_len = histories.shape
-    seq_len = total_seq_len - hist_len
+    seq_len = total_seq_lens - hist_len
     weights = torch.ones(vocab_size)
     weights[excluded] *= 0
 
@@ -75,15 +78,17 @@ def mc_sample_random_batch(
     ], dim = 0)
 
     # (hum_hists, num_seqs, total_seq_len)
-    return seqs
+    return seqs, None, None
 
 def mc_sample_random_list(
     histories,
     vocab_size,
     num_seqs,
     total_seq_lens,
+    model = None,
     excluded = [],
     device = 'cpu',
+    **kwargs,
 ):
     """Monte-carlo sampling, where each sequence is
     chosen randomly from the vocabulary. Assumes that each
@@ -125,7 +130,7 @@ def mc_sample_random_list(
     ]
 
     # (batch, num_seqs, total_seq_len)
-    return seqs
+    return seqs, None, None
 
 #######################################################################
 # Importance sampling helper functions
@@ -194,11 +199,11 @@ def importance_sampling_inner_loop(
 
 @torch.no_grad()
 def mc_sample_importance(
-    model,
     histories,
     vocab_size,
     num_seqs,
     total_seq_lens,
+    model = None,
     temperature = 1,
     rnn_args = None,
     excluded = [],
@@ -206,6 +211,7 @@ def mc_sample_importance(
     device = 'cpu',
     batch = True,
     eps = 1e-10,
+    **kwargs,
 ):
     """Monte-carlo sampling with importance sampling
     provided by some model. First duplicates all history
@@ -298,8 +304,8 @@ def mc_sample_importance(
     )
 
     if batch:
-        return torch.stack(seqs,0), torch.stack(log_probs,dim=0)
-    return seqs, log_probs
+        return torch.stack(seqs,0), torch.stack(log_probs,dim=0), None
+    return seqs, log_probs, None
 
 
 #######################################################################
@@ -615,11 +621,11 @@ def beam_search_inner_loop(
 
 @torch.no_grad()
 def sample_beam_search(
-    model,
     histories,
     vocab_size,
     beam_widths,
     total_seq_lens,
+    model = None,
     temperature = 1,
     rnn_args = None,
     excluded = [],
@@ -628,6 +634,7 @@ def sample_beam_search(
     eps = 1e-10,
     bw_params = {'coverage_type':'backoff'},
     return_beams = True,
+    **kwargs,
 ):
     """Beam search where thes histories and the
     sequence lengths may have different sizes.
@@ -738,33 +745,86 @@ def sample_beam_search(
         seqs, probs =  torch.stack(seqs, dim = 0), torch.stack(probs,dim =0)
     if return_beams:
         return seqs, probs, (all_beam_widths,all_beam_coverages)
-    return seqs, probs
+    return seqs, probs, None
 
 
 #################################################################################
-#   TESTING
+#   TESTING Orchestration
 #################################################################################
 
+def sample(
+    dataloader,
+    args,
+    model = None,
+    **kwargs,
+):
+    """Sample from any of these methods given an
+    input dataloader, arguments, and potentially a model
 
-if __name__ == "__main__":
+    :dataloader: TODO
+    :args: TODO
+    :model: TODO
+    :: TODO
+    :returns: TODO
 
-    exps = [
-        [10,5, 0.5,'backoff'],
-        # [10,5, 0.75,'backoff'],
-        # [10,5, 0.9,'backoff'],
-        # [10,5, 0.5,'interpolate'],
-        # [10,5, 0.75,'interpolate'],
-        # [10,5, 0.9,'interpolate'],
-        # [30,5, 0.5,'backoff'],
-        # [30,5, 0.75,'backoff'],
-        # [30,5, 0.9,'backoff'],
-        # [30,5, 0.5,'interpolate'],
-        # [30,5, 0.75,'interpolate'],
-        # [30,5, 0.9,'interpolate'],
-        # [30,10, 0.5,'backoff'],
-        # [30,10, 0.65,'backoff'],
-        # [30,10, 0.5,'interpolate'],
-        # [30,10, 0.75,'interpolate'],
-    ]
+    """
+    roster = {
+        "beam_search": sample_beam_search,
+        "mc_random": (mc_sample_random_batch if
+        args.sample_args['coverage_type'] == "fixed_width"
+                      else mc_sample_random_list),
+        "mc_importance": mc_sample_importance,
+    }; sampler = roster[args.sample_type]
+    if (not args.sample_args['coverage_type'] == "fixed_width"):
+        args.effective_num_seqs = args.beam_widths
+    else: args.effective_num_seqs = args.num_seqs
+    args.model = model
+
+    output = {"settings":vars(args)}
+    all_seqs = []; all_probs = []; all_beam = []; all_covs = []
+    for dbatch in dataloader:
+        batched = False
+        if isinstance(args.hist_len,int):
+            args.hist_len = [args.hist_len]*dbatch.shape[0]
+            batched = True
+        data_batch =[dbatch[i,:args.hist_len[i]] for i in range(dbatch.shape[0])]
+        data_batch = torch.stack(data_batch, dim = 0).cpu()
+        kwargs = vars(args)
+        # del kwargs['vocab_size']
+        seqs, probs, beams_covs = sampler(
+            data_batch,
+            **kwargs,
+        )
+
+        #Tensors
+        # print(probs[0].shape)
+        seqs = [seq.numpy() for seq in seqs] if isinstance(seqs,list) else [seqs.numpy()]
+        probs = ([None] if probs is not None
+                 else ([prob.numpy() for prob in probs] if isinstance(seqs, list)
+                 else ([probs.numpy()])))
+        all_seqs += seqs
+        all_probs += probs
+        print(len(seqs))
+        sys.exit(1)
+
+        # Lists
+        if beams_covs is not None:
+            all_beams += beams_covs[0]
+            all_covs += beams_covs[1]
+
+    output['beams'] = all_beams
+    output['probabilities'] = all_probs
+    output['sequences'] = all_seqs
+    output['covs'] = all_covs
+    args.model = None
+
+    return output
+
+
+
+
+
+
+
 
 
