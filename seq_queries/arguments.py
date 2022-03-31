@@ -1,12 +1,14 @@
 import argparse
 import json
+import torch
 
-from .utils import print_log
+from .utils import print_log, _merge_configs, read_yaml
 
 
 def general_args(parser):
     group = parser.add_argument_group("General set arguments for miscelaneous utilities.")
     #group.add_argument("--json_config_path", default=None, help="Path to json file containing arguments to be parsed.")
+    group.add_argument("--config", type=read_yaml, default = None, help="Config file to seed argparse from yaml file. WILL OVERWRITE OTHER ARGUMENTS")
     group.add_argument("--seed", type=int, default=1234321, help="Seed for all random processes.")
     group.add_argument("--dont_print_args", action="store_true", help="Specify to disable printing of arguments.")
     group.add_argument("--cuda", action="store_true", help="Convert model and data to GPU.")
@@ -49,7 +51,12 @@ def evaluation_args(parser):
 
 def sampling_args(parser):
     group = parser.add_argument_group("Sampling specification arguments.")
-    #group.add_argument("--", type=, default=, help="")
+    group.add_argument("--hist_len", type=int, default=10, help="Length of conditioning context for sequence")
+    group.add_argument("--total_seq_lens", type=_int_or_float_or_list, default=15, help="List[int] or int for total sequence lengths")
+    group.add_argument("--beam_widths", type=_int_or_float_or_list, default=0.5, help="List[int,float], float, or int for total sequence lengths")
+    group.add_argument("--sample_type", default="beam_search", help="beam_search, mc_random, or mc_importance")
+    group.add_argument("--bw_params", type=dict, default={"coverage_type":"backoff"}, help="")
+    group.add_argument("--disable_tqdm", action="store_false",help="Disable tqdm monitoring runs for samplers")
 
 def print_args(args):
     max_arg_len = max(len(k) for k, v in args.items())
@@ -62,7 +69,7 @@ def print_args(args):
             v,
         ))
 
-def get_args():
+def get_args(manual_config = None):
     parser = argparse.ArgumentParser()
 
     general_args(parser)
@@ -75,8 +82,14 @@ def get_args():
 
     args.shuffle = not args.dont_shuffle
 
+    if manual_config is not None:
+        args.config = read_yaml(manual_config)
+    if args.config is not None:
+        args.__dict__ = _merge_configs(args.config, args.__dict__)
+
     if not args.dont_print_args:
         print_args(vars(args))
+        print("====="*10)
 
     if args.cuda and torch.cuda.is_available():
         args.device = torch.device("cuda:{}".format(args.device_num))
