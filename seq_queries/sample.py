@@ -27,6 +27,75 @@ from .model import CausalLM, MaskedLM
 
 from .arguments import get_args
 
+
+#################################################################################
+#   Evaluate sampler
+#################################################################################
+
+def evaluate_seq_query_probs(
+    model,
+    sample_lists,
+    excluded_tokens,
+    seq_lens,
+    sample_prob_lists = None,
+    device = "cuda:0",
+    excluded = [],):
+    if isinstance(seq_lens, int):
+        seq_lens = [seq_lens]*len(sample_lists)
+    if sample_prob_lists is None:
+        sample_prob_lists = [None]*len(sample_lists)
+
+    estimates = [
+        _evaluate_seq_query_prob(
+            model,
+            sample_lists[i],
+            seq_lens[i],
+            sample_prob_lists[i],
+            device=device,
+            excluded=excluded,
+        ) for i in range(len(sample_lists))
+    ]
+
+    return estimates
+
+
+def _evaluate_seq_query_prob(
+    model,
+    samples,
+    seq_len,
+    sample_probs = None,
+    device = "cuda:0",
+    excluded = [],
+):
+    """Evaluate samples from model for a sequential query.
+    This could be from a monte carlo sample or from an
+    importance sampled sequence
+
+    :model: TODO
+    :samples: TODO
+    :excluded_tokens: TODO
+    :sample_type: TODO
+    :: TODO
+    :returns: TODO
+
+    """
+    probs = model.get_next_probs(
+        samples,
+        rnn_args = None,
+        temperature = None,
+        device = device,
+    )
+
+    assert tuple(probs.shape) == tuple(sample_probs.shape),\
+        f"Probabilities are of different shapes: probs: {probs.shape} sampled: {sample_probs.shape}"
+    if sample_probs is not None:
+        log_probs = torch.log(probs) - sample_probs
+
+    norm_const = (model.vocab_size - len(excluded))**(seq_len)/probs.shape[0]
+    estimate = norm_const* torch.exp(log_probs).sum()
+    return estimate
+
+
 #################################################################################
 #   Monte carlo random sampling (batch and variable)
 #################################################################################
@@ -307,6 +376,64 @@ def mc_sample_importance(
         return torch.stack(seqs,0), torch.stack(log_probs,dim=0), None
     return seqs, log_probs, None
 
+#######################################################################
+# Beam search evaluation
+#######################################################################
+
+
+def evaluate_beam_search_lbs(
+    model,
+    sample_lists,
+    excluded_tokens,
+    seq_lens,
+    sample_prob_lists = None,
+    device = "cuda:0",
+    excluded = [],
+):
+    if isinstance(seq_lens, int):
+        seq_lens = [seq_lens]*len(sample_lists)
+    if sample_prob_lists is None:
+        sample_prob_lists = [None]*len(sample_lists)
+
+    lower_bounds = [
+        _evaluate_beam_search_lb(
+            model,
+            sample_lists[i],
+            seq_lens[i],
+            sample_prob_lists[i],
+            device=device,
+            excluded=excluded,
+        ) for i in range(len(sample_lists))
+    ]
+
+    return lower_bounds
+
+def _evaluate_beam_search_lb(
+    model,
+    samples,
+    seq_len,
+    sample_probs = None,
+    device = "cuda:0",
+    excluded = [],
+):
+    """ Sum up all probabilities from
+    beam search to get a lower bound on the
+    actual marginal probability
+    """
+    probs = model.get_next_probs(
+        samples,
+        rnn_args = None,
+        temperature = None,
+        device = device,
+    )
+
+    assert tuple(probs.shape) == tuple(sample_probs.shape),\
+        f"Probabilities are of different shapes: probs: {probs.shape} sampled: {sample_probs.shape}"
+    if sample_probs is not None:
+        log_probs = torch.log(probs) - sample_probs
+
+    lower_bound = torch.exp(log_probs.sum())
+    return lower_bound
 
 #######################################################################
 # Beam Search helper functions
