@@ -4,6 +4,7 @@ import math
 import yaml
 import pickle as pkl
 import json
+import ast
 
 from datetime import datetime
 
@@ -22,6 +23,9 @@ def _int_or_float_or_list(item):
             isinstance(item, list)),\
         f"Item was not int, float or list: got {type(item)}"
     return item
+
+def _to_list(str_list):
+    return ast.literal_eval(str_list)
 
 def _merge_configs(primary, secondary):
     """
