@@ -24,7 +24,6 @@ import torch.nn as nn
 from tqdm import tqdm
 from .data import load_text, process_data
 from .model import CausalLM, MaskedLM
-
 from .arguments import get_args
 
 
@@ -49,41 +48,27 @@ def evaluate_seq_query_probs(
     if sample_prob_lists is None:
         sample_prob_lists = [None]*len(sample_lists)
 
+    # (num_samples, )
+    # print(len(prob_lists), len(sample_prob_lists), len(sample_lists))
+    # print("probs",prob_lists[0].shape)
+    # print("sample probs:",sample_prob_lists[0].shape)
+    # print("sample:",sample_lists[0].shape)
+    # sys.exit(1)
+
+
     estimates = []
     for i in range(len(sample_lists)):
 
-        batch_size = None
-        if len(sample_lists[i].shape) > 2:
-            batch_size = sample_lists[i].shape[0]
-            sample_lists[i] = [sample_lists[i][j,...] for j in range(batch_size)]
-            if prob_lists[i] is not None:
-                prob_lists[i] =[prob_lists[i][j,...] for j in range(batch_size)]
-            if sample_prob_lists[i] is not None:
-                sample_prob_lists[i] =[sample_prob_lists[i][j,...] for j in range(batch_size)]
-
-        if batch_size is not None:
-            for j in range(batch_size):
-
-                estimates.append(
-                    _evaluate_seq_query_prob(
-                        model,
-                        sample_lists[i][j],
-                        seq_lens[i],
-                        probs=prob_lists[i][j],
-                        sample_probs=sample_prob_lists[i][j],
-                        device=device,
-                        excluded=excluded))
-        else:
-            estimates.append(
-                    _evaluate_seq_query_prob(
-                        model,
-                        sample_lists[i],
-                        seq_lens[i],
-                        probs=prob_lists[i],
-                        sample_probs=sample_prob_lists[i],
-                        device=device,
-                        excluded=excluded,
-                    ))
+        estimates.append(
+                _evaluate_seq_query_prob(
+                    model,
+                    sample_lists[i],
+                    seq_lens[i],
+                    probs=prob_lists[i],
+                    sample_probs=sample_prob_lists[i],
+                    device=device,
+                    excluded=excluded,
+                ))
 
     return estimates
 
@@ -119,19 +104,12 @@ def _evaluate_seq_query_prob(
         temperature = temperature,
         device = device,
     ); marg_probs = [marg_probs[:,e] for e in excluded]
-    # TODO: Start here
-    print(torch.log(marg_probs[0].max()), sample_probs.max())
-    print(torch.log(marg_probs[0].min()), sample_probs.min())
-    sys.exit(1)
 
     if probs is not None:
-        log_probs = [(torch.log(marg_prob + eps) + probs) - sample_probs for marg_prob in marg_probs]
+        log_probs = [torch.log(marg_prob + eps) + probs - sample_probs for marg_prob in marg_probs]
 
-        #TODO: Issue with log probabilities being too small
-        print(log_probs[0].sum())
-
-    norm_const = (model.vocab_size - len(excluded))**(seq_len)/marg_probs[0].shape[0]
-    estimates = [norm_const* torch.exp(log_prob.sum()) for log_prob in log_probs]
+    norm_const_numerator = (model.vocab_size - len(excluded))**(seq_len)
+    estimates = [norm_const_numerator* torch.exp(log_prob.mean()) for log_prob in log_probs]
     return estimates
 
 
@@ -279,11 +257,14 @@ def importance_sampling_inner_loop(
             if new_prob_state is not None else (None,None)
             for new_prob_state in new_probs_states]))
         probs, sorted_states = list(new_probs), list(new_states)
+        sample_probs = copy.deepcopy(probs)
 
         # Add to sequences only if they aren't done
         for i in range(num_hists):
             if probs[i] is not None:
                 probs[i][:,excluded] = eps/2
+                sample_probs[i][:,excluded] *= 0
+                sample_probs[i] /= sample_probs[i].sum(dim=-1).reshape(-1,1)
                 addition = torch.multinomial(
                     probs[i],
                     num_samples = 1,
@@ -296,9 +277,8 @@ def importance_sampling_inner_loop(
                     torch.log(probs[i]), -1,
                     torch.unsqueeze(seqs[i][:,-1],-1),
                 )
-                sample_probs = probs[i]/probs[i].sum(dim=-1).reshape(-1,1)
                 log_sample_probs[i] += torch.gather(
-                    torch.log(sample_probs), -1,
+                    torch.log(sample_probs[i]), -1,
                     torch.unsqueeze(seqs[i][:,-1],-1),
                 )
 
@@ -373,9 +353,9 @@ def mc_sample_importance(
 
     # Zero out weights on excluded tokens
     for i in range(num_hists):
-        probs[i][:,excluded] *= eps/2
-        # probs[i] /= probs[i].sum(dim=-1).reshape(-1,1)
-        sample_probs[i] /= probs[i].sum(dim=-1).reshape(-1,1)
+        probs[i][:,excluded] = eps/2
+        sample_probs[i][:,excluded] *= 0
+        sample_probs[i] /= sample_probs[i].sum(dim=-1).reshape(-1,1)
 
     # Log probabilities start (num_hists, num_seqs)
     log_probs = [ # (num_seqs, vocab)
@@ -494,7 +474,9 @@ def _evaluate_beam_search_lb(
     if sample_probs is not None:
         log_probs = [torch.log(prob) + sample_probs for prob in probs]
 
-    lower_bounds = [torch.exp(log_prob.sum()) for log_prob in log_probs]
+    print(log_probs[0])
+    sys.exit(1)
+    lower_bounds = [torch.exp(log_prob).sum() for log_prob in log_probs]
     assert len(lower_bounds) == len(excluded),"List of bounds should equal num excluded tokens"
     return lower_bounds
 
@@ -739,7 +721,6 @@ def beam_search_inner_loop(
         for i in range(num_hists):
             if new_probs[i] is not None:
                 new_probs[i][:,excluded] = eps/2
-                # new_probs[i] /= new_probs[i].sum(dim=-1).reshape(-1,1)
 
         # Add together probabilities to make new measures
         # List[(beam_width, vocab)] len num_hists
@@ -761,6 +742,7 @@ def beam_search_inner_loop(
                         probs[i].flatten(), dim = -1,
                         descending = True,
                     )
+                # Normalized to ensure proper probability coverage with beam coverage
                 sorted_probs = torch.exp(sorted_probs_inds[i][0])
                 sorted_probs /= sorted_probs.sum()
                 assert not sorted_probs.isnan().any(),"Nans in sorted probabilities"
@@ -777,7 +759,7 @@ def beam_search_inner_loop(
                     all_beam_coverages[i].append(new_coverage)
 
                 # Match sequences with their next best token
-                tokens = sorted_probs_inds[i][1][:beam_width].cpu()
+                tokens = sorted_probs_inds[i][1][:beam_width]
                 seq_inds = tokens // vocab_size
                 best_tokens = tokens % vocab_size
 
@@ -852,10 +834,6 @@ def sample_beam_search(
                 in zip(total_seq_lens,hist_lens)]
     orig_beams, percentile = prepare_beams(beam_widths,num_hists,seq_lens, bw_params)
     all_beam_coverages = [[orig_beam] for orig_beam in orig_beams]
-    excluded = set(excluded)
-    legal_vocab = np.array(
-        [val for val in np.arange(vocab_size) if val not in excluded]
-    ); excluded = list(excluded)
 
     # Get probabilities from model for each history
     # (num_hists, vocab)
@@ -872,7 +850,6 @@ def sample_beam_search(
     # Zero out weights on excluded tokens
     for i in range(num_hists):
         probs[i][:,excluded] = eps/2
-        # probs[i] /= probs[i].sum(axis=1).reshape(-1,1)
 
     # Top probabilities
     # (num_hists, vocab)
@@ -955,6 +932,7 @@ def evaluate_samples(
     }; evaluator = evaluation_roster[args.sample_type]
 
     seq_lens = [s.shape[-1] - hl for s,hl in zip(output_dict['seqs'],args.hist_len)]
+
     estimates_or_lbs = evaluator(model,
                                  output_dict['seqs'],
                                  seq_lens,
@@ -1009,14 +987,23 @@ def sample(
 
         #Tensors
         # print(probs[0].shape)
-        seqs = [seq.numpy() for seq in seqs] if isinstance(seqs,list) else [seqs.numpy()]
+        seqs = [seq.numpy() for seq in seqs]
         probs = ([None] if probs is None
                  else ([prob.numpy() for prob in probs] if isinstance(seqs, list)
                  else ([probs.numpy()])))
+        sample_probs = ([None] if sample_probs is None
+                 else ([sample_prob.numpy() for sample_prob in sample_probs] if isinstance(seqs, list)
+                 else ([sample_probs.numpy()])))
+        # for p, sp in zip(probs, sample_probs):
+        #     tt = p - sp
+        #     print(tt.min(), tt.max())
         all_seqs += seqs
         all_probs += probs
-        if sample_probs is not None:
-            all_sample_probs += sample_probs
+        all_sample_probs += sample_probs
+
+        # for p, sp in zip(all_probs, all_sample_probs):
+        #     tt = p - sp
+        #     print(tt.min(), tt.max())
 
         # Lists
         if beams_covs is not None:

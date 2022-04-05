@@ -27,6 +27,9 @@ disable_tqdm: false
 
 # Sampling args
 sample_type: "beam_search"
-sample_args: {"coverage_type":"backoff"}
+sample_args: {"coverage_type":"interpolate"}
+num_seqs: 100
+hist_len: 10
+excluded: [11]
 
 

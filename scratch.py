@@ -21,7 +21,7 @@ import torch
 # from experiments.train.shakespeare import main as shakespeare_main
 # from experiments.train.stacks import main as stacks_main
 
-from seq_queries.sample import sample
+from seq_queries.sample import sample, evaluate_samples
 from seq_queries.model import get_model
 from seq_queries.data import load_text, process_data
 from seq_queries.arguments import get_args
@@ -40,8 +40,10 @@ if __name__ == "__main__":
     if args.checkpoint_path:
         load_checkpoint(args, model)
     model.eval()
-
     output = sample(val_dl, args, model)
+    estimates_or_lbs = evaluate_samples(args, model, output)
+    print(estimates_or_lbs[0])
+
 
 #################################################################################
 #   Main Method
