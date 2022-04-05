@@ -48,14 +48,6 @@ def evaluate_seq_query_probs(
     if sample_prob_lists is None:
         sample_prob_lists = [None]*len(sample_lists)
 
-    # (num_samples, )
-    # print(len(prob_lists), len(sample_prob_lists), len(sample_lists))
-    # print("probs",prob_lists[0].shape)
-    # print("sample probs:",sample_prob_lists[0].shape)
-    # print("sample:",sample_lists[0].shape)
-    # sys.exit(1)
-
-
     estimates = []
     for i in range(len(sample_lists)):
 
@@ -108,8 +100,7 @@ def _evaluate_seq_query_prob(
     if probs is not None:
         log_probs = [torch.log(marg_prob + eps) + probs - sample_probs for marg_prob in marg_probs]
 
-    norm_const_numerator = (model.vocab_size - len(excluded))**(seq_len)
-    estimates = [norm_const_numerator* torch.exp(log_prob.mean()) for log_prob in log_probs]
+    estimates = [torch.exp(log_prob.mean()) for log_prob in log_probs]
     return estimates
 
 
@@ -471,11 +462,7 @@ def _evaluate_beam_search_lb(
         device = device,
     ); probs = [probs[:,e] for e in excluded]
 
-    if sample_probs is not None:
-        log_probs = [torch.log(prob) + sample_probs for prob in probs]
-
-    print(log_probs[0])
-    sys.exit(1)
+    log_probs = [torch.log(prob) + sample_probs for prob in probs]
     lower_bounds = [torch.exp(log_prob).sum() for log_prob in log_probs]
     assert len(lower_bounds) == len(excluded),"List of bounds should equal num excluded tokens"
     return lower_bounds
@@ -500,7 +487,9 @@ def get_beam_width(
     if not percentile:
         return curr_beam
 
-    cum_probs = torch.cumsum(prob.flatten(),0)
+    #Normalize here
+    norm_prob = prob/prob.sum()
+    cum_probs = torch.cumsum(norm_prob.flatten(),0)
     beam_width = torch.argwhere(
         cum_probs >= curr_beam
     ).flatten()[0].item() + 1
@@ -571,7 +560,7 @@ def get_initial_sorted_states(
 def get_beam_coverage(
     curr_coverage,
     orig_coverage,
-    bw_params,
+    sample_args,
     index = None,
 ):
     """TODO: Docstring for get_beam_coverage.
@@ -586,41 +575,41 @@ def get_beam_coverage(
     fixed_width = lambda cov, orig, params,index: orig
     backoff = lambda cov, orig, params,index: cov*orig
     interpolate = lambda cov, orig, params, index: cov - params['interpolate_step'][index]
-    assert (bw_params['coverage_type'] in ['fixed_width','backoff','interpolate'])
+    assert (sample_args['coverage_type'] in ['fixed_width','backoff','interpolate'])
     roster = {'fixed_width': fixed_width,
               'backoff': backoff,
               'interpolate': interpolate,
               }
-    return roster[bw_params['coverage_type']](curr_coverage, orig_coverage, bw_params, index)
+    return roster[sample_args['coverage_type']](curr_coverage, orig_coverage, sample_args, index)
 
 def prepare_beams(
     beam_widths,
     num_hists,
     seq_lens,
-    bw_params,
+    sample_args,
 ):
     roster = {'fixed_width':_prepare_beams_backoff,
               'backoff':_prepare_beams_backoff,
               'interpolate': _prepare_beams_interpolate,
               }
-    return roster[bw_params['coverage_type']](
+    return roster[sample_args['coverage_type']](
         beam_widths,
         num_hists,seq_lens,
-        bw_params
+        sample_args
     )
 
 def _prepare_beams_interpolate(
     beam_widths,
     num_hists,
     seq_lens,
-    bw_params,
+    sample_args,
 ):
     percentile = False
     if isinstance(beam_widths, float):
         assert 0 < beam_widths < 1, "Coverage must be between 0 and 1"
         percentile = True
         orig_beam_widths = [np.power(beam_widths, 1/seq_lens[i]) for i in range(num_hists)]
-        bw_params['interpolate_step'] = np.array(
+        sample_args['interpolate_step'] = np.array(
             [(orig_beam_widths[i] - beam_widths)/(seq_lens[i] -1) for i in range(num_hists)]
         )
 
@@ -629,7 +618,7 @@ def _prepare_beams_interpolate(
         if isinstance(beam_widths[0],float):
             percentile = True
             orig_beam_widths = [np.power(beam_widths[i], 1/seq_lens[i]) for i in range(num_hists)]
-            bw_params['interpolate_step'] = np.array(
+            sample_args['interpolate_step'] = np.array(
                 [(orig_beam_widths[i] - beam_widths[i])/(seq_lens[i] -1) for i in range(num_hists)]
             )
     else:
@@ -641,12 +630,9 @@ def _prepare_beams_backoff(
     beam_widths,
     num_hists,
     seq_lens,
-    bw_params,
+    sample_args,
 ):
-    """TODO: Docstring for prepare_beams.
-
-    :beam_width: TODO
-    :returns: TODO
+    """Handles fixed width and backoff beam operations
 
     """
     percentile = False
@@ -683,7 +669,7 @@ def beam_search_inner_loop(
     iter_range, eps,
     excluded, vocab_size,
     disable_tqdm = False,
-    bw_params = None,
+    sample_args = None,
 ):
     """TODO: Docstring for beam_search_inner_loop.
 
@@ -711,7 +697,9 @@ def beam_search_inner_loop(
                     temperature = temperature,
                     device = device,
                 ) for i in range(num_hists)
-        ]; new_probs,new_states = list(zip(*[
+        ];
+        # Worry: We are working a lot in probability land
+        new_probs,new_states = list(zip(*[
             (new_prob_state[0] + eps, new_prob_state[1])
             if new_prob_state is not None else (None,None)
             for new_prob_state in new_probs_states]))
@@ -725,6 +713,7 @@ def beam_search_inner_loop(
         # Add together probabilities to make new measures
         # List[(beam_width, vocab)] len num_hists
         # Store all probabilities even from earlier sequences
+        # Rename probabilities to log probabilities where applicable
         probs = [ # (beam_width) + (beam_width, vocab)
             sorted_probs_inds[i][0][:all_beam_widths[i][-1]].reshape(-1,1) + torch.log(new_probs[i])
                 if new_probs[i] is not None else sorted_probs_inds[i][0][:all_beam_widths[i][-1]]
@@ -743,25 +732,32 @@ def beam_search_inner_loop(
                         descending = True,
                     )
                 # Normalized to ensure proper probability coverage with beam coverage
+                # This is just a temporary variable for choosing a probability
                 sorted_probs = torch.exp(sorted_probs_inds[i][0])
-                sorted_probs /= sorted_probs.sum()
                 assert not sorted_probs.isnan().any(),"Nans in sorted probabilities"
 
                 beam_width = get_beam_width(
                     all_beam_coverages[i][-1], sorted_probs,
                     percentile=percentile,
-                ); all_beam_widths[i].append(beam_width)
+                );
+                all_beam_widths[i].append(beam_width)
                 if percentile:
                     new_coverage = get_beam_coverage(all_beam_coverages[i][-1],
                                                      orig_beam_coverage[i],
-                                                     bw_params, index = i)
+                                                     sample_args, index = i)
                     # print(new_coverage)
                     all_beam_coverages[i].append(new_coverage)
 
-                # Match sequences with their next best token
+                # Match sequences with the most proable next tokens
+                # Make sure none of these are the excluded tokens
                 tokens = sorted_probs_inds[i][1][:beam_width]
                 seq_inds = tokens // vocab_size
                 best_tokens = tokens % vocab_size
+
+                # Check if any tokens are in excluded set
+                included_mask = (1 - sum(best_tokens==e for e in excluded)).bool()
+                best_tokens = best_tokens[included_mask]
+                seq_inds = seq_inds[included_mask]
 
                 # (beam_width, curr_seq_len+1)
                 # Need to expand this if the size is growing
@@ -804,7 +800,7 @@ def sample_beam_search(
     disable_tqdm = False,
     device = 'cpu',
     eps = 1e-10,
-    bw_params = {'coverage_type':'backoff'},
+    sample_args = {'coverage_type':'backoff'},
     return_beams = True,
     **kwargs,
 ):
@@ -827,12 +823,16 @@ def sample_beam_search(
     """
 
     # Excluded labels
-    num_hists = len(histories)
-    hist_lens = [h.shape[-1] for h in histories]
+    num_hists = len(histories) # number of history sequences
+    hist_lens = [h.shape[-1] for h in histories] # length of history seqs
+    # Broadcase sequence lengths if integer is probivided
     if isinstance(total_seq_lens, int): total_seq_lens = [total_seq_lens]*num_hists
+    # Estimated sequence lengths for each history seq
     seq_lens = [total_seq_len_i - hist_len for total_seq_len_i,hist_len
                 in zip(total_seq_lens,hist_lens)]
-    orig_beams, percentile = prepare_beams(beam_widths,num_hists,seq_lens, bw_params)
+    # Get original beam width, and a boolean that indivates p-coverage (percentile)
+    orig_beams, percentile = prepare_beams(beam_widths,num_hists,seq_lens, sample_args)
+    # All beam coverages is a List[List[int]] storage for beams
     all_beam_coverages = [[orig_beam] for orig_beam in orig_beams]
 
     # Get probabilities from model for each history
@@ -844,30 +844,35 @@ def sample_beam_search(
             temperature = temperature,
             device = device,
         ) for i in range(num_hists)
-    ]; probs = [prob_state[0] + eps for prob_state in probs_states]
+    ];
+    probs = [prob_state[0] + eps for prob_state in probs_states]
     states = [prob_state[1] for prob_state in probs_states]
 
     # Zero out weights on excluded tokens
+    # Squash probability for excluded tokens
     for i in range(num_hists):
         probs[i][:,excluded] = eps/2
 
     # Top probabilities
     # (num_hists, vocab)
+    # Sort probabilities in descending order
     sorted_probs_inds = [
         torch.sort(
             probs[i].flatten(), dim = -1,
             descending = True
         ) for i in range(num_hists)
-    ]
+    ];
+    sorted_probs = [sorted_probs_inds[i][0] for i in range(num_hists)]
     # Initial seqs
     # List[(beam_width, hist_len + 1)] len num_hists
     beam_widths = [
         get_beam_width(
-            beam_coverage[-1], prob,
+            beam_coverage[-1], sorted_prob,
             percentile=percentile,
-        ) for beam_coverage,prob in
-        zip(all_beam_coverages, probs)
-    ]; all_beam_widths = [[bw] for bw in beam_widths]
+        ) for beam_coverage,sorted_prob in
+        zip(all_beam_coverages, sorted_probs)
+    ];
+    all_beam_widths = [[bw] for bw in beam_widths]
 
     # Create the logarithm here to seed sum
     sorted_probs_inds = [
@@ -877,7 +882,7 @@ def sample_beam_search(
 
     # Initial seqs
     # List[(beam_width, hist_len + 1)] len num_hists
-    widths = [(1,min(bw, vocab_size),1) for bw in beam_widths]
+    widths = [(1,min(bw, vocab_size - len(excluded)),1) for bw in beam_widths]
     sorted_states = get_initial_sorted_states(states, widths,num_hists)
 
     seqs = [
@@ -885,10 +890,12 @@ def sample_beam_search(
             (
                 # (beam_width, hist_len)
                 histories[i].reshape(1, hist_lens[i]).repeat(
-                    # In case the beam width is > vocab_size
-                    (min(beam_widths[i],vocab_size),1)),
-                # (beam_width, 1)
-                sorted_probs_inds[i][1][:beam_widths[i]].reshape(-1,1)
+                    # In case the beam width is > vocab_size - excluded tokens
+                    (min(beam_widths[i],vocab_size - len(excluded)),1)),
+                # (beam_width, 1) -> prevents excluded tokens from being considered
+                sorted_probs_inds[i][1][:min(beam_widths[i],
+                                             vocab_size-len(excluded))
+                                        ].reshape(-1,1)
             ), dim = 1
         ) for i in range(num_hists)
     ]
@@ -905,10 +912,10 @@ def sample_beam_search(
         range(1,max(seq_lens) + 1,1),
         eps, excluded, vocab_size,
         disable_tqdm = disable_tqdm,
-        bw_params = bw_params
+        sample_args = sample_args
     )
 
-    if bw_params['coverage_type'] == "fixed_width" and not percentile:
+    if sample_args['coverage_type'] == "fixed_width" and not percentile:
         seqs, probs =  torch.stack(seqs, dim = 0), torch.stack(probs,dim =0)
     if return_beams:
         return seqs, probs, (all_beam_widths,all_beam_coverages)

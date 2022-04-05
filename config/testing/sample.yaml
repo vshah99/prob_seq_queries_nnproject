@@ -26,10 +26,11 @@ data_path: data/shakespeare_input.txt
 disable_tqdm: false
 
 # Sampling args
-sample_type: "beam_search"
+sample_type: "mc_importance"
+beam_widths: 0.95
 sample_args: {"coverage_type":"interpolate"}
 num_seqs: 100
 hist_len: 10
-excluded: [11]
+excluded: [55]
 
 
