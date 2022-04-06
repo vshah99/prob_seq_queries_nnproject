@@ -26,6 +26,7 @@ from seq_queries.model import get_model
 from seq_queries.data import load_text, process_data
 from seq_queries.arguments import get_args
 from seq_queries.train import load_checkpoint
+from seq_queries.utils import write_pkl
 #################################################################################
 #   Function-Class Declaration
 #################################################################################
@@ -35,6 +36,8 @@ if __name__ == "__main__":
 
     args = get_args(manual_config="config/testing/sample.yaml")
     text_dict= load_text(args.data_path)
+    args.text_dict = text_dict
+    print(text_dict['char_to_id'])
     train_dl, val_dl, test_dl = process_data(text_dict, args)
     model = get_model(args)
     if args.checkpoint_path:
@@ -42,7 +45,9 @@ if __name__ == "__main__":
     model.eval()
     output = sample(val_dl, args, model)
     estimates_or_lbs = evaluate_samples(args, model, output)
-    print(estimates_or_lbs[0])
+    plot_estimates = [est_lbs[0].item() for est_lbs in estimates_or_lbs]
+    write_pkl(plot_estimates,"mc_importance_estimate_art_thou?_1024.pkl")
+
 
 
 #################################################################################

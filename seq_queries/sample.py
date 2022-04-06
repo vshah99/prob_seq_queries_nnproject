@@ -101,6 +101,7 @@ def _evaluate_seq_query_prob(
         log_probs = [torch.log(marg_prob + eps) + probs - sample_probs for marg_prob in marg_probs]
 
     estimates = [torch.exp(log_prob.mean()) for log_prob in log_probs]
+    estimates_std = [torch.exp(log_prob).std() for log_prob in log_probs]
     return estimates
 
 
@@ -983,10 +984,18 @@ def sample(
         if isinstance(args.hist_len,int):
             args.hist_len = [args.hist_len]*dbatch.shape[0]
             batched = True
-        data_batch =[dbatch[i,:args.hist_len[i]] for i in range(dbatch.shape[0])]
+        data_batch =[dbatch[0,:args.hist_len[i]] for i in range(dbatch.shape[0])]
         if batched: data_batch = torch.stack(data_batch, dim = 0).cpu()
         kwargs = vars(args)
-        # del kwargs['vocab_size']
+
+        # data_list = data_batch.tolist()
+        # id_to_char = args.text_dict['id_to_char']
+        # sentences = [''.join([id_to_char[idx] for idx in lst]) for lst in data_list]
+        # for i,s in enumerate(sentences):
+        #     print(i,s)
+        # sys.exit(1)
+        # print("sampling")
+
         seqs, probs, beams_covs = sampler(data_batch,**kwargs)
         sample_probs = None
         if isinstance(probs,tuple):
@@ -1001,23 +1010,14 @@ def sample(
         sample_probs = ([None] if sample_probs is None
                  else ([sample_prob.numpy() for sample_prob in sample_probs] if isinstance(seqs, list)
                  else ([sample_probs.numpy()])))
-        # for p, sp in zip(probs, sample_probs):
-        #     tt = p - sp
-        #     print(tt.min(), tt.max())
         all_seqs += seqs
         all_probs += probs
         all_sample_probs += sample_probs
-
-        # for p, sp in zip(all_probs, all_sample_probs):
-        #     tt = p - sp
-        #     print(tt.min(), tt.max())
 
         # Lists
         if beams_covs is not None:
             all_beams += beams_covs[0]
             all_covs += beams_covs[1]
-
-        # sys.exit(1)
         break
 
     output['beams'] = all_beams
