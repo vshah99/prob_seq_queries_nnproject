@@ -27,10 +27,10 @@ batch_size: 1024
 disable_tqdm: false
 
 # Sampling args
-sample_type: "mc_importance"
-beam_widths: 0.95
-sample_args: {"coverage_type":"interpolate"}
-num_seqs: 10000
+sample_type: "beam_search"
+beam_widths: 8000
+sample_args: {"coverage_type":"fixed_width"}
+num_seqs: 4500
 total_seq_lens: 20
 hist_len: 18
 excluded: [1]

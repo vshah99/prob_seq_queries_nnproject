@@ -461,10 +461,10 @@ def _evaluate_beam_search_lb(
         rnn_args = None,
         temperature = temperature,
         device = device,
-    ); probs = [probs[:,e] for e in excluded]
+    ); probs = [probs[:,e].numpy() for e in excluded]
 
-    log_probs = [torch.log(prob) + sample_probs for prob in probs]
-    lower_bounds = [torch.exp(log_prob).sum() for log_prob in log_probs]
+    log_probs = [np.log(prob) + sample_probs for prob in probs]
+    lower_bounds = [np.exp(log_prob).sum() for log_prob in log_probs]
     assert len(lower_bounds) == len(excluded),"List of bounds should equal num excluded tokens"
     return lower_bounds
 
@@ -687,6 +687,9 @@ def beam_search_inner_loop(
 
     # Iterate through all sequences
     for pos in tqdm(iter_range,disable = disable_tqdm):
+        # print("HI")
+        # print(torch.exp(sorted_probs_inds[0][0]).max(),
+        #     torch.exp(sorted_probs_inds[0][0]).sum())
 
         # Get new probabilities
         # List[(beam_width, vocab)] len num_hists
@@ -706,14 +709,15 @@ def beam_search_inner_loop(
             for new_prob_state in new_probs_states]))
         new_probs, new_states = list(new_probs), list(new_states)
 
-        # Knock down excluded probabilities
-        for i in range(num_hists):
-            if new_probs[i] is not None:
-                new_probs[i][:,excluded] = eps/2
+        # # Knock down excluded probabilities
+        # for i in range(num_hists):
+        #     if new_probs[i] is not None:
+        #         new_probs[i][:,excluded] = eps/2
 
         # Add together probabilities to make new measures
         # List[(beam_width, vocab)] len num_hists
         # Store all probabilities even from earlier sequences
+
         # Rename probabilities to log probabilities where applicable
         probs = [ # (beam_width) + (beam_width, vocab)
             sorted_probs_inds[i][0][:all_beam_widths[i][-1]].reshape(-1,1) + torch.log(new_probs[i])
@@ -757,15 +761,17 @@ def beam_search_inner_loop(
 
                 # Check if any tokens are in excluded set
                 included_mask = (1 - sum(best_tokens==e for e in excluded)).bool()
-                best_tokens = best_tokens[included_mask]
-                seq_inds = seq_inds[included_mask]
+                best_tokens = best_tokens[included_mask][:beam_width]
+                seq_inds = seq_inds[included_mask][:beam_width]
+                beam_width = min(beam_width, included_mask.sum())
 
                 # (beam_width, curr_seq_len+1)
                 # Need to expand this if the size is growing
                 sorted_probs_inds[i] = (
-                    sorted_probs_inds[i][0][seq_inds],
+                    sorted_probs_inds[i][0][tokens[:beam_width]],
                     best_tokens
                 )
+
                 # Check for multiple hidden states or not
                 if isinstance(new_states[i], tuple):
                     sorted_states[i] = (new_states[i][0][:,seq_inds,:],
@@ -800,7 +806,7 @@ def sample_beam_search(
     excluded = [],
     disable_tqdm = False,
     device = 'cpu',
-    eps = 1e-10,
+    eps = 1e-20,
     sample_args = {'coverage_type':'backoff'},
     return_beams = True,
     **kwargs,
@@ -877,7 +883,9 @@ def sample_beam_search(
 
     # Create the logarithm here to seed sum
     sorted_probs_inds = [
-        (torch.log(sorted_prob), sorted_ind)
+        (torch.log(sorted_prob[:min(beam_widths[i],
+                                    vocab_size - len(excluded))]),
+                               sorted_ind)
         for sorted_prob, sorted_ind in sorted_probs_inds
     ]
 
@@ -899,7 +907,7 @@ def sample_beam_search(
                                         ].reshape(-1,1)
             ), dim = 1
         ) for i in range(num_hists)
-    ]
+    ];
 
     seqs, probs = beam_search_inner_loop(
         model, seqs,
@@ -984,10 +992,11 @@ def sample(
         if isinstance(args.hist_len,int):
             args.hist_len = [args.hist_len]*dbatch.shape[0]
             batched = True
-        data_batch =[dbatch[0,:args.hist_len[i]] for i in range(dbatch.shape[0])]
+        data_batch =[dbatch[i,:args.hist_len[i]] for i in range(dbatch.shape[0])]
         if batched: data_batch = torch.stack(data_batch, dim = 0).cpu()
         kwargs = vars(args)
 
+        data_batch = [data_batch[0]]
         # data_list = data_batch.tolist()
         # id_to_char = args.text_dict['id_to_char']
         # sentences = [''.join([id_to_char[idx] for idx in lst]) for lst in data_list]
