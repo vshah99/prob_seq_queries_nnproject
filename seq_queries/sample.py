@@ -779,7 +779,6 @@ def beam_search_inner_loop(
                             best_tokens.reshape(-1,1),
                         ), dim = 1
                     )
-                # print(seqs[i].shape,vocab_size)
     return seqs, probs
 
 

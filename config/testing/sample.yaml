@@ -28,11 +28,12 @@ disable_tqdm: false
 
 # Sampling args
 sample_type: "beam_search"
-beam_widths: 8000
+# Bug here where if you increase this somehow the overall coverage goes down
+beam_widths: 4500
 sample_args: {"coverage_type":"fixed_width"}
-num_seqs: 4500
+num_seqs: 450
 total_seq_lens: 20
 hist_len: 18
-excluded: [1]
+excluded: [55]
 
 
