@@ -19,6 +19,7 @@ vocab_size: 68
 
 # Data args
 data_path: data/shakespeare_input.txt
+batch_size: 1024
 
 # Training args not needed here
 # Evaluation arguments not needed here
@@ -26,11 +27,13 @@ data_path: data/shakespeare_input.txt
 disable_tqdm: false
 
 # Sampling args
-sample_type: "mc_importance"
-beam_widths: 0.95
-sample_args: {"coverage_type":"interpolate"}
-num_seqs: 100
-hist_len: 10
+sample_type: "beam_search"
+# Bug here where if you increase this somehow the overall coverage goes down
+beam_widths: 4500
+sample_args: {"coverage_type":"fixed_width"}
+num_seqs: 450
+total_seq_lens: 20
+hist_len: 18
 excluded: [55]
 
 
