@@ -100,7 +100,7 @@ def _evaluate_seq_query_prob(
     if probs is not None:
         log_probs = [torch.log(marg_prob + eps) + probs - sample_probs for marg_prob in marg_probs]
 
-    estimates = [torch.exp(log_prob.mean()) for log_prob in log_probs]
+    estimates = [torch.exp(log_prob).mean() for log_prob in log_probs]
     estimates_std = [torch.exp(log_prob).std() for log_prob in log_probs]
     return estimates
 
@@ -268,7 +268,7 @@ def importance_sampling_inner_loop(
                 log_probs[i] += torch.gather(
                     torch.log(probs[i]), -1,
                     torch.unsqueeze(seqs[i][:,-1],-1),
-                )
+                );
                 log_sample_probs[i] += torch.gather(
                     torch.log(sample_probs[i]), -1,
                     torch.unsqueeze(seqs[i][:,-1],-1),
@@ -379,7 +379,7 @@ def mc_sample_importance(
         torch.gather(log_probs[i], -1,
             torch.unsqueeze(seqs[i][:,-1],-1))
         for i in range(num_hists)
-    ]
+    ];
     log_sample_probs = [
         torch.gather(log_sample_probs[i], -1,
             torch.unsqueeze(seqs[i][:,-1],-1))
@@ -980,10 +980,11 @@ def sample(
             args.hist_len = [args.hist_len]*dbatch.shape[0]
             batched = True
         data_batch =[dbatch[i,:args.hist_len[i]] for i in range(dbatch.shape[0])]
+        # data_batch =[dbatch[0,:args.hist_len[i]] for i in range(dbatch.shape[0])]
         if batched: data_batch = torch.stack(data_batch, dim = 0).cpu()
         kwargs = vars(args)
 
-        data_batch = [data_batch[0]]
+        # data_batch = [data_batch[0]]
 
         # data_list = data_batch.tolist()
         # id_to_char = args.text_dict['id_to_char']
@@ -999,7 +1000,6 @@ def sample(
             probs, sample_probs = probs
 
         #Tensors
-        # print(probs[0].shape)
         seqs = [seq.numpy() for seq in seqs]
         probs = ([None] if probs is None
                  else ([prob.numpy() for prob in probs] if isinstance(seqs, list)

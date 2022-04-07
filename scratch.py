@@ -53,8 +53,8 @@ if __name__ == "__main__":
 
     estimates_or_lbs = evaluate_samples(args, model, output)
     plot_estimates = [est_lbs[0].item() for est_lbs in estimates_or_lbs]
-    print(len(plot_estimates), plot_estimates)
-    # write_pkl(plot_estimates,"mc_importance_estimate_art_thou?_1024.pkl")
+    # print(len(plot_estimates), plot_estimates)
+    # write_pkl(plot_estimates,"data/importance_sampling/shakespeare/mc_importance_estimate-a_rt-t_hou?_1000s_1024m.pkl")
 
 
 
