@@ -984,7 +984,7 @@ def sample(
         if batched: data_batch = torch.stack(data_batch, dim = 0).cpu()
         kwargs = vars(args)
 
-        # data_batch = [data_batch[0]]
+        data_batch = [data_batch[0]]
 
         # data_list = data_batch.tolist()
         # id_to_char = args.text_dict['id_to_char']

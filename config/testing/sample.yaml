@@ -27,13 +27,13 @@ batch_size: 1024
 disable_tqdm: false
 
 # Sampling args
-sample_type: "mc_importance"
+sample_type: "beam_search"
 # Bug here where if you increase this somehow the overall coverage goes down
-beam_widths: 1000
-sample_args: {"coverage_type":"fixed_width"}
+beam_widths: 0.90
+sample_args: {"coverage_type":"backoff"}
 num_seqs: 1000
 total_seq_lens: 22
-hist_len: 18
+hist_len: 17
 excluded: [49]
 
 
