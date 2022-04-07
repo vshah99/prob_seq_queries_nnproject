@@ -44,6 +44,13 @@ if __name__ == "__main__":
         load_checkpoint(args, model)
     model.eval()
     output = sample(val_dl, args, model)
+
+    # print(output['seqs'][0].shape)
+    # print([''.join([text_dict['id_to_char'][c]
+    #                 for c in output['seqs'][0][i,:].tolist()])
+    #                for i in range(min(5,output['seqs'][0].shape[0]))]
+    #         )
+
     estimates_or_lbs = evaluate_samples(args, model, output)
     plot_estimates = [est_lbs[0].item() for est_lbs in estimates_or_lbs]
     print(len(plot_estimates), plot_estimates)

@@ -244,7 +244,8 @@ def importance_sampling_inner_loop(
                     temperature = temperature,
                     device = device,
                 ) for i in range(num_hists)
-        ]; new_probs,new_states = list(zip(*[
+        ];
+        new_probs,new_states = list(zip(*[
             (new_prob_state[0] + eps, new_prob_state[1])
             if new_prob_state is not None else (None,None)
             for new_prob_state in new_probs_states]))
@@ -254,11 +255,10 @@ def importance_sampling_inner_loop(
         # Add to sequences only if they aren't done
         for i in range(num_hists):
             if probs[i] is not None:
-                probs[i][:,excluded] = eps/2
                 sample_probs[i][:,excluded] *= 0
                 sample_probs[i] /= sample_probs[i].sum(dim=-1).reshape(-1,1)
                 addition = torch.multinomial(
-                    probs[i],
+                    sample_probs[i],
                     num_samples = 1,
                     replacement = True,
                 )
@@ -325,10 +325,6 @@ def mc_sample_importance(
     if isinstance(total_seq_lens, int): total_seq_lens = [total_seq_lens]*num_hists
     seq_lens = [total_seq_len_i - hist_len for total_seq_len_i,hist_len
                 in zip(total_seq_lens,hist_lens)]
-    excluded = set(excluded)
-    legal_vocab = np.array(
-        [val for val in np.arange(vocab_size) if val not in excluded]
-    ); excluded = list(excluded)
 
     # Get probabilities from model
     # (num_histories, vocab)
@@ -339,13 +335,13 @@ def mc_sample_importance(
             temperature = temperature,
             device = device,
         ) for i in range(num_hists)
-    ]; probs = [prob_state[0] + eps for prob_state in probs_states]
+    ];
+    probs = [prob_state[0] + eps for prob_state in probs_states]
     states = [prob_state[1] for prob_state in probs_states]
     sample_probs = copy.deepcopy(probs)
 
     # Zero out weights on excluded tokens
     for i in range(num_hists):
-        probs[i][:,excluded] = eps/2
         sample_probs[i][:,excluded] *= 0
         sample_probs[i] /= sample_probs[i].sum(dim=-1).reshape(-1,1)
 
@@ -709,8 +705,8 @@ def beam_search_inner_loop(
 
         # Rename probabilities to log probabilities where applicable
         probs = [ # (beam_width) + (beam_width, vocab)
-            sorted_probs_inds[i][0][:all_beam_widths[i][-1]].reshape(-1,1) + torch.log(new_probs[i])
-                if new_probs[i] is not None else sorted_probs_inds[i][0][:all_beam_widths[i][-1]]
+            sorted_probs_inds[i][0].reshape(-1,1) + torch.log(new_probs[i])
+                if new_probs[i] is not None else sorted_probs_inds[i][0]
             for i in range(num_hists)
         ]
 
@@ -727,6 +723,7 @@ def beam_search_inner_loop(
                     )
                 # Normalized to ensure proper probability coverage with beam coverage
                 # This is just a temporary variable for choosing a probability
+                # There could be issues with numerical stability here
                 sorted_probs = torch.exp(sorted_probs_inds[i][0])
                 assert not sorted_probs.isnan().any(),"Nans in sorted probabilities"
 
@@ -739,8 +736,15 @@ def beam_search_inner_loop(
                 # Check if any tokens are in excluded set
                 included_mask = (1 - sum(best_tokens==e for e in excluded)).bool()
 
+                if percentile:
+                    new_coverage = get_beam_coverage(all_beam_coverages[i][-1],
+                                                     orig_beam_coverage[i],
+                                                     sample_args, index = i)
+                    all_beam_coverages[i].append(new_coverage)
+
                 beam_width = get_beam_width(
                     all_beam_coverages[i][-1],
+                    # Normalize first, then remove the masked elements
                     (sorted_probs/sorted_probs.sum())[included_mask],
                     vocab_size, len(excluded),
                     percentile=percentile,
@@ -751,11 +755,6 @@ def beam_search_inner_loop(
                 seq_inds = seq_inds[included_mask][:beam_width]
                 valid_log_probs = sorted_probs_inds[i][0][included_mask][:beam_width]
 
-                if percentile:
-                    new_coverage = get_beam_coverage(all_beam_coverages[i][-1],
-                                                     orig_beam_coverage[i],
-                                                     sample_args, index = i)
-                    all_beam_coverages[i].append(new_coverage)
 
                 # (beam_width, curr_seq_len+1)
                 # Need to expand this if the size is growing
@@ -798,7 +797,7 @@ def sample_beam_search(
     excluded = [],
     disable_tqdm = False,
     device = 'cpu',
-    eps = 1e-20,
+    eps = 1e-10,
     sample_args = {'coverage_type':'backoff'},
     return_beams = True,
     **kwargs,
@@ -874,7 +873,7 @@ def sample_beam_search(
     # Create the logarithm here to seed sum
     sorted_probs_inds = [
         (torch.log(sorted_prob[included_mask][:beam_width]),
-         sorted_ind[included_mask])
+         sorted_ind[included_mask][:beam_width])
         for beam_width, included_mask, (sorted_prob, sorted_ind)
         in zip(beam_widths,included_masks,sorted_probs_inds)
     ];
@@ -891,10 +890,8 @@ def sample_beam_search(
                 histories[i].reshape(1, hist_lens[i]).repeat(
                     # In case the beam width is > vocab_size - excluded tokens
                     (min(beam_widths[i],vocab_size - len(excluded)),1)),
-                # (beam_width, 1) -> prevents excluded tokens from being considered
-                sorted_probs_inds[i][1][:min(beam_widths[i],
-                                             vocab_size-len(excluded))
-                                        ].reshape(-1,1)
+                # (beam_width, 1)
+                sorted_probs_inds[i][1].reshape(-1,1)
             ), dim = 1
         ) for i in range(num_hists)
     ];
@@ -987,6 +984,7 @@ def sample(
         kwargs = vars(args)
 
         data_batch = [data_batch[0]]
+
         # data_list = data_batch.tolist()
         # id_to_char = args.text_dict['id_to_char']
         # sentences = [''.join([id_to_char[idx] for idx in lst]) for lst in data_list]
