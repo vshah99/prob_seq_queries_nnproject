@@ -38,35 +38,36 @@ def evaluate_seq_query_probs(
     seq_lens,
     prob_lists = None,
     sample_prob_lists = None,
+    eval_type = "mc_importance",
     device = "cuda:0",
     excluded = [],):
 
     if isinstance(seq_lens, int):
         seq_lens = [seq_lens]*len(sample_lists)
-    if prob_lists is None:
+    if prob_lists[0] is None:
         prob_lists = [None]*len(sample_lists)
-    if sample_prob_lists is None:
+    if sample_prob_lists[0] is None:
         sample_prob_lists = [None]*len(sample_lists)
 
     estimates = []
     for i in range(len(sample_lists)):
 
         estimates.append(
-                _evaluate_seq_query_prob(
+                _evaluate_seq_query_prob_random(
                     model,
                     sample_lists[i],
                     seq_lens[i],
                     probs=prob_lists[i],
                     sample_probs=sample_prob_lists[i],
+                    eval_type=eval_type,
                     device=device,
                     excluded=excluded,
                 ))
 
     return estimates
 
-
 @torch.no_grad()
-def _evaluate_seq_query_prob(
+def _evaluate_seq_query_prob_random(
     model,
     samples,
     seq_len,
@@ -74,10 +75,68 @@ def _evaluate_seq_query_prob(
     sample_probs=None,
     device="cuda:0",
     excluded=[],
+    eval_type="mc_importance",
     temperature=1,
     eps=1e-10,
-    **kwargs,
-):
+    **kwargs,):
+    """Evaluate samples from model for a sequential query.
+    This could be from a monte carlo sample or from an
+    importance sampled sequence
+
+    :model: TODO
+    :samples: TODO
+    :excluded_tokens: TODO
+    :sample_type: TODO
+    :: TODO
+    :returns: TODO
+
+    """
+
+    # TODO: Fix this issue
+    samples = torch.from_numpy(samples)
+    states = None
+    num_samples =samples.shape[0]
+    hists = samples[:,:-seq_len];
+    seqs = hists
+    log_marg_probs = torch.zeros(num_samples).reshape(-1,1)
+    for i in range(-seq_len,0,1):
+        marg_probs, states = model.get_next_probs(
+            seqs,
+            rnn_args = states,
+            temperature = temperature,
+            device = device,
+        );
+        new_probs = torch.gather(marg_probs, 1, samples[:,i].reshape(-1,1))
+        log_marg_probs += torch.log(new_probs + eps)
+        seqs = samples[:,i].reshape(-1,1)
+
+    log_probs = []
+    for e in excluded:
+        marg_probs, _ = model.get_next_probs(
+            (torch.ones(num_samples)*e).reshape(-1,1).long(),
+            rnn_args = states,
+            temperature = temperature,
+            device = device,
+        );
+        log_probs.append(log_marg_probs + torch.log(marg_probs[:,e] + eps))
+
+    num_paths = (model.vocab_size - len(excluded))**seq_len
+    estimates = [num_paths*np.exp(log_prob).mean() for log_prob in log_probs]
+    return estimates
+
+@torch.no_grad()
+def _evaluate_seq_query_prob_importance(
+    model,
+    samples,
+    seq_len,
+    probs=None,
+    sample_probs=None,
+    device="cuda:0",
+    excluded=[],
+    eval_type="mc_importance",
+    temperature=1,
+    eps=1e-10,
+    **kwargs,):
     """Evaluate samples from model for a sequential query.
     This could be from a monte carlo sample or from an
     importance sampled sequence
@@ -97,11 +156,8 @@ def _evaluate_seq_query_prob(
         device = device,
     ); marg_probs = [marg_probs[:,e] for e in excluded]
 
-    if probs is not None:
-        log_probs = [torch.log(marg_prob + eps) + probs - sample_probs for marg_prob in marg_probs]
-
+    log_probs = [torch.log(marg_prob + eps) + probs - sample_probs for marg_prob in marg_probs]
     estimates = [torch.exp(log_prob).mean() for log_prob in log_probs]
-    estimates_std = [torch.exp(log_prob).std() for log_prob in log_probs]
     return estimates
 
 
@@ -186,8 +242,9 @@ def mc_sample_random_list(
     # from only valid tokens
     num_hists = len(histories)
     hist_lens = [hist.shape[-1] for hist in histories]
-    seq_lens = [total_seq_len - hist_len for total_seq_len,hist_len
-                in zip(total_seq_lens, hist_lens)]
+    if isinstance(total_seq_lens, int): total_seq_lens = [total_seq_lens]*num_hists
+    seq_lens = [total_seq_len_i - hist_len for total_seq_len_i,hist_len
+                in zip(total_seq_lens,hist_lens)]
     weights = torch.ones(vocab_size)
     weights[excluded] *= 0
 
@@ -416,6 +473,7 @@ def evaluate_beam_search_lbs(
     device="cuda:0",
     excluded=[],
     temperature=1,
+    **kwargs,
 ):
     if isinstance(seq_lens, int):
         seq_lens = [seq_lens]*len(sample_lists)
@@ -941,6 +999,7 @@ def evaluate_samples(
                                  seq_lens,
                                  prob_lists=output_dict['probs'],
                                  sample_prob_lists=output_dict['sample_probs'],
+                                 eval_type=args.sample_type,
                                  device=args.device,
                                  excluded=args.excluded)
     return estimates_or_lbs
@@ -979,12 +1038,12 @@ def sample(
         if isinstance(args.hist_len,int):
             args.hist_len = [args.hist_len]*dbatch.shape[0]
             batched = True
-        data_batch =[dbatch[i,:args.hist_len[i]] for i in range(dbatch.shape[0])]
-        # data_batch =[dbatch[0,:args.hist_len[i]] for i in range(dbatch.shape[0])]
+        # data_batch =[dbatch[i,:args.hist_len[i]] for i in range(dbatch.shape[0])]
+        data_batch =[dbatch[0,:args.hist_len[i]] for i in range(dbatch.shape[0])]
         if batched: data_batch = torch.stack(data_batch, dim = 0).cpu()
         kwargs = vars(args)
 
-        data_batch = [data_batch[0]]
+        # data_batch = [data_batch[0]]
 
         # data_list = data_batch.tolist()
         # id_to_char = args.text_dict['id_to_char']

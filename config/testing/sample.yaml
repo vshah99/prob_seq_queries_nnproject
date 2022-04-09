@@ -27,13 +27,13 @@ batch_size: 1024
 disable_tqdm: false
 
 # Sampling args
-sample_type: "beam_search"
+sample_type: "mc_random"
 # Bug here where if you increase this somehow the overall coverage goes down
 beam_widths: 0.90
 sample_args: {"coverage_type":"backoff"}
 num_seqs: 1000
-total_seq_lens: 22
-hist_len: 17
-excluded: [49]
+total_seq_lens: 20
+hist_len: 18
+excluded: [1]
 
 
