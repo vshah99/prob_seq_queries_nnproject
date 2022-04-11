@@ -32,7 +32,7 @@ from .arguments import get_args
 #################################################################################
 
 @torch.no_grad()
-def evaluate_seq_query_probs(
+def evaluate_sample_probs(
     model,
     sample_lists,
     seq_lens,
@@ -40,7 +40,13 @@ def evaluate_seq_query_probs(
     sample_prob_lists = None,
     eval_type = "mc_importance",
     device = "cuda:0",
-    excluded = [],):
+    excluded = [],
+    disable_tqdm = True):
+
+    roster = {"mc_importance":_evaluate_seq_query_prob_importance,
+              "mc_random": _evaluate_seq_query_prob_random,
+              }
+    eval_sampler = roster[eval_type]
 
     if isinstance(seq_lens, int):
         seq_lens = [seq_lens]*len(sample_lists)
@@ -50,10 +56,10 @@ def evaluate_seq_query_probs(
         sample_prob_lists = [None]*len(sample_lists)
 
     estimates = []
-    for i in range(len(sample_lists)):
+    for i in tqdm(range(len(sample_lists)),disable=disable_tqdm):
 
         estimates.append(
-                _evaluate_seq_query_prob_random(
+                eval_sampler(
                     model,
                     sample_lists[i],
                     seq_lens[i],
@@ -62,6 +68,7 @@ def evaluate_seq_query_probs(
                     eval_type=eval_type,
                     device=device,
                     excluded=excluded,
+                    disable_tqdm=disable_tqdm,
                 ))
 
     return estimates
@@ -92,36 +99,36 @@ def _evaluate_seq_query_prob_random(
 
     """
 
-    # TODO: Fix this issue
-    samples = torch.from_numpy(samples)
     states = None
-    num_samples =samples.shape[0]
-    hists = samples[:,:-seq_len];
-    seqs = hists
-    log_marg_probs = torch.zeros(num_samples).reshape(-1,1)
-    for i in range(-seq_len,0,1):
+    # 1000 x 20
+    samples = torch.from_numpy(samples)
+    num_samples, sample_len =samples.shape
+    seqs = samples[:,:-seq_len]
+    log_probs = torch.zeros(num_samples).reshape(-1,1)
+    for i in range(sample_len - seq_len,sample_len+1,1):
+        # 17,18,19
         marg_probs, states = model.get_next_probs(
             seqs,
             rnn_args = states,
             temperature = temperature,
             device = device,
         );
-        new_probs = torch.gather(marg_probs, 1, samples[:,i].reshape(-1,1))
-        log_marg_probs += torch.log(new_probs + eps)
-        seqs = samples[:,i].reshape(-1,1)
+        # marg_probs = (samples x vocab) | samples -> (samples,1)
+        if (i< sample_len):
+            new_probs = torch.gather(marg_probs, 1, samples[:,i].reshape(-1,1))
+            # print(new_probs.max())
+            log_probs += torch.log(new_probs + eps)
+            seqs = samples[:,i].reshape(-1,1)
+        else:
+            new_probs = [marg_probs[:e] for e in excluded]
+            # print(new_probs[0].max())
+            log_probs = [log_probs + torch.log(new_prob + eps) for new_prob in new_probs]
 
-    log_probs = []
-    for e in excluded:
-        marg_probs, _ = model.get_next_probs(
-            (torch.ones(num_samples)*e).reshape(-1,1).long(),
-            rnn_args = states,
-            temperature = temperature,
-            device = device,
-        );
-        log_probs.append(log_marg_probs + torch.log(marg_probs[:,e] + eps))
-
-    num_paths = (model.vocab_size - len(excluded))**seq_len
-    estimates = [num_paths*np.exp(log_prob).mean() for log_prob in log_probs]
+    num_paths = (model.vocab_size - len(excluded))**(seq_len+1)
+    # print(torch.exp(log_probs[0]).min(), torch.exp(log_probs[0]).max(),torch.exp(log_probs[0]).mean())
+    # print(num_paths)
+    # sys.exit(1)
+    estimates = [num_paths*torch.exp(log_prob).mean() for log_prob in log_probs]
     return estimates
 
 @torch.no_grad()
@@ -473,6 +480,7 @@ def evaluate_beam_search_lbs(
     device="cuda:0",
     excluded=[],
     temperature=1,
+    disable_tqdm = True,
     **kwargs,
 ):
     if isinstance(seq_lens, int):
@@ -988,8 +996,8 @@ def evaluate_samples(
 ):
     evaluation_roster = {
         "beam_search": evaluate_beam_search_lbs,
-        "mc_random": evaluate_seq_query_probs,
-        "mc_importance":evaluate_seq_query_probs,
+        "mc_random": evaluate_sample_probs,
+        "mc_importance":evaluate_sample_probs,
     }; evaluator = evaluation_roster[args.sample_type]
 
     seq_lens = [s.shape[-1] - hl for s,hl in zip(output_dict['seqs'],args.hist_len)]
@@ -1001,7 +1009,9 @@ def evaluate_samples(
                                  sample_prob_lists=output_dict['sample_probs'],
                                  eval_type=args.sample_type,
                                  device=args.device,
-                                 excluded=args.excluded)
+                                 excluded=args.excluded,
+                                 disable_tqdm=args.disable_tqdm,
+                                 )
     return estimates_or_lbs
 
 
@@ -1039,7 +1049,7 @@ def sample(
             args.hist_len = [args.hist_len]*dbatch.shape[0]
             batched = True
         # data_batch =[dbatch[i,:args.hist_len[i]] for i in range(dbatch.shape[0])]
-        data_batch =[dbatch[0,:args.hist_len[i]] for i in range(dbatch.shape[0])]
+        data_batch =[dbatch[0,:args.hist_len[0]] for i in range(dbatch.shape[0])]
         if batched: data_batch = torch.stack(data_batch, dim = 0).cpu()
         kwargs = vars(args)
 

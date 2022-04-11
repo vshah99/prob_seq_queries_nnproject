@@ -19,19 +19,19 @@ vocab_size: 68
 
 # Data args
 data_path: data/shakespeare_input.txt
-batch_size: 1024
+batch_size: 1000
 
 # Training args not needed here
 # Evaluation arguments not needed here
 # Sampling arguments are provided by the testing script explicitly
-disable_tqdm: false
+disable_tqdm: true
 
 # Sampling args
 sample_type: "mc_random"
 # Bug here where if you increase this somehow the overall coverage goes down
 beam_widths: 0.90
 sample_args: {"coverage_type":"backoff"}
-num_seqs: 1000
+num_seqs: 100000
 total_seq_lens: 20
 hist_len: 18
 excluded: [1]
