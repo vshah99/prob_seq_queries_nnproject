@@ -57,8 +57,8 @@ if __name__ == "__main__":
     # plot_estimates = [est_lbs[0].item() for est_lbs in estimates_or_lbs]
     # print(len(plot_estimates), plot_estimates)
     # write_pkl(plot_estimates,f"data/{sample_type}_sampling/shakespeare/mc_{sample_type}_estimate_a_rt_thou_10-20?_{args.num_seqs}s_{args.batch_size}m.pkl")
-    # write_pkl(estimate,f"data/importance_sampling/shakespeare/val-dl_mc-imp_16h_20s_exc-dynamic.pkl")
-    write_pkl(estimate,f"data/random_sampling/shakespeare/val-dl_mc-rand_18h_20s_exc-dynamic.pkl")
+    write_pkl(estimate,f"data/importance_sampling/shakespeare/val-dl_mc-imp_17h_20s_exc-dynamic.pkl")
+    # write_pkl(estimate,f"data/random_sampling/shakespeare/val-dl_mc-rand_18h_20s_exc-dynamic.pkl")
     # write_pkl(estimate,f"data/ground_truth/shakespeare/val-dl_gt_16h_20s_exc-dynamic.pkl")
 
 
