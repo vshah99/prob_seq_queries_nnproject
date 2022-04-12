@@ -56,6 +56,7 @@ def sampling_args(parser):
     group.add_argument("--beam_widths", type=_int_or_float_or_list, default=0.5, help="List[int,float], float, or int for total sequence lengths")
     group.add_argument("--num_seqs", type=int, default=50, help="Number of sequences per sample")
     group.add_argument("--sample_type", default="beam_search", help="beam_search, mc_random, or mc_importance")
+    group.add_argument("--sample_occ_range", type=int, default=4, help="Distance a gt token can be from the evaluated token in question")
     group.add_argument("--sample_args", type=dict, default={"coverage_type":"fixed_width"}, help="")
     group.add_argument("--excluded", type=dict, default={"coverage_type":"fixed_width"}, help="")
     group.add_argument("--disable_tqdm", action="store_false",help="Disable tqdm monitoring runs for samplers")

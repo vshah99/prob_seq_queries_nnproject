@@ -2,7 +2,7 @@
 seed: 1234321
 dont_print_args: false
 cuda: true
-device_num: 5
+device_num: 4
 train_data_pct: 0.9
 val_data_pct: 0.05
 seq_len: 100
@@ -19,21 +19,21 @@ vocab_size: 68
 
 # Data args
 data_path: data/shakespeare_input.txt
-batch_size: 1000
+batch_size: 128
 
 # Training args not needed here
 # Evaluation arguments not needed here
 # Sampling arguments are provided by the testing script explicitly
-disable_tqdm: true
+disable_tqdm: false
 
 # Sampling args
-sample_type: "mc_random"
+sample_type: "beam_search"
 # Bug here where if you increase this somehow the overall coverage goes down
-beam_widths: 0.90
+beam_widths: 0.80
 sample_args: {"coverage_type":"backoff"}
 num_seqs: 100000
 total_seq_lens: 20
-hist_len: 18
-excluded: [1]
+hist_len: 10
+excluded: [42]
 
 

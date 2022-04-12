@@ -99,35 +99,33 @@ def _evaluate_seq_query_prob_random(
 
     """
 
-    states = None
     # 1000 x 20
+    states = None
     samples = torch.from_numpy(samples)
     num_samples, sample_len =samples.shape
     seqs = samples[:,:-seq_len]
     log_probs = torch.zeros(num_samples).reshape(-1,1)
     for i in range(sample_len - seq_len,sample_len+1,1):
-        # 17,18,19
         marg_probs, states = model.get_next_probs(
             seqs,
             rnn_args = states,
             temperature = temperature,
             device = device,
-        );
+        )
         # marg_probs = (samples x vocab) | samples -> (samples,1)
-        if (i< sample_len):
+        if (i < sample_len):
             new_probs = torch.gather(marg_probs, 1, samples[:,i].reshape(-1,1))
             # print(new_probs.max())
             log_probs += torch.log(new_probs + eps)
             seqs = samples[:,i].reshape(-1,1)
         else:
-            new_probs = [marg_probs[:e] for e in excluded]
+            new_probs = [marg_probs[:,e] for e in excluded]
             # print(new_probs[0].max())
-            log_probs = [log_probs + torch.log(new_prob + eps) for new_prob in new_probs]
+            # print(log_probs.shape, new_probs.shape)
+            log_probs = [log_probs.flatten() + torch.log(new_prob + eps)
+                         for new_prob in new_probs]
 
-    num_paths = (model.vocab_size - len(excluded))**(seq_len+1)
-    # print(torch.exp(log_probs[0]).min(), torch.exp(log_probs[0]).max(),torch.exp(log_probs[0]).mean())
-    # print(num_paths)
-    # sys.exit(1)
+    num_paths = (model.vocab_size - len(excluded))**(seq_len)
     estimates = [num_paths*torch.exp(log_prob).mean() for log_prob in log_probs]
     return estimates
 
@@ -278,7 +276,8 @@ def mc_sample_random_list(
 # Importance sampling helper functions
 #######################################################################
 
-def importance_sampling_inner_loop(
+
+def importance_sampling_inner_loop_single(
     model, seqs,
     log_probs, log_sample_probs,
     sorted_states,
@@ -288,6 +287,73 @@ def importance_sampling_inner_loop(
     excluded,
     disable_tqdm = False,
 ):
+    """TODO: Docstring for importance_sampling_inner_loop.
+
+    :model: TODO
+    :returns: TODO
+
+    """
+
+    # Iterate through to end of sequence,
+    # sampling all values, but already got one
+    for pos in tqdm(iter_range, disable = disable_tqdm):
+        # Get probabilities from model
+        # (batch, num_seqs, vocab)
+        new_probs_states = (
+                None if (pos >= seq_lens[i]) else
+                model.get_next_probs(
+                    seqs[i][...,-1].reshape(-1,1),
+                    rnn_args = sorted_states[i],
+                    temperature = temperature,
+                    device = device,
+                )
+        )
+        new_probs,new_states = list(zip(*[
+            (new_prob_state[0] + eps, new_prob_state[1])
+            if new_prob_state is not None else (None,None)
+            for new_prob_state in new_probs_states]))
+        probs, sorted_states = list(new_probs), list(new_states)
+        sample_probs = copy.deepcopy(probs)
+
+        # Add to sequences only if they aren't done
+        for i in range(num_hists):
+            if probs[i] is not None:
+                sample_probs[i][:,excluded] *= 0
+                sample_probs[i] /= sample_probs[i].sum(dim=-1).reshape(-1,1)
+                addition = torch.multinomial(
+                    sample_probs[i],
+                    num_samples = 1,
+                    replacement = True,
+                )
+                seqs[i] = torch.cat(
+                    (seqs[i], addition), dim = -1
+                )
+                log_probs[i] += torch.gather(
+                    torch.log(probs[i]), -1,
+                    torch.unsqueeze(seqs[i][:,-1],-1),
+                );
+                log_sample_probs[i] += torch.gather(
+                    torch.log(sample_probs[i]), -1,
+                    torch.unsqueeze(seqs[i][:,-1],-1),
+                )
+
+    log_probs = [torch.squeeze(log_prob,-1) for log_prob in log_probs]
+    log_sample_probs = [torch.squeeze(log_sample_prob,-1) for log_sample_prob in log_sample_probs]
+    return seqs, log_probs, log_sample_probs
+
+#######################################################################
+# Monte carlo importance sampling (batch and variable)
+#######################################################################
+
+def importance_sampling_inner_loop(
+    model, seqs,
+    log_probs, log_sample_probs,
+    sorted_states,
+    num_hists, seq_lens,
+    device, temperature,
+    iter_range, eps,
+    excluded,
+    disable_tqdm = False,):
     """TODO: Docstring for importance_sampling_inner_loop.
 
     :model: TODO
@@ -461,8 +527,8 @@ def mc_sample_importance(
         disable_tqdm = False,
     )
 
-    if batch:
-        return torch.stack(seqs,0), (torch.stack(log_probs,dim=0), torch.stack(log_sample_probs, dim = 0)), None
+    # if batch:
+    #     return torch.stack(seqs,0), (torch.stack(log_probs,dim=0), torch.stack(log_sample_probs, dim = 0)), None
     return seqs, (log_probs,log_sample_probs), None
 
 #######################################################################
@@ -983,6 +1049,10 @@ def sample_beam_search(
         return seqs, probs, (all_beam_widths,all_beam_coverages)
     return seqs, probs, None
 
+#######################################################################
+#   Sampling experiments
+#######################################################################
+
 
 #################################################################################
 #   TESTING Orchestration
@@ -1016,8 +1086,8 @@ def evaluate_samples(
 
 
 def sample(
-    dataloader,
     args,
+    dataloader,
     model = None,
     **kwargs,
 ):
@@ -1052,6 +1122,7 @@ def sample(
         data_batch =[dbatch[0,:args.hist_len[0]] for i in range(dbatch.shape[0])]
         if batched: data_batch = torch.stack(data_batch, dim = 0).cpu()
         kwargs = vars(args)
+        # kwargs['batch'] = False
 
         # data_batch = [data_batch[0]]
 

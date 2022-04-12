@@ -27,6 +27,7 @@ from seq_queries.data import load_text, process_data
 from seq_queries.arguments import get_args
 from seq_queries.train import load_checkpoint
 from seq_queries.utils import write_pkl
+from seq_queries.experiments import sample_token_centric
 #################################################################################
 #   Function-Class Declaration
 #################################################################################
@@ -43,16 +44,20 @@ if __name__ == "__main__":
     if args.checkpoint_path:
         load_checkpoint(args, model)
     model.eval()
-    output = sample(val_dl, args, model)
-    print(output['seqs'][0].shape)
-    print([''.join([text_dict['id_to_char'][c]
-                    for c in output['seqs'][0][i,:].tolist()])
-                   for i in range(min(5,output['seqs'][0].shape[0]))]
-            )
+    output = sample_token_centric(args, val_dl, model)
+    # output = sample(args,val_dl, model)
+    # print(output['seqs'][0].shape)
+    # print([''.join([text_dict['id_to_char'][c]
+    #                 for c in output['seqs'][0][i,:].tolist()])
+    #                for i in range(min(5,output['seqs'][0].shape[0]))]
+    #         )
+    # sys.exit(1)
     estimates_or_lbs = evaluate_samples(args, model, output)
     plot_estimates = [est_lbs[0].item() for est_lbs in estimates_or_lbs]
     print(len(plot_estimates), plot_estimates)
-    write_pkl(plot_estimates,"data/random_sampling/shakespeare/mc_random_estimate_a_rt_thou?_100000s_1000m.pkl")
+    sample_type = "importance"
+    # write_pkl(plot_estimates,f"data/{sample_type}_sampling/shakespeare/mc_{sample_type}_estimate_a_rt_thou_10-20?_{args.num_seqs}s_{args.batch_size}m.pkl")
+    write_pkl(plot_estimates,f"data/beam_search/shakespeare/beam_search_lb_a_rt_thou?_10seq_<a>_55.pkl")
 
 
 
