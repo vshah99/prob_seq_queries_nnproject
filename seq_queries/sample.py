@@ -50,9 +50,9 @@ def evaluate_sample_probs(
 
     if isinstance(seq_lens, int):
         seq_lens = [seq_lens]*len(sample_lists)
-    if prob_lists[0] is None:
+    if prob_lists is None or prob_lists[0] is None:
         prob_lists = [None]*len(sample_lists)
-    if sample_prob_lists[0] is None:
+    if sample_prob_lists is None or sample_prob_lists[0] is None:
         sample_prob_lists = [None]*len(sample_lists)
 
     estimates = []
@@ -101,7 +101,8 @@ def _evaluate_seq_query_prob_random(
 
     # 1000 x 20
     states = None
-    samples = torch.from_numpy(samples)
+    if not isinstance(samples,torch.Tensor):
+        samples = torch.from_numpy(samples)
     num_samples, sample_len =samples.shape
     seqs = samples[:,:-seq_len]
     log_probs = torch.zeros(num_samples).reshape(-1,1)
@@ -154,15 +155,17 @@ def _evaluate_seq_query_prob_importance(
     :returns: TODO
 
     """
+    if not isinstance(samples,torch.Tensor):
+        samples = torch.from_numpy(samples)
     marg_probs, _ = model.get_next_probs(
-        torch.from_numpy(samples),
+        samples,
         rnn_args = None,
         temperature = temperature,
         device = device,
     ); marg_probs = [marg_probs[:,e] for e in excluded]
 
     log_probs = [torch.log(marg_prob + eps) + probs - sample_probs for marg_prob in marg_probs]
-    estimates = [torch.exp(log_prob).mean() for log_prob in log_probs]
+    estimates = [torch.exp(log_prob) for log_prob in log_probs]
     return estimates
 
 
@@ -584,15 +587,17 @@ def _evaluate_beam_search_lb(
     beam search to get a lower bound on the
     actual marginal probability
     """
+    if not isinstance(samples,torch.Tensor):
+        samples = torch.from_numpy(samples)
     probs, _ = model.get_next_probs(
-        torch.from_numpy(samples),
+        samples,
         rnn_args = None,
         temperature = temperature,
         device = device,
-    ); probs = [probs[:,e].numpy() for e in excluded]
+    ); probs = [probs[:,e] for e in excluded]
 
-    log_probs = [np.log(prob) + sample_probs for prob in probs]
-    lower_bounds = [np.exp(log_prob).sum() for log_prob in log_probs]
+    log_probs = [torch.log(prob) + sample_probs for prob in probs]
+    lower_bounds = [torch.exp(log_prob).sum() for log_prob in log_probs]
     assert len(lower_bounds) == len(excluded),"List of bounds should equal num excluded tokens"
     return lower_bounds
 

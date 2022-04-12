@@ -27,6 +27,75 @@ from .sample import *
 #   Function-Class Declaration
 #################################################################################
 
+def sample_dynamic_experiment(
+    args,
+    dataloader,
+    model =None,
+    **kwargs):
+    """Get a set of ground truth sequences for data
+
+    :args: TODO
+    :dataloader: TODO
+    :model: TODO
+    :**kwargs: TODO
+    :returns: TODO
+
+    """
+    roster = {
+        "beam_search": sample_beam_search,
+        "mc_random": (mc_sample_random_batch if
+        args.sample_args['coverage_type'] == "fixed_width"
+                      else mc_sample_random_list),
+        "mc_importance": mc_sample_importance,
+    };
+    evaluation_roster = {
+        "beam_search": evaluate_beam_search_lbs,
+        "mc_random": evaluate_sample_probs,
+        "mc_importance":evaluate_sample_probs,
+    }; evaluator = evaluation_roster[args.sample_type]
+    sampler = roster[args.sample_type]
+    args.model = model;
+    output = {"settings":vars(args)}
+
+    all_seqs = []; all_probs = []; all_beams = []; all_covs = []; all_sample_probs = []
+    assert len(args.excluded) == 1,"Must only have one excluded token"
+    excluded_token = args.excluded[0]
+    args.seq_lens=args.total_seq_lens - args.hist_len
+    args.beam_widths = (model.vocab_size - 1)**(args.seq_lens)
+    args.vocab_size = model.vocab_size
+    print("Getting samples from batch")
+    estimates = []
+    for dbatch in tqdm(dataloader):
+        batched = False
+        # Get ground truth sequences for all items
+        # and make excluded token the actual token
+        data_batch = dbatch[:,:args.hist_len].cpu()
+        excluded = dbatch[:,args.total_seq_lens].cpu()
+
+        for i in tqdm(range(dbatch.shape[0]),disable=True):
+            data_sample = data_batch[i,:].reshape(1,-1)
+            args.excluded = [excluded[i].item()]
+            kwargs = vars(args)
+            # Tensor, tensor, tuple(Optional[tensor])
+            seqs, probs, beams_covs = sampler(data_sample,**kwargs)
+            sample_probs = None
+            if isinstance(probs,tuple):
+                probs, sample_probs = probs
+
+            estimates_or_lbs = evaluator(model,
+                                        [torch.squeeze(seqs[0])],
+                                        args.seq_lens,
+                                        prob_lists=probs,
+                                        sample_prob_lists=sample_probs,
+                                        eval_type=args.sample_type,
+                                        device=args.device,
+                                        excluded=args.excluded,
+                                        disable_tqdm=args.disable_tqdm,
+                                        )
+            estimates.append(estimates_or_lbs[0][0])
+    return torch.stack(estimates,dim=0).numpy()
+
+
 def sample_token_centric(
     args,
     dataloader,

@@ -1,0 +1,49 @@
+[2022-04-12 07:37:55.095467] batch_size ......... 128
+[2022-04-12 07:37:55.095497] beam_widths ........ 20160000
+[2022-04-12 07:37:55.095506] checkpoint_path .... models/shakespeare/
+[2022-04-12 07:37:55.095534] config ............. {'seed': 1234321, 'dont_print_args': False, 'cuda': True, 'device_num': 2, 'train_data_pct': 0.9, 'val_data_pct': 0.05, 'seq_len': 100, 'do_test': False, 'rnn_type': 'LSTM', 'hidden_size': 128, 'dropout': 0.3, 'num_layers': 2, 'masked_lm': False, 'checkpoint_path': 'models/shakespeare/', 'vocab_size': 68, 'data_path': 'data/shakespeare_input.txt', 'batch_size': 128, 'disable_tqdm': True, 'sample_type': 'beam_search', 'beam_widths': 20160000, 'sample_args': {'coverage_type': 'fixed_width'}, 'num_seqs': 100000, 'total_seq_lens': 20, 'hist_len': 17, 'excluded': [1]}
+[2022-04-12 07:37:55.095544] cuda ............... True
+[2022-04-12 07:37:55.095552] data_path .......... data/shakespeare_input.txt
+[2022-04-12 07:37:55.095560] device_num ......... 2
+[2022-04-12 07:37:55.095573] disable_tqdm ....... True
+[2022-04-12 07:37:55.095582] do_test ............ False
+[2022-04-12 07:37:55.095590] dont_print_args .... False
+[2022-04-12 07:37:55.095598] dont_shuffle ....... False
+[2022-04-12 07:37:55.095607] dropout ............ 0.3
+[2022-04-12 07:37:55.095616] excluded ........... [1]
+[2022-04-12 07:37:55.095625] finetune ........... False
+[2022-04-12 07:37:55.095633] grad_clip .......... 1.0
+[2022-04-12 07:37:55.095641] hidden_size ........ 128
+[2022-04-12 07:37:55.095649] hist_len ........... 17
+[2022-04-12 07:37:55.095657] log_interval ....... 100
+[2022-04-12 07:37:55.095666] lr ................. 0.001
+[2022-04-12 07:37:55.095674] lr_decay_style ..... constant
+[2022-04-12 07:37:55.095683] masked_lm .......... False
+[2022-04-12 07:37:55.095691] num_layers ......... 2
+[2022-04-12 07:37:55.095698] num_seqs ........... 100000
+[2022-04-12 07:37:55.095707] num_workers ........ 0
+[2022-04-12 07:37:55.095714] optimizer .......... adam
+[2022-04-12 07:37:55.095722] rnn_type ........... LSTM
+[2022-04-12 07:37:55.095731] sample_args ........ {'coverage_type': 'fixed_width'}
+[2022-04-12 07:37:55.095739] sample_occ_range ... 4
+[2022-04-12 07:37:55.095747] sample_type ........ beam_search
+[2022-04-12 07:37:55.095755] save_epochs ........ 1
+[2022-04-12 07:37:55.095763] seed ............... 1234321
+[2022-04-12 07:37:55.095771] seq_len ............ 100
+[2022-04-12 07:37:55.095779] shuffle ............ True
+[2022-04-12 07:37:55.095787] total_seq_lens ..... 20
+[2022-04-12 07:37:55.095795] train_data_pct ..... 0.9
+[2022-04-12 07:37:55.095803] train_epochs ....... 40
+[2022-04-12 07:37:55.095812] val_data_pct ....... 0.05
+[2022-04-12 07:37:55.095820] valid_data_pct ..... 0.05
+[2022-04-12 07:37:55.095828] vocab_size ......... 68
+[2022-04-12 07:37:55.095837] warmup_pct ......... 0.01
+[2022-04-12 07:37:55.095845] weight_decay ....... 0.0
+==================================================
+{'\n': 0, ' ': 1, '!': 2, '$': 3, '&': 4, "'": 5, ',': 6, '-': 7, '.': 8, '3': 9, ':': 10, ';': 11, '<BOS>': 12, '?': 13, 'A': 14, 'B': 15, 'C': 16, 'D': 17, 'E': 18, 'F': 19, 'G': 20, 'H': 21, 'I': 22, 'J': 23, 'K': 24, 'L': 25, 'M': 26, 'N': 27, 'O': 28, 'P': 29, 'Q': 30, 'R': 31, 'S': 32, 'T': 33, 'U': 34, 'V': 35, 'W': 36, 'X': 37, 'Y': 38, 'Z': 39, '[': 40, ']': 41, 'a': 42, 'b': 43, 'c': 44, 'd': 45, 'e': 46, 'f': 47, 'g': 48, 'h': 49, 'i': 50, 'j': 51, 'k': 52, 'l': 53, 'm': 54, 'n': 55, 'o': 56, 'p': 57, 'q': 58, 'r': 59, 's': 60, 't': 61, 'u': 62, 'v': 63, 'w': 64, 'x': 65, 'y': 66, 'z': 67}
+[2022-04-12 07:37:58.578820] Checkpoint path [models/shakespeare/] does exist.
+[2022-04-12 07:37:58.581486] Loaded model from models/shakespeare/shakespeare_model.pt
+Getting samples from batch
+  0%|          | 0/18 [00:00<?, ?it/s]/home/showalte/research/prob_seq_queries/seq_queries/sample.py:869: UserWarning: __floordiv__ is deprecated, and its behavior will change in a future version of pytorch. It currently rounds toward 0 (like the 'trunc' function NOT 'floor'). This results in incorrect rounding for negative values. To keep the current behavior, use torch.div(a, b, rounding_mode='trunc'), or for actual floor division, use torch.div(a, b, rounding_mode='floor').
+  seq_inds = tokens // vocab_size
+  6%|▌         | 1/18 [06:06<1:43:54, 366.71s/it] 11%|█         | 2/18 [12:36<1:41:24, 380.25s/it] 17%|█▋        | 3/18 [18:52<1:34:38, 378.53s/it] 22%|██▏       | 4/18 [25:06<1:27:49, 376.41s/it] 28%|██▊       | 5/18 [31:28<1:22:00, 378.53s/it] 33%|███▎      | 6/18 [37:43<1:15:30, 377.50s/it] 39%|███▉      | 7/18 [44:22<1:10:27, 384.32s/it] 44%|████▍     | 8/18 [51:21<1:05:55, 395.51s/it] 50%|█████     | 9/18 [58:17<1:00:15, 401.73s/it] 56%|█████▌    | 10/18 [1:04:56<53:27, 400.96s/it] 61%|██████    | 11/18 [1:11:41<46:56, 402.34s/it]
