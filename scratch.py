@@ -49,11 +49,11 @@ if __name__ == "__main__":
 
     sample_type_roster_long = {"mc_random":"random_sampling",
                           "mc_importance":"importance_sampling",
-                          "beam_search":"beam_search"}
+                          "beam_search":"ground_truth"}
     sample_type_roster_short = {"mc_random":"mc-rand",
-                          "importance_sampling":"mc-imp",
+                          "mc_importance":"mc-imp",
                           "beam_search":"gt"}
-    write_pkl(estimate,f"data/{sample_type_roster_long[args.sample_type]}/shakespeare/val-dl_{sample_type_roster_short[args.sample_type]}_{args.hist_len}h_{args.total_seq_lens}s_{args.beam_widths}b_exc-dynamic.pkl")
+    write_pkl(estimate,f"data/{sample_type_roster_long[args.sample_type]}/shakespeare/val-dl_{sample_type_roster_short[args.sample_type]}_{args.hist_len}h_{args.total_seq_lens}s_exc-dynamic.pkl")
 
     # output = sample_token_centric(args, val_dl, model)
     # output = sample(args,val_dl, model)

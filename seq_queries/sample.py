@@ -837,10 +837,11 @@ def beam_search_inner_loop(
         ];
         # Worry: We are working a lot in probability land
         new_probs,new_states = list(zip(*[
-            (new_prob_state[0] + eps, new_prob_state[1])
+            (new_prob_state[0], new_prob_state[1])
             if new_prob_state is not None else (None,None)
             for new_prob_state in new_probs_states]))
         new_probs, new_states = list(new_probs), list(new_states)
+
 
         # Rename probabilities to log probabilities where applicable
         probs = [ # (beam_width) + (beam_width, vocab)
