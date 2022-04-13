@@ -27,6 +27,7 @@ from .sample import *
 #   Function-Class Declaration
 #################################################################################
 
+
 def sample_dynamic_experiment(
     args,
     dataloader,
@@ -61,7 +62,7 @@ def sample_dynamic_experiment(
     assert len(args.excluded) == 1,"Must only have one excluded token"
     excluded_token = args.excluded[0]
     args.seq_lens=args.total_seq_lens - args.hist_len
-    args.beam_widths = (model.vocab_size - 1)**(args.seq_lens)
+    # args.beam_widths = (model.vocab_size - 1)**(args.seq_lens)
     args.vocab_size = model.vocab_size
     print("Getting samples from batch")
     estimates = []
@@ -93,6 +94,10 @@ def sample_dynamic_experiment(
                                         disable_tqdm=args.disable_tqdm,
                                         )
             estimates.append(estimates_or_lbs[0][0])
+            if i%10 == 0:
+                print(".",end="", flush=True)
+                # break
+        # break
     return torch.stack(estimates,dim=0).numpy()
 
 

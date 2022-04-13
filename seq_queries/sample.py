@@ -127,7 +127,7 @@ def _evaluate_seq_query_prob_random(
                          for new_prob in new_probs]
 
     num_paths = (model.vocab_size - len(excluded))**(seq_len)
-    estimates = [num_paths*torch.exp(log_prob).mean() for log_prob in log_probs]
+    estimates = [num_paths*torch.exp(log_prob) for log_prob in log_probs]
     return estimates
 
 @torch.no_grad()
@@ -594,7 +594,9 @@ def _evaluate_beam_search_lb(
         rnn_args = None,
         temperature = temperature,
         device = device,
-    ); probs = [probs[:,e] for e in excluded]
+    );
+    if (len(probs.shape) < 2): probs = probs.reshape(1,-1)
+    probs = [probs[:,e] for e in excluded]
 
     log_probs = [torch.log(prob) + sample_probs for prob in probs]
     lower_bounds = [torch.exp(log_prob).sum() for log_prob in log_probs]

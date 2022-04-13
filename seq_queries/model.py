@@ -116,7 +116,7 @@ class CausalLM(LM, nn.Module):
                     f"Sizes were x: {x.shape[0]}, rnn1 {rnn_arg[0].shape[1]}, rnn2 {rnn_arg[1].shape[1]}"
             elif rnn_arg is not None: rnn_arg.to(device)
             step_output = self.forward(src=x.to(device), rnn_args=rnn_arg_cuda if rnn_arg else None)
-            logits = step_output["logits"][:, -1, :]  # last position in the sequence
+            logits = step_output["logits"][..., -1, :]  # last position in the sequence
             probs = torch.softmax(logits / temperature, dim=-1)
             prob_outputs.append(probs.cpu())
             step_outputs.append(_tup_cpu(step_output['misc_output']))

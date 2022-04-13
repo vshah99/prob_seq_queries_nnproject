@@ -2,7 +2,7 @@
 seed: 1234321
 dont_print_args: false
 cuda: true
-device_num: 2
+device_num: 3
 train_data_pct: 0.9
 val_data_pct: 0.05
 seq_len: 100
@@ -27,13 +27,13 @@ batch_size: 128
 disable_tqdm: true
 
 # Sampling args
-sample_type: "mc_random"
+sample_type: "beam_search"
 # Bug here where if you increase this somehow the overall coverage goes down
-beam_widths: 301000
-sample_args: {"coverage_type":"fixed_width"}
+beam_widths: 0.95
+sample_args: {"coverage_type":"backoff"}
 num_seqs: 100000
 total_seq_lens: 20
-hist_len: 17
+hist_len: 16
 excluded: [1]
 
 
