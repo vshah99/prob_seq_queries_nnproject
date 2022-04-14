@@ -60,11 +60,8 @@ def lm_proposal(hists, sample_len, model, vocab_size, excluded_terms,
     samples = []
     last_sample, rnn_args = hists, None
     for _ in range(sample_len):
-        logits, rnn_args = model.get_next_probs(last_sample, rnn_args=rnn_args, device=device)
-        logits = logits[...,-1,:] # Do I still need this?
-
-        # logits, rnn_args = output["logits"][..., -1, :], output["misc_output"]
-
+        logits, rnn_args = model.get_next_probs(last_sample, rnn_args=rnn_args, device=device, return_logits=True)
+        
         proposal_logits = logits.clone()
         proposal_logits[..., excluded_terms] = -float('inf')
         proposal_logits = torch.log_softmax(top_k_top_p_filtering(proposal_logits/temperature, top_k=top_k, top_p=top_p), dim=-1)
@@ -74,7 +71,7 @@ def lm_proposal(hists, sample_len, model, vocab_size, excluded_terms,
         model_log_prob += torch.gather(torch.log_softmax(logits, dim=-1), dim=-1, index=last_sample).squeeze(-1)
         samples.append(last_sample)
 
-    output = model(last_sample, rnn_args=rnn_args, device=device)  # get last subsequent distribution
+    logits, _ = model.get_next_probs(last_sample, rnn_args=rnn_args, device=device, return_logits=True)  # get last subsequent distribution
 
     samples = torch.cat(samples, dim=-1)
 
