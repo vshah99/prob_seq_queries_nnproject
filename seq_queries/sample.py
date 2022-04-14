@@ -31,7 +31,7 @@ from .utils import top_k_top_p_filtering
 
 
 def uniform_proposal(hists, sample_len, model, vocab_size, excluded_terms,
-                     device='cpu', **kwargs):
+                     batch_size, device='cpu', **kwargs):
     assert(len(hists.shape) == 2)
 
     # Uniformly sample across the restricted vocabulary indices
@@ -53,14 +53,15 @@ def uniform_proposal(hists, sample_len, model, vocab_size, excluded_terms,
     }
 
 def lm_proposal(hists, sample_len, model, vocab_size, excluded_terms,
-                device='cpu',top_k=0, top_p=1.0, temperature=1.0,  **kwargs):
+                batch_size=128,device='cpu',top_k=0, top_p=1.0, temperature=1.0,  **kwargs):
     assert(len(hists.shape) == 2)
 
     proposal_log_prob, model_log_prob = 0.0, 0.0
     samples = []
     last_sample, rnn_args = hists, None
     for _ in range(sample_len):
-        logits, rnn_args = model.get_next_probs(last_sample, rnn_args=rnn_args, device=device, return_logits=True)
+        logits, rnn_args = model.get_next_probs(last_sample, rnn_args=rnn_args, max_batch_size=batch_size,
+                                                device=device, return_logits=True)
 
         proposal_logits = logits.clone()
         proposal_logits[..., excluded_terms] = -float('inf')
@@ -71,7 +72,8 @@ def lm_proposal(hists, sample_len, model, vocab_size, excluded_terms,
         model_log_prob += torch.gather(torch.log_softmax(logits, dim=-1), dim=-1, index=last_sample).squeeze(-1)
         samples.append(last_sample)
 
-    logits, _ = model.get_next_probs(last_sample, rnn_args=rnn_args, device=device, return_logits=True)  # get last subsequent distribution
+    logits, _ = model.get_next_probs(last_sample, rnn_args=rnn_args, device=device,
+                                     max_batch_size=batch_size,return_logits=True)  # get last subsequent distribution
 
     samples = torch.cat(samples, dim=-1)
 
@@ -98,6 +100,7 @@ def mc_estimate(hist, num_mc_samples, sample_len, model, excluded_terms, proposa
             top_k=top_k,
             top_p=top_p,
             device=device,
+            batch_size=batch_size,
             temperature=temperature,
         )
         remaining_samples -= batch_size
@@ -117,7 +120,7 @@ def lin_interp(target_pct, n_current, n_end):
 
 @torch.no_grad()
 def beam_search_lower_bound(hist, num_beams, sample_len, model, excluded_terms, interp_func,
-                            device, vocab_size, **kwargs):
+                            batch_size, device, vocab_size, **kwargs):
     assert(isinstance(num_beams, (int, float)))
     assert(len(hist.shape) == 1)
 
@@ -126,7 +129,8 @@ def beam_search_lower_bound(hist, num_beams, sample_len, model, excluded_terms, 
     cur_restricted_log_probs = cur_log_probs.clone()  # sum of restricted probabilities
     num_beams_over_time = []
     for n_cur in range(sample_len):
-        logits, states = model.get_next_probs(beams, rnn_args=rnn_args, return_logits = True, device=device)
+        logits, states = model.get_next_probs(beams, rnn_args=rnn_args, return_logits = True,
+                                              max_batch_size=batch_size,device=device)
         next_log_probs = torch.log_softmax(logits, dim=-1)  # (num of current beams, vocab_size)
         next_log_probs[..., excluded_terms] = -float('inf')
         next_restricted_log_probs = torch.log_softmax(next_log_probs, dim=-1)
@@ -155,7 +159,8 @@ def beam_search_lower_bound(hist, num_beams, sample_len, model, excluded_terms, 
 
         num_beams_over_time.append(cur_log_probs.shape[0])
 
-    logits, states = model.get_next_probs(beams, rnn_args=rnn_args, device=device)
+    logits, states = model.get_next_probs(beams, rnn_args=rnn_args, device=device, return_logits=True,
+                                          max_batch_size=batch_size)
     next_log_probs = cur_log_probs.unsqueeze(-1) + torch.log_softmax(logits, dim=-1)
     return {
         "dist_lower_bound": next_log_probs.exp().sum(dim=0),
@@ -223,7 +228,6 @@ def sample(
             _tensor_output('restricted_coverage',data_list)
         else:
             output['sample_estimates'] += data_list
-
 
     if "beam_search" in args.estimate_type.__name__:
         _consolidate_output("num_beams")
