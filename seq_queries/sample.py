@@ -40,7 +40,8 @@ def uniform_proposal(hists, sample_len, model, vocab_size, excluded_terms,
         samples[samples>=item] += 1
     assert(samples.max() < vocab_size)
 
-    logits, states = model.get_next_probs(torch.cat((hists, samples), dim=-1), device=device)
+    output = model.forward(src=torch.cat((hists, samples), dim=-1))  #, device=device)
+    logits = output["logits"]
     model_log_prob = torch.log_softmax(logits, dim=-1)[..., -(sample_len+1):-1, :]
     model_log_prob = torch.gather(model_log_prob, dim=-1, index=samples.unsqueeze(-1)).squeeze(-1).sum(dim=-1)  # grab specific log probabilities
 
