@@ -24,19 +24,19 @@ batch_size: 1024
 # Training args not needed here
 # Evaluation arguments not needed here
 # Sampling arguments are provided by the testing script explicitly
-disable_tqdm: false
+disable_tqdm: true
 
 # Sampling args
 estimate_type: search
 # Bug here where if you increase this somehow the overall coverage goes down
 proposal_func: uniform
 interp_func: linear
-top_k: 100
-top_p: 0.95
-num_beams: 1.0
+top_k: 0
+top_p: 0
+num_beams: 0.8
 num_mc_samples: 1000
-total_seq_len: 20
-hist_len: 18
+total_seq_len: 30
+hist_len: 20
 excluded_terms: [1]
 
 

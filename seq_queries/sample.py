@@ -180,8 +180,7 @@ def sample(
     args,
     dataloader,
     model = None,
-    **kwargs,
-):
+    **kwargs,):
     """Sample from any of these methods given an
     input dataloader, arguments, and potentially a model
 
