@@ -79,7 +79,7 @@ def lm_proposal(hists, sample_len, model, vocab_size, excluded_terms,
         "proposal_log_prob": proposal_log_prob.unsqueeze(-1),
         "model_log_prob": model_log_prob.unsqueeze(-1),
         "samples": samples,
-        "next_log_dist": torch.log_softmax(logits, dim=-1)[..., -1, :],
+        "next_log_dist": torch.log_softmax(logits, dim=-1),
     }
 
 @torch.no_grad()
