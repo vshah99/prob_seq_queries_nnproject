@@ -121,7 +121,6 @@ def flatten(list_of_lists):
 #######################################################################
 # Top k top p
 #######################################################################
-
 def top_k_top_p_filtering(logits, top_k=0, top_p=0.0, filter_value=-float('Inf'), is_log_prob=False):
     """ Filter a distribution of logits using top-k and/or nucleus (top-p) filtering.
         Currently only supports a batch size of 1.

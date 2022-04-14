@@ -35,20 +35,15 @@ def uniform_proposal(hists, sample_len, model, vocab_size, excluded_terms,
     assert(len(hists.shape) == 2)
 
     # Uniformly sample across the restricted vocabulary indices
-    print(excluded_terms)
     samples = torch.randint(low=0, high=vocab_size-len(excluded_terms), size=(hists.shape[0], sample_len), device=hists.device)
     for item in sorted(excluded_terms):
         samples[samples>=item] += 1
     assert(samples.max() < vocab_size)
 
-    logits, states = model.get_next_probs(torch.cat((hists, samples), dim=-1), device=device)
-    print(logits.shape)
-    # logits shape
-    # model_log_prob = torch.log_softmax(logits, dim=-1)[..., -(sample_len+1):-1, :]
-    model_log_prob = torch.log_softmax(logits, dim=-1)
-    print(model_log_prob.shape, samples.shape)
-    model_log_prob = torch.gather(model_log_prob.to(device), dim=-1,
-                                  index=samples.unsqueeze(-1)).squeeze(-1).sum(dim=-1)  # grab specific log probabilities
+    output = model.forward(src=torch.cat((hists, samples), dim=-1))  #, device=device)
+    logits = output["logits"]
+    model_log_prob = torch.log_softmax(logits, dim=-1)[..., -(sample_len+1):-1, :]
+    model_log_prob = torch.gather(model_log_prob, dim=-1, index=samples.unsqueeze(-1)).squeeze(-1).sum(dim=-1)  # grab specific log probabilities
 
     return {
         "proposal_log_prob": -sample_len * np.log(vocab_size - len(excluded_terms)),
@@ -65,25 +60,26 @@ def lm_proposal(hists, sample_len, model, vocab_size, excluded_terms,
     samples = []
     last_sample, rnn_args = hists, None
     for _ in range(sample_len):
-        logits, rnn_args = model.get_next_probs(last_sample, rnn_args=rnn_args, device=device)
+        logits, rnn_args = model.get_next_probs(last_sample, rnn_args=rnn_args, device=device, return_logits=True)
+
         proposal_logits = logits.clone()
         proposal_logits[..., excluded_terms] = -float('inf')
-        proposal_logits = torch.log_softmax(top_k_top_p_filtering(proposal_logits/temperature,
-                                                                  top_k=top_k, top_p=top_p), dim=-1)
+        proposal_logits = torch.log_softmax(top_k_top_p_filtering(proposal_logits/temperature, top_k=top_k, top_p=top_p), dim=-1)
 
         last_sample = torch.distributions.Categorical(logits=proposal_logits).sample().unsqueeze(-1)
         proposal_log_prob += torch.gather(proposal_logits, dim=-1, index=last_sample).squeeze(-1)
         model_log_prob += torch.gather(torch.log_softmax(logits, dim=-1), dim=-1, index=last_sample).squeeze(-1)
         samples.append(last_sample)
 
-    output = model.get_next_probs(last_sample, rnn_args=rnn_args, device=device)  # get last subsequent distribution
+    logits, _ = model.get_next_probs(last_sample, rnn_args=rnn_args, device=device, return_logits=True)  # get last subsequent distribution
+
     samples = torch.cat(samples, dim=-1)
 
     return {
         "proposal_log_prob": proposal_log_prob.unsqueeze(-1),
         "model_log_prob": model_log_prob.unsqueeze(-1),
         "samples": samples,
-        "next_log_dist": torch.log_softmax(logits, dim=-1)[..., -1, :],
+        "next_log_dist": torch.log_softmax(logits, dim=-1),
     }
 
 @torch.no_grad()
@@ -131,7 +127,7 @@ def beam_search_lower_bound(hist, num_beams, sample_len, model, excluded_terms, 
     num_beams_over_time = []
     for n_cur in range(sample_len):
         logits, states = model.get_next_probs(beams, rnn_args=rnn_args, return_logits = True, device=device)
-        next_log_probs = torch.log_softmax(logits[..., -1, :], dim=-1)  # (num of current beams, vocab_size)
+        next_log_probs = torch.log_softmax(logits, dim=-1)  # (num of current beams, vocab_size)
         next_log_probs[..., excluded_terms] = -float('inf')
         next_restricted_log_probs = torch.log_softmax(next_log_probs, dim=-1)
         next_log_probs = cur_log_probs.unsqueeze(-1) + next_log_probs
@@ -160,7 +156,7 @@ def beam_search_lower_bound(hist, num_beams, sample_len, model, excluded_terms, 
         num_beams_over_time.append(cur_log_probs.shape[0])
 
     logits, states = model.get_next_probs(beams, rnn_args=rnn_args, device=device)
-    next_log_probs = cur_log_probs.unsqueeze(-1) + torch.log_softmax(logits[..., -1, :], dim=-1)
+    next_log_probs = cur_log_probs.unsqueeze(-1) + torch.log_softmax(logits, dim=-1)
     return {
         "dist_lower_bound": next_log_probs.exp().sum(dim=0),
         "true_coverage": cur_log_probs.exp().sum(),
