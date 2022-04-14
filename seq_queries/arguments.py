@@ -1,28 +1,112 @@
+import math
+import sys
+import copy
+import yaml
 import argparse
-import json
 import torch
+import pickle as pkl
+import json
+import ast
 
-from .utils import print_log, _merge_configs, read_yaml, _int_or_float_or_list
+from datetime import datetime
+
+from .utils import print_log, read_yaml
+from .sample import (
+    mc_estimate, beam_search_lower_bound, uniform_proposal, lm_proposal,
+    geom_interp, lin_interp)
+
+
+#######################################################################
+# Utilities for argparse
+#######################################################################
+
+def _str2estimate(estimate):
+    assert estimate in ["search","sample"],\
+        "Estimate must be [search, sample], got {}".format(estimate)
+    roster = {"sample":mc_estimate,
+              "search":beam_search_lower_bound,
+              }
+    return roster[estimate]
+
+def _str2interp_func(interp):
+    assert interp in ["geometric","linear"],\
+        "Interpolation function must be [geometric, linear], got {}".format(interp)
+    roster = {"geometric":geom_interp,
+              "linear":lin_interp,
+              }
+    return roster[interp]
+
+def _str2proposal(proposal):
+    assert proposal in ["uniform","lm"],\
+        "Proposal must be [uniform, lm], got {}".format(proposal)
+    roster = {"uniform":uniform_proposal,
+              "lm":lm_proposal,
+              }
+    return roster[proposal]
+
+def _str2bool(item):
+    item =1 if item in ['true','True'] else 0
+    return bool(item)
+
+def _int_or_float(item):
+    try: item = int(item)
+    except:
+        return float(item)
+    return item
+
+def _int_or_float_or_list(item):
+    assert isinstance(item, (int,float,list)),\
+        f"Item was not int, float or list: got {type(item)}"
+    return item
+
+def _str2list(str_list):
+    return ast.literal_eval(str_list)
+
+def _merge_configs(primary, secondary):
+    """
+    Super simple configuration update
+    function. Not great, but good enough
+    for what I am doing
+
+    Ignore functions
+    """
+    for k,v in primary.items():
+
+        if (k not in secondary):
+            secondary[k] = v
+
+        # Key for primary dictionary is also a dictionary
+        # and key present in both dictionaries
+        elif isinstance(v, dict) and isinstance(secondary[k], dict):
+            secondary[k] = _merge_configs(primary[k], secondary[k])
+
+        # Key is present in both but not nested
+        # Only if current object is not a function
+        # elif not hasattr(secondary[k], '__call__'):
+        else:
+            secondary[k] = v
+
+    return secondary
+
 
 
 def general_args(parser):
     group = parser.add_argument_group("General set arguments for miscelaneous utilities.")
     #group.add_argument("--json_config_path", default=None, help="Path to json file containing arguments to be parsed.")
-    group.add_argument("--config", type=read_yaml, default = None, help="Config file to seed argparse from yaml file. WILL OVERWRITE OTHER ARGUMENTS")
     group.add_argument("--seed", type=int, default=1234321, help="Seed for all random processes.")
-    group.add_argument("--dont_print_args", action="store_true", help="Specify to disable printing of arguments.")
-    group.add_argument("--cuda", action="store_true", help="Convert model and data to GPU.")
+    group.add_argument("--dont_print_args", type=_str2bool,default=False, help="Specify to disable printing of arguments.")
+    group.add_argument("--cuda", type=_str2bool,default=True, help="Convert model and data to GPU.")
     group.add_argument("--device_num", type=int, default=0, help="Should cuda be enabled, this is the GPU id to use.")
     group.add_argument("--data_path",  type=str, default="./data/imdb.txt", help="Path to training data file.")
     group.add_argument("--train_data_pct", type=float, default=0.9, help="Percent of data used for training.")
-    group.add_argument("--valid_data_pct", type=float, default=0.05, help="Percent of data used for validation.")
+    group.add_argument("--val_data_pct", type=float, default=0.05, help="Percent of data used for validation.")
     group.add_argument("--seq_len", type=int, default=100, help="Length of sequences of tokens to process.")
-    group.add_argument("--do_test", action="store_true", help="Perform evaluation on testing set.")
+    group.add_argument("--do_test",type=_str2bool, default=True, help="Perform evaluation on testing set.")
 
 def model_config_args(parser):
     group = parser.add_argument_group("Model configuration arguments.")
     group.add_argument("--rnn_type", type=str, default="LSTM", help="RNN type to use in model. Supported values are 'RNN', 'LSTM', and 'GRU'.")
-    group.add_argument("--masked_lm", action="store_true", help="If enabled, makes RNN bidirectional and turns it into a Masked Language Model rather than a Causal Language Model.")
+    group.add_argument("--masked_lm",type=_str2bool,default=True, help="If enabled, makes RNN bidirectional and turns it into a Masked Language Model rather than a Causal Language Model.")
     group.add_argument("--vocab_size", type=int, default=-1, help="Number of unique vocabulary terms to embed and predict. A value of -1 means this will be inferred by the dataset.")
     group.add_argument("--hidden_size", type=int, default=32, help="Size of hidden state of RNN.")
     group.add_argument("--num_layers", type=int, default=3, help="Number of RNN layers.")
@@ -31,7 +115,7 @@ def model_config_args(parser):
 def training_args(parser):
     group = parser.add_argument_group("Training specification arguments.")
     group.add_argument("--checkpoint_path", type=str, default=None, help="Path to folder that contains model checkpoints. Will take the most recent one.")
-    group.add_argument("--finetune", action="store_true", help="Will load in a model from the checkpoint path to finetune.")
+    group.add_argument("--finetune", type=_str2bool,default=True, help="Will load in a model from the checkpoint path to finetune.")
     group.add_argument("--train_epochs", type=int, default=40, help="Number of epochs to iterate over for training.")
     group.add_argument("--num_workers", type=int, default=0, help="Number of parallel workers for data loaders.")
     group.add_argument("--batch_size", type=int, default=32, help="Number of samples per batch.")
@@ -43,7 +127,7 @@ def training_args(parser):
     group.add_argument("--weight_decay", type=float, default=0.0, help="L2 coefficient for weight decay.")
     group.add_argument("--warmup_pct", type=float, default=0.01, help="Percentage of 'train_iters' to be spent ramping learning rate up from 0.")
     group.add_argument("--lr_decay_style", type=str, default="constant", help="Decay style for the learning rate, after the warmup period. Choices: 'constant', 'monotonic', and 'cosine'.")
-    group.add_argument("--dont_shuffle", action="store_true", help="Don't shuffle training and validation dataloaders.")
+    group.add_argument("--dont_shuffle", type=_str2bool, help="Don't shuffle training and validation dataloaders.")
 
 def evaluation_args(parser):
     group = parser.add_argument_group("Evaluation specification arguments.")
@@ -51,14 +135,17 @@ def evaluation_args(parser):
 
 def sampling_args(parser):
     group = parser.add_argument_group("Sampling specification arguments.")
-    group.add_argument("--hist_len", type=_int_or_float_or_list, default=10, help="Length of conditioning context for sequence")
-    group.add_argument("--total_seq_lens", type=_int_or_float_or_list, default=15, help="List[int] or int for total sequence lengths")
-    group.add_argument("--beam_widths", type=_int_or_float_or_list, default=0.5, help="List[int,float], float, or int for total sequence lengths")
-    group.add_argument("--num_seqs", type=int, default=50, help="Number of sequences per sample")
-    group.add_argument("--sample_type", default="beam_search", help="beam_search, mc_random, or mc_importance")
-    group.add_argument("--sample_args", type=dict, default={"coverage_type":"fixed_width"}, help="")
-    group.add_argument("--excluded", type=dict, default={"coverage_type":"fixed_width"}, help="")
-    group.add_argument("--disable_tqdm", action="store_false",help="Disable tqdm monitoring runs for samplers")
+    group.add_argument("--hist_len", type=int, default=10, help="Length of conditioning context for sequence")
+    group.add_argument("--total_seq_len", type=int, default=15, help="List[int] or int for total sequence lengths")
+    group.add_argument("--estimate_type", type=_str2estimate,default="sample", help="Get estimate type")
+    group.add_argument("--proposal_func",  type=_str2proposal,default="uniform", help="Get proposal distribution for sampling")
+    group.add_argument("--interp_func",  type=_str2interp_func,default="linear", help="Get inpterpolation function for search coverage")
+    group.add_argument("--excluded_terms", type=_str2list, default=[], help="List of excluded terms")
+    group.add_argument("--top_k", type=int, default=1, help="Top k beams/samples to take")
+    group.add_argument("--top_p", type=_int_or_float, default=1, help="Top p coverage to take")
+    group.add_argument("--num_beams", type=_int_or_float, default=10, help="Beam coverage (or number)")
+    group.add_argument("--num_mc_samples", type=int, default=10, help="Number of MC samples")
+    group.add_argument("--disable_tqdm", type=_str2bool,default=False,help="Disable tqdm monitoring runs for samplers")
 
 def print_args(args):
     max_arg_len = max(len(k) for k, v in args.items())
@@ -72,7 +159,7 @@ def print_args(args):
         ))
 
 def get_args(manual_config = None):
-    parser = argparse.ArgumentParser()
+    parser = argparse.ArgumentParser(fromfile_prefix_chars='@')
 
     general_args(parser)
     model_config_args(parser)
@@ -80,15 +167,30 @@ def get_args(manual_config = None):
     #evaluation_args(parser)
     sampling_args(parser)
 
-    args = parser.parse_args()
+    def yaml2argparse(astr):
+        # custom convert_arg_line_to_args method
+        # convert 'names: [v1,v2]' into ['--names', v1, '--names', v2, ...]
+        alist = []
+        if ':' not in astr:
+            return astr
+        field,value = astr.split(':')
+        value = value.strip()
+        field = '--'+field
+        if value.startswith('['):
+            values = value[1:-1].split(',')
+            for v in values:
+                alist.extend([field,v.strip()])
+        else:
+            alist.extend([field, value])
+        return alist
+
+    parser.convert_arg_line_to_args = yaml2argparse
+    if manual_config is not None:
+        args, _ = parser.parse_known_args(['@' + manual_config])
+    else:
+        args = parser.parse_args()
 
     args.shuffle = not args.dont_shuffle
-
-    if manual_config is not None:
-        args.config = read_yaml(manual_config)
-    if args.config is not None:
-        args.__dict__ = _merge_configs(args.config, args.__dict__)
-
     if not args.dont_print_args:
         print_args(vars(args))
         print("====="*10)
@@ -99,3 +201,4 @@ def get_args(manual_config = None):
         args.device = torch.device("cpu")
 
     return args
+
