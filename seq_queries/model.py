@@ -119,7 +119,8 @@ class CausalLM(LM, nn.Module):
             if not return_logits:
                 probs = torch.softmax(logits, dim=-1)
                 prob_outputs.append(probs.cpu())
-            prob_outputs.append(logits.cpu())
+            else:
+                prob_outputs.append(logits.cpu())
             step_outputs.append(_tup_cpu(step_output['misc_output']))
 
         # If we have a LSTM

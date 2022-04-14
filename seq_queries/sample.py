@@ -202,7 +202,7 @@ def sample(
             torch.Tensor(db[key]) for db in data]))
 
     def _consolidate_output(key,output=output):
-        output[key] = torch.cat(output[key],dim=0)
+        output[key] = torch.cat(output[key])
 
     for dbatch in tqdm(dataloader, disable=args.disable_tqdm):
         data_list = []
@@ -225,23 +225,18 @@ def sample(
             _tensor_output('restricted_coverage',data_list)
         else:
             output['sample_estimates'] += data_list
-        break
 
 
-    print("HI")
-    print(output)
-    if args.estimate_type == "search":
-        sys.exit(1)
+    if "beam_search" in args.estimate_type.__name__:
         _consolidate_output("num_beams")
         _consolidate_output("true_coverage")
         _consolidate_output("restricted_coverage")
         _consolidate_output("dist_lower_bound")
-    # else:
-    #     _consolidate_output("sample_estimates")
+    else:
+        _consolidate_output("sample_estimates")
 
     args.model = None
     output['metadata'] = vars(args)
-    sys.exit(1)
     return output
 
 
