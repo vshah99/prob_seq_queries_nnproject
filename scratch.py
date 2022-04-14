@@ -46,6 +46,8 @@ if __name__ == "__main__":
         load_checkpoint(args, model)
     model.eval()
     estimates = sample(args, val_dl, model)
+    print(torch.max(estimates['dist_lower_bound'][0]))
+    print(torch.argmax(estimates['dist_lower_bound'][0]))
     # estimate = sample_dynamic_experiment(args,val_dl, model)
 
     # sample_type_roster_long = {"mc_random":"random_sampling",

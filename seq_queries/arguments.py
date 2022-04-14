@@ -176,12 +176,7 @@ def get_args(manual_config = None):
         field,value = astr.split(':')
         value = value.strip()
         field = '--'+field
-        if value.startswith('['):
-            values = value[1:-1].split(',')
-            for v in values:
-                alist.extend([field,v.strip()])
-        else:
-            alist.extend([field, value])
+        alist.extend([field, value])
         return alist
 
     parser.convert_arg_line_to_args = yaml2argparse
