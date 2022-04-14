@@ -21,13 +21,13 @@ import torch
 # from experiments.train.shakespeare import main as shakespeare_main
 # from experiments.train.stacks import main as stacks_main
 
-from seq_queries.sample import sample, evaluate_samples
+from seq_queries.sample import sample
 from seq_queries.model import get_model
 from seq_queries.data import load_text, process_data
 from seq_queries.arguments import get_args
 from seq_queries.train import load_checkpoint
 from seq_queries.utils import write_pkl
-from seq_queries.experiments import sample_token_centric, sample_dynamic_experiment
+# from seq_queries.experiments import sample_token_centric, sample_dynamic_experiment
 #################################################################################
 #   Function-Class Declaration
 #################################################################################
@@ -45,15 +45,16 @@ if __name__ == "__main__":
     if args.checkpoint_path:
         load_checkpoint(args, model)
     model.eval()
-    estimate = sample_dynamic_experiment(args,val_dl, model)
+    estimates = sample(args, val_dl, model)
+    # estimate = sample_dynamic_experiment(args,val_dl, model)
 
-    sample_type_roster_long = {"mc_random":"random_sampling",
-                          "mc_importance":"importance_sampling",
-                          "beam_search":"ground_truth"}
-    sample_type_roster_short = {"mc_random":"mc-rand",
-                          "mc_importance":"mc-imp",
-                          "beam_search":"gt"}
-    write_pkl(estimate,f"data/{sample_type_roster_long[args.sample_type]}/shakespeare/val-dl_{sample_type_roster_short[args.sample_type]}_{args.hist_len}h_{args.total_seq_lens}s_exc-dynamic.pkl")
+    # sample_type_roster_long = {"mc_random":"random_sampling",
+    #                       "mc_importance":"importance_sampling",
+    #                       "beam_search":"ground_truth"}
+    # sample_type_roster_short = {"mc_random":"mc-rand",
+    #                       "mc_importance":"mc-imp",
+    #                       "beam_search":"gt"}
+    # write_pkl(estimate,f"data/{sample_type_roster_long[args.sample_type]}/shakespeare/val-dl_{sample_type_roster_short[args.sample_type]}_{args.hist_len}h_{args.total_seq_lens}s_exc-dynamic.pkl")
 
     # output = sample_token_centric(args, val_dl, model)
     # output = sample(args,val_dl, model)

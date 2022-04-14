@@ -23,7 +23,7 @@ def load_text(file_name):
     }
 
 def process_data(text_dict, args): # batch_size, seq_len, dev=torch.device("cpu"), splits=(0.9, 0.05, 0.05), **dl_args):
-    tr_split, v_split = args.train_data_pct, args.valid_data_pct  # data split percentages for training and validation
+    tr_split, v_split = args.train_data_pct, args.val_data_pct  # data split percentages for training and validation
     seq_len, dev = args.seq_len, args.device
 
     ids = [text_dict["char_to_id"][c] for c in text_dict["text"]]
