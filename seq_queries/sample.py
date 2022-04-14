@@ -127,7 +127,7 @@ def beam_search_lower_bound(hist, num_beams, sample_len, model, excluded_terms, 
     num_beams_over_time = []
     for n_cur in range(sample_len):
         logits, states = model.get_next_probs(beams, rnn_args=rnn_args, return_logits = True, device=device)
-        next_log_probs = torch.log_softmax(logits[..., -1, :], dim=-1)  # (num of current beams, vocab_size)
+        next_log_probs = torch.log_softmax(logits, dim=-1)  # (num of current beams, vocab_size)
         next_log_probs[..., excluded_terms] = -float('inf')
         next_restricted_log_probs = torch.log_softmax(next_log_probs, dim=-1)
         next_log_probs = cur_log_probs.unsqueeze(-1) + next_log_probs
@@ -156,7 +156,7 @@ def beam_search_lower_bound(hist, num_beams, sample_len, model, excluded_terms, 
         num_beams_over_time.append(cur_log_probs.shape[0])
 
     logits, states = model.get_next_probs(beams, rnn_args=rnn_args, device=device)
-    next_log_probs = cur_log_probs.unsqueeze(-1) + torch.log_softmax(logits[..., -1, :], dim=-1)
+    next_log_probs = cur_log_probs.unsqueeze(-1) + torch.log_softmax(logits, dim=-1)
     return {
         "dist_lower_bound": next_log_probs.exp().sum(dim=0),
         "true_coverage": cur_log_probs.exp().sum(),
