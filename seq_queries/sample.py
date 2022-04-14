@@ -35,14 +35,20 @@ def uniform_proposal(hists, sample_len, model, vocab_size, excluded_terms,
     assert(len(hists.shape) == 2)
 
     # Uniformly sample across the restricted vocabulary indices
+    print(excluded_terms)
     samples = torch.randint(low=0, high=vocab_size-len(excluded_terms), size=(hists.shape[0], sample_len), device=hists.device)
     for item in sorted(excluded_terms):
         samples[samples>=item] += 1
     assert(samples.max() < vocab_size)
 
     logits, states = model.get_next_probs(torch.cat((hists, samples), dim=-1), device=device)
-    model_log_prob = torch.log_softmax(logits, dim=-1)[..., -(sample_len+1):-1, :]
-    model_log_prob = torch.gather(model_log_prob, dim=-1, index=samples.unsqueeze(-1)).squeeze(-1).sum(dim=-1)  # grab specific log probabilities
+    print(logits.shape)
+    # logits shape
+    # model_log_prob = torch.log_softmax(logits, dim=-1)[..., -(sample_len+1):-1, :]
+    model_log_prob = torch.log_softmax(logits, dim=-1)
+    print(model_log_prob.shape, samples.shape)
+    model_log_prob = torch.gather(model_log_prob.to(device), dim=-1,
+                                  index=samples.unsqueeze(-1)).squeeze(-1).sum(dim=-1)  # grab specific log probabilities
 
     return {
         "proposal_log_prob": -sample_len * np.log(vocab_size - len(excluded_terms)),
@@ -60,21 +66,17 @@ def lm_proposal(hists, sample_len, model, vocab_size, excluded_terms,
     last_sample, rnn_args = hists, None
     for _ in range(sample_len):
         logits, rnn_args = model.get_next_probs(last_sample, rnn_args=rnn_args, device=device)
-        logits = logits[...,-1,:] # Do I still need this?
-
-        # logits, rnn_args = output["logits"][..., -1, :], output["misc_output"]
-
         proposal_logits = logits.clone()
         proposal_logits[..., excluded_terms] = -float('inf')
-        proposal_logits = torch.log_softmax(top_k_top_p_filtering(proposal_logits/temperature, top_k=top_k, top_p=top_p), dim=-1)
+        proposal_logits = torch.log_softmax(top_k_top_p_filtering(proposal_logits/temperature,
+                                                                  top_k=top_k, top_p=top_p), dim=-1)
 
         last_sample = torch.distributions.Categorical(logits=proposal_logits).sample().unsqueeze(-1)
         proposal_log_prob += torch.gather(proposal_logits, dim=-1, index=last_sample).squeeze(-1)
         model_log_prob += torch.gather(torch.log_softmax(logits, dim=-1), dim=-1, index=last_sample).squeeze(-1)
         samples.append(last_sample)
 
-    output = model(last_sample, rnn_args=rnn_args, device=device)  # get last subsequent distribution
-
+    output = model.get_next_probs(last_sample, rnn_args=rnn_args, device=device)  # get last subsequent distribution
     samples = torch.cat(samples, dim=-1)
 
     return {

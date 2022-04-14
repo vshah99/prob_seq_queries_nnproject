@@ -27,7 +27,7 @@ batch_size: 128
 disable_tqdm: false
 
 # Sampling args
-estimate_type: search
+estimate_type: sample
 # Bug here where if you increase this somehow the overall coverage goes down
 proposal_func: uniform
 interp_func: linear
@@ -37,6 +37,6 @@ num_beams: 1.0
 num_mc_samples: 1000
 total_seq_len: 20
 hist_len: 18
-excluded: [1]
+excluded_terms: [1]
 
 
