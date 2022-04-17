@@ -86,7 +86,8 @@ def lm_proposal(hists, sample_len, model, vocab_size, excluded_terms,
 
 @torch.no_grad()
 def mc_estimate(hist, num_mc_samples, sample_len, model, excluded_terms, proposal_func,
-                vocab_size, batch_size=128,temperature=1, top_k=None, top_p=None, device='cpu',**kwargs):
+                vocab_size, batch_size=128,temperature=1, top_k=None, top_p=None, device='cpu',
+                sub_estimates=None,**kwargs):
     assert(len(hist.shape) == 1)  # (hist_seq_len), Only conditions on a single history
     dist_estimate = None
     remaining_samples = num_mc_samples
@@ -107,6 +108,14 @@ def mc_estimate(hist, num_mc_samples, sample_len, model, excluded_terms, proposa
         term_log_prob = sample_out["next_log_dist"] + sample_out["model_log_prob"] - sample_out["proposal_log_prob"]
         dist_estimate = (term_log_prob.cpu() if dist_estimate is None
                          else torch.cat((dist_estimate,term_log_prob.exp().cpu()), dim=0))
+
+    if sub_estimates is not None and len(sub_estimates) > 0:
+        # (samples x vocab) -> (sub-estimates x vocab)
+        dist_estimate = torch.stack(
+            # (vocab)
+            [dist_estimate[:s, :].mean(dim=0).flatten()
+             for s in sorted(sub_estimates)
+        ])
 
     return dist_estimate
 
@@ -158,6 +167,7 @@ def beam_search_lower_bound(hist, num_beams, sample_len, model, excluded_terms, 
         else:
             rnn_args = rnn_args[..., seq_inds, :]
 
+        print(n_cur, cur_log_probs.shape[0])
         num_beams_over_time.append(cur_log_probs.shape[0])
 
     logits, states = model.get_next_probs(beams, rnn_args=rnn_args, device=device, return_logits=True,
@@ -229,7 +239,6 @@ def sample(
         else:
             output['sample_estimates'] += data_list
 
-    print("DONE")
     if "beam_search" in args.estimate_type.__name__:
         _consolidate_output("num_beams")
         _consolidate_output("true_coverage")

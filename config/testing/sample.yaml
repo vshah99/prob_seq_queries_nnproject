@@ -19,7 +19,7 @@ vocab_size: 68
 
 # Data args
 data_path: data/shakespeare_input.txt
-batch_size: 1024
+batch_size: 2048
 
 # Training args not needed here
 # Evaluation arguments not needed here
@@ -27,16 +27,17 @@ batch_size: 1024
 disable_tqdm: true
 
 # Sampling args
-estimate_type: sample
+estimate_type: search
 # Bug here where if you increase this somehow the overall coverage goes down
-proposal_func: uniform
+proposal_func: lm
 interp_func: linear
 top_k: 0
 top_p: 0
 num_beams: 0.8
-num_mc_samples: 100000
+num_mc_samples: 10000
+sub_estimates: []
 total_seq_len: 30
-hist_len: 18
+hist_len: 20
 excluded_terms: [1]
 
 
