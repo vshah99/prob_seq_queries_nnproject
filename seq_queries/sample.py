@@ -88,7 +88,7 @@ def lm_proposal(hists, sample_len, model, vocab_size, excluded_terms,
 def mc_estimate(hist, num_mc_samples, sample_len, model, excluded_terms, proposal_func,
                 vocab_size, batch_size=128,temperature=1, top_k=None, top_p=None, device='cpu',**kwargs):
     assert(len(hist.shape) == 1)  # (hist_seq_len), Only conditions on a single history
-    dist_estimate = 0
+    dist_estimate = None
     remaining_samples = num_mc_samples
     while remaining_samples > 0:
         sample_out = proposal_func(
@@ -105,7 +105,8 @@ def mc_estimate(hist, num_mc_samples, sample_len, model, excluded_terms, proposa
         )
         remaining_samples -= batch_size
         term_log_prob = sample_out["next_log_dist"] + sample_out["model_log_prob"] - sample_out["proposal_log_prob"]
-        dist_estimate += term_log_prob.exp().sum(dim=0) / num_mc_samples
+        dist_estimate = (term_log_prob.cpu() if dist_estimate is None
+                         else torch.cat((dist_estimate,term_log_prob.exp()), dim=0).cpu())
 
     return dist_estimate
 
