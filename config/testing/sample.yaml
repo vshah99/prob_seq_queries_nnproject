@@ -2,7 +2,7 @@
 seed: 1234321
 dont_print_args: False
 cuda: true
-device_num: 6
+device_num: 7
 train_data_pct: 0.9
 val_data_pct: 0.05
 seq_len: 100
@@ -29,7 +29,7 @@ disable_tqdm: true
 # Sampling args
 estimate_type: sample
 # Bug here where if you increase this somehow the overall coverage goes down
-proposal_func: lm
+proposal_func: uniform
 interp_func: linear
 top_k: 0
 top_p: 0

@@ -106,7 +106,7 @@ def mc_estimate(hist, num_mc_samples, sample_len, model, excluded_terms, proposa
         remaining_samples -= batch_size
         term_log_prob = sample_out["next_log_dist"] + sample_out["model_log_prob"] - sample_out["proposal_log_prob"]
         dist_estimate = (term_log_prob.cpu() if dist_estimate is None
-                         else torch.cat((dist_estimate,term_log_prob.exp()), dim=0).cpu())
+                         else torch.cat((dist_estimate,term_log_prob.exp().cpu()), dim=0))
 
     return dist_estimate
 
@@ -229,13 +229,15 @@ def sample(
         else:
             output['sample_estimates'] += data_list
 
+    print("DONE")
     if "beam_search" in args.estimate_type.__name__:
         _consolidate_output("num_beams")
         _consolidate_output("true_coverage")
         _consolidate_output("restricted_coverage")
         _consolidate_output("dist_lower_bound")
     else:
-        _consolidate_output("sample_estimates")
+        output['sample_estimates'] =torch.stack(output['sample_estimates'],
+                                                dim=0)
 
     args.model = None
     output['metadata'] = vars(args)

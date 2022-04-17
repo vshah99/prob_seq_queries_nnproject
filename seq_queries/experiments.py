@@ -73,7 +73,8 @@ def sample_dynamic_target_token(
             args.excluded_tokens = [dbatch[i,args.total_seq_len].cpu().item()]
             kwargs = vars(args)
             # print(''.join([args.text_dict['id_to_char'][s] for s in sample.tolist()]))
-            data_list.append(args.estimate_type(sample,**kwargs))
+            sample_output =args.estimate_type(sample,**kwargs)
+            data_list.append(args.estimate_type(sample,**kwargs)[:,args.excluded_tokens[0]].flatten())
 
 
         print("",flush=True)
@@ -91,8 +92,8 @@ def sample_dynamic_target_token(
         _consolidate_output("restricted_coverage")
         _consolidate_output("dist_lower_bound")
     else:
-        _consolidate_output("sample_estimates")
-
+        output['sample_estimates'] =torch.stack(output['sample_estimates'],
+                                                dim=0)
     args.model = None
     output['metadata'] = vars(args)
     return output

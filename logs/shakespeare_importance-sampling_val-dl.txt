@@ -45,4 +45,4 @@
 [2022-04-16 17:05:22.423128] Loaded model from models/shakespeare/shakespeare_model.pt
 Hist length 25 | Total Seq Length 30 | Num samples: 100000 | Sample type: importance
 
-.
+..............................................................................................
