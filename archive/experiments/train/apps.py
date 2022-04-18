@@ -40,7 +40,7 @@ def get_optimizer(model, args):
 
     return optimizer
 
-def train(args,train_dataloader, val_dataloader):
+def train(args,train_dataloader, valid_dataloader):
     print_log("Setting up model, optimizer, and learning rate scheduler.")
     model, optimizer, lr_scheduler = setup_model_and_optim(args, len(train_dataloader))
 

@@ -8,6 +8,7 @@ val_data_pct: 0.05
 seq_len: 15
 do_test: false
 do_test: true
+valid_epochs: 1
 
 # Model args
 rnn_type: LSTM
