@@ -28,7 +28,6 @@ disable_tqdm: true
 
 # Sampling args
 estimate_type: search
-# Bug here where if you increase this somehow the overall coverage goes down
 proposal_func: lm
 interp_func: linear
 top_k: 0

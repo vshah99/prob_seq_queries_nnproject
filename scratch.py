@@ -87,6 +87,7 @@ if __name__ == "__main__":
         estimates = sample_dynamic_target_token(args, val_dl, model)
         os.makedirs(f"data/beam_search/shakespeare/",exist_ok=True)
         write_pkl(estimates,f"data/beam_search/shakespeare/val-dl_beam-search_{args.hist_len}h_{args.total_seq_len}s_{args.num_beams}c_exc-dynamic.pkl")
+        estimates = None
         print("====="*10)
 
     # output = sample_token_centric(args, val_dl, model)
