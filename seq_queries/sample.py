@@ -89,7 +89,7 @@ def mc_estimate(hist, num_mc_samples, sample_len, model, excluded_terms, proposa
                 vocab_size, batch_size=128,temperature=1, top_k=0, top_p=0.0, device='cpu',
                 sub_estimates=None,**kwargs):
     assert(len(hist.shape) == 1)  # (hist_seq_len), Only conditions on a single history
-    dist_estimate = None
+    dist_estimate = []
     remaining_samples = num_mc_samples
     while remaining_samples > 0:
         sample_out = proposal_func(
@@ -106,9 +106,9 @@ def mc_estimate(hist, num_mc_samples, sample_len, model, excluded_terms, proposa
         )
         remaining_samples -= batch_size
         term_log_prob = sample_out["next_log_dist"] + sample_out["model_log_prob"] - sample_out["proposal_log_prob"]
-        dist_estimate = (term_log_prob.exp().cpu() if dist_estimate is None
-                         else torch.cat((dist_estimate,term_log_prob.exp().cpu()), dim=0))
+        dist_estimate.append(term_log_prob.exp().cpu())
 
+    dist_estimate = torch.cat(dist_estimate,dim=0)
     if sub_estimates is not None and len(sub_estimates) > 0:
         # (samples x vocab) -> (sub-estimates x vocab)
         dist_estimate = torch.stack(
