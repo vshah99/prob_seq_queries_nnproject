@@ -55,21 +55,20 @@ if __name__ == "__main__":
         # (28,0.10),
         # (25,0.99),
         # (24,0.99),
-        (23,0.95),
-        (22,0.95),
-        (21,0.90),
-        (20,0.90),
+        # (23,0.95),
+        # (22,0.95),
+        # (21,0.90),
+        (20,0.80),
+        (15,0.65),
+        (17,0.75),
     ]
-    # 20 steps -> max of 1million beams
-    estimates = sample_dynamic_target_token(args, val_dl, model)
-    sys.exit(1)
 
     # for exp in sample_experiments:
     #     args.hist_len = exp
     #     print("Hist length {} | Total Seq Length {} | Num samples: {} | Sample type: random".format(args.hist_len,args.total_seq_len, args.num_mc_samples))
     #     estimates = sample_dynamic_target_token(args, val_dl, model)
     #     os.makedirs(f"data/random_sampling/shakespeare/",exist_ok=True)
-    #     write_pkl(estimates,f"data/random_sampling/shakespeare/val-dl_random-sampling_{args.hist_len}h_{args.total_seq_len}s_{args.num_beams}c_exc-dynamic.pkl")
+    #     write_pkl(estimates,f"data/random_sampling/shakespeare/val-dl_random-sampling_{args.hist_len}h_{args.total_seq_len}s_exc-dynamic.pkl")
     #     print("====="*10)
 
     # args.proposal_func = lm_proposal
@@ -78,17 +77,17 @@ if __name__ == "__main__":
     #     print("Hist length {} | Total Seq Length {} | Num samples: {} | Sample type: importance".format(args.hist_len,args.total_seq_len, args.num_mc_samples))
     #     estimates = sample_dynamic_target_token(args, val_dl, model)
     #     os.makedirs(f"data/importance_sampling/shakespeare/",exist_ok=True)
-    #     write_pkl(estimates,f"data/importance_sampling/shakespeare/val-dl_importance-sampling_{args.hist_len}h_{args.total_seq_len}s_{args.num_beams}c_exc-dynamic.pkl")
+    #     write_pkl(estimates,f"data/importance_sampling/shakespeare/val-dl_importance-sampling_{args.hist_len}h_{args.total_seq_len}s_exc-dynamic.pkl")
     #     print("====="*10)
 
 
-    # for exp in lb_experiments:
-    #     args.hist_len, args.num_beams = exp
-    #     print("Hist length {} | Total Seq Length {} | Coverage: {}".format(args.hist_len,args.total_seq_len, args.num_beams))
-    #     estimates = sample_dynamic_target_token(args, val_dl, model)
-    #     os.makedirs(f"data/beam_search/shakespeare/",exist_ok=True)
-    #     write_pkl(estimates,f"data/beam_search/shakespeare/val-dl_beam-search_{args.hist_len}h_{args.total_seq_len}s_{args.num_beams}c_exc-dynamic.pkl")
-    #     print("====="*10)
+    for exp in lb_experiments:
+        args.hist_len, args.num_beams = exp
+        print("Hist length {} | Total Seq Length {} | Coverage: {}".format(args.hist_len,args.total_seq_len, args.num_beams))
+        estimates = sample_dynamic_target_token(args, val_dl, model)
+        os.makedirs(f"data/beam_search/shakespeare/",exist_ok=True)
+        write_pkl(estimates,f"data/beam_search/shakespeare/val-dl_beam-search_{args.hist_len}h_{args.total_seq_len}s_{args.num_beams}c_exc-dynamic.pkl")
+        print("====="*10)
 
     # output = sample_token_centric(args, val_dl, model)
     # output = sample(args,val_dl, model)

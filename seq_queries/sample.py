@@ -174,9 +174,9 @@ def beam_search_lower_bound(hist, num_beams, sample_len, model, excluded_terms, 
                                           max_batch_size=batch_size)
     next_log_probs = cur_log_probs.unsqueeze(-1) + torch.log_softmax(logits, dim=-1)
     return {
-        "dist_lower_bound": next_log_probs.exp().sum(dim=0),
-        "true_coverage": cur_log_probs.exp().sum(),
-        "restricted_coverage": cur_restricted_log_probs.exp().sum(),
+        "dist_lower_bound": next_log_probs.exp().sum(dim=0).cpu(),
+        "true_coverage": cur_log_probs.exp().sum().cpu(),
+        "restricted_coverage": cur_restricted_log_probs.exp().sum().cpu(),
         "num_beams": num_beams_over_time,
     }
 

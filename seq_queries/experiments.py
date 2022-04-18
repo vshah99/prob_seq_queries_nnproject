@@ -74,7 +74,8 @@ def sample_dynamic_target_token(
             kwargs = vars(args)
             # print(''.join([args.text_dict['id_to_char'][s] for s in sample.tolist()]))
             sample_output =args.estimate_type(sample,**kwargs)
-            data_list.append(args.estimate_type(sample,**kwargs)[:,args.excluded_tokens[0]].flatten())
+            data_list.append(sample_output)
+            # data_list.append(args.estimate_type(sample,**kwargs)[:,args.excluded_tokens[0]].flatten())
 
 
         print("",flush=True)
