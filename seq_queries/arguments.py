@@ -102,6 +102,7 @@ def general_args(parser):
     group.add_argument("--val_data_pct", type=float, default=0.05, help="Percent of data used for validation.")
     group.add_argument("--seq_len", type=int, default=100, help="Length of sequences of tokens to process.")
     group.add_argument("--do_test",type=_str2bool, default=True, help="Perform evaluation on testing set.")
+    group.add_argument("--do_valid",type=_str2bool, default=True, help="Perform evaluation on valid set.")
 
 def model_config_args(parser):
     group = parser.add_argument_group("Model configuration arguments.")
@@ -141,6 +142,7 @@ def sampling_args(parser):
     group.add_argument("--proposal_func",  type=_str2proposal,default="uniform", help="Get proposal distribution for sampling")
     group.add_argument("--interp_func",  type=_str2interp_func,default="linear", help="Get inpterpolation function for search coverage")
     group.add_argument("--excluded_terms", type=_str2list, default=[], help="List of excluded terms")
+    group.add_argument("--sub_estimates", type=_str2list, default=[], help="Sub-estimates (to track noise), all must be <= num_samples")
     group.add_argument("--top_k", type=int, default=1, help="Top k beams/samples to take")
     group.add_argument("--top_p", type=_int_or_float, default=1, help="Top p coverage to take")
     group.add_argument("--num_beams", type=_int_or_float, default=10, help="Beam coverage (or number)")

@@ -18,7 +18,7 @@ import torch
 import torch.nn as nn
 
 from tqdm import tqdm
-from .data import load_text, process_data
+# from .data import load_text, process_data
 from .model import CausalLM, MaskedLM
 from .arguments import get_args
 from .sample import *
@@ -28,77 +28,78 @@ from .sample import *
 #################################################################################
 
 
-def sample_dynamic_experiment(
+
+@torch.no_grad()
+def sample_dynamic_target_token(
     args,
     dataloader,
-    model =None,
-    **kwargs):
-    """Get a set of ground truth sequences for data
+    model = None,
+    **kwargs,):
+    """Sample from any of these methods given an
+    input dataloader, arguments, and potentially a model
 
-    :args: TODO
     :dataloader: TODO
+    :args: TODO
     :model: TODO
-    :**kwargs: TODO
+    :: TODO
     :returns: TODO
 
     """
-    roster = {
-        "beam_search": sample_beam_search,
-        "mc_random": (mc_sample_random_batch if
-        args.sample_args['coverage_type'] == "fixed_width"
-                      else mc_sample_random_list),
-        "mc_importance": mc_sample_importance,
-    };
-    evaluation_roster = {
-        "beam_search": evaluate_beam_search_lbs,
-        "mc_random": evaluate_sample_probs,
-        "mc_importance":evaluate_sample_probs,
-    }; evaluator = evaluation_roster[args.sample_type]
-    sampler = roster[args.sample_type]
-    args.model = model;
-    output = {"settings":vars(args)}
+    args.model = model; print();
+    output = {"sample_estimates":[]}
 
-    all_seqs = []; all_probs = []; all_beams = []; all_covs = []; all_sample_probs = []
-    assert len(args.excluded) == 1,"Must only have one excluded token"
-    excluded_token = args.excluded[0]
-    args.seq_lens=args.total_seq_lens - args.hist_len
-    # args.beam_widths = (model.vocab_size - 1)**(args.seq_lens)
-    args.vocab_size = model.vocab_size
-    print("Getting samples from batch")
-    estimates = []
-    for dbatch in tqdm(dataloader):
-        batched = False
-        # Get ground truth sequences for all items
-        # and make excluded token the actual token
-        data_batch = dbatch[:,:args.hist_len].cpu()
-        excluded = dbatch[:,args.total_seq_lens].cpu()
+    def _tensor_output(key, data,output=output):
+        if key not in output: output[key] = []
+        output[key].append(torch.Tensor([db[key] for db in data]))
 
-        for i in tqdm(range(dbatch.shape[0]),disable=True):
-            data_sample = data_batch[i,:].reshape(1,-1)
-            args.excluded = [excluded[i].item()]
+    def _stack_output(key, data,output=output):
+        if key not in output: output[key] = []
+        output[key].append(torch.stack([
+            torch.Tensor(db[key]) for db in data]))
+
+    def _consolidate_output(key,output=output):
+        output[key] = torch.cat(output[key])
+
+    for dbatch in tqdm(dataloader, disable=args.disable_tqdm):
+        data_list = []
+        data_batch =[dbatch[i,:args.hist_len] for i in range(dbatch.shape[0])]
+
+        for i in range(dbatch.shape[0]):
+            # print(i)
+            if i%10 == 0 and args.disable_tqdm:
+                print(".",end="",flush=True)
+            sample = data_batch[i]
+            args.sample_len = args.total_seq_len - args.hist_len
+            args.excluded_tokens = [dbatch[i,args.total_seq_len].cpu().item()]
             kwargs = vars(args)
-            # Tensor, tensor, tuple(Optional[tensor])
-            seqs, probs, beams_covs = sampler(data_sample,**kwargs)
-            sample_probs = None
-            if isinstance(probs,tuple):
-                probs, sample_probs = probs
+            # print(''.join([args.text_dict['id_to_char'][s] for s in sample.tolist()]))
+            sample_output =args.estimate_type(sample,**kwargs)
+            # print(sample_output['dist_lower_bound'].shape)
+            data_list.append(sample_output)
+            # data_list.append(args.estimate_type(sample,**kwargs)[:,args.excluded_tokens[0]].flatten())
 
-            estimates_or_lbs = evaluator(model,
-                                        [torch.squeeze(seqs[0])],
-                                        args.seq_lens,
-                                        prob_lists=probs,
-                                        sample_prob_lists=sample_probs,
-                                        eval_type=args.sample_type,
-                                        device=args.device,
-                                        excluded=args.excluded,
-                                        disable_tqdm=args.disable_tqdm,
-                                        )
-            estimates.append(estimates_or_lbs[0][0])
-            if i%10 == 0:
-                print(".",end="", flush=True)
-                # break
-        # break
-    return torch.stack(estimates,dim=0).numpy()
+
+        print("",flush=True)
+        if "beam_search" in args.estimate_type.__name__:
+            _stack_output('num_beams',data_list)
+            _stack_output('dist_lower_bound',data_list)
+            _tensor_output('true_coverage',data_list)
+            _tensor_output('restricted_coverage',data_list)
+        else:
+            output['sample_estimates'] += data_list
+
+    if "beam_search" in args.estimate_type.__name__:
+        _consolidate_output("num_beams")
+        _consolidate_output("true_coverage")
+        _consolidate_output("restricted_coverage")
+        _consolidate_output("dist_lower_bound")
+    else:
+        output['sample_estimates'] =torch.stack(output['sample_estimates'],
+                                                dim=0)
+    args.model = None
+    output['metadata'] = vars(args)
+    return output
+
 
 
 def sample_token_centric(

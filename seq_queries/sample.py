@@ -21,7 +21,7 @@ import torch
 import torch.nn as nn
 
 from tqdm import tqdm
-from .data import load_text, process_data
+# from .data import load_text, process_data
 from .model import CausalLM, MaskedLM
 from .utils import top_k_top_p_filtering
 
@@ -86,9 +86,10 @@ def lm_proposal(hists, sample_len, model, vocab_size, excluded_terms,
 
 @torch.no_grad()
 def mc_estimate(hist, num_mc_samples, sample_len, model, excluded_terms, proposal_func,
-                vocab_size, batch_size=128,temperature=1, top_k=None, top_p=None, device='cpu',**kwargs):
+                vocab_size, batch_size=128,temperature=1, top_k=0, top_p=0.0, device='cpu',
+                sub_estimates=None,**kwargs):
     assert(len(hist.shape) == 1)  # (hist_seq_len), Only conditions on a single history
-    dist_estimate = 0
+    dist_estimate = None
     remaining_samples = num_mc_samples
     while remaining_samples > 0:
         sample_out = proposal_func(
@@ -105,7 +106,16 @@ def mc_estimate(hist, num_mc_samples, sample_len, model, excluded_terms, proposa
         )
         remaining_samples -= batch_size
         term_log_prob = sample_out["next_log_dist"] + sample_out["model_log_prob"] - sample_out["proposal_log_prob"]
-        dist_estimate += term_log_prob.exp().sum(dim=0) / num_mc_samples
+        dist_estimate = (term_log_prob.exp().cpu() if dist_estimate is None
+                         else torch.cat((dist_estimate,term_log_prob.exp().cpu()), dim=0))
+
+    if sub_estimates is not None and len(sub_estimates) > 0:
+        # (samples x vocab) -> (sub-estimates x vocab)
+        dist_estimate = torch.stack(
+            # (vocab)
+            [dist_estimate[:s, :].mean(dim=0).flatten()
+             for s in sorted(sub_estimates)
+        ])
 
     return dist_estimate
 
@@ -157,15 +167,16 @@ def beam_search_lower_bound(hist, num_beams, sample_len, model, excluded_terms, 
         else:
             rnn_args = rnn_args[..., seq_inds, :]
 
+        # print(n_cur, cur_log_probs.shape[0])
         num_beams_over_time.append(cur_log_probs.shape[0])
 
     logits, states = model.get_next_probs(beams, rnn_args=rnn_args, device=device, return_logits=True,
                                           max_batch_size=batch_size)
     next_log_probs = cur_log_probs.unsqueeze(-1) + torch.log_softmax(logits, dim=-1)
     return {
-        "dist_lower_bound": next_log_probs.exp().sum(dim=0),
-        "true_coverage": cur_log_probs.exp().sum(),
-        "restricted_coverage": cur_restricted_log_probs.exp().sum(),
+        "dist_lower_bound": next_log_probs.exp().sum(dim=0).cpu(),
+        "true_coverage": cur_log_probs.exp().sum().cpu(),
+        "restricted_coverage": cur_restricted_log_probs.exp().sum().cpu(),
         "num_beams": num_beams_over_time,
     }
 
@@ -180,8 +191,7 @@ def sample(
     args,
     dataloader,
     model = None,
-    **kwargs,
-):
+    **kwargs,):
     """Sample from any of these methods given an
     input dataloader, arguments, and potentially a model
 
@@ -235,7 +245,8 @@ def sample(
         _consolidate_output("restricted_coverage")
         _consolidate_output("dist_lower_bound")
     else:
-        _consolidate_output("sample_estimates")
+        output['sample_estimates'] =torch.stack(output['sample_estimates'],
+                                                dim=0)
 
     args.model = None
     output['metadata'] = vars(args)
