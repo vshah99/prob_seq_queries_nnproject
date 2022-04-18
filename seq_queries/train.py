@@ -12,16 +12,17 @@ from tqdm import tqdm
 from seq_queries.optim import get_optimizer, get_lr_scheduler
 from seq_queries.utils import print_log
 from seq_queries.model import get_model
-from seq_queries.data import load_text, process_data
+# from seq_queries.data import load_text, process_data
 from seq_queries.arguments import get_args
 
 
 def forward_pass(args, batch, model):
     if args.cuda:
-        batch = {k:v.to(args.device) for k,v in batch.items()}
+        batch = batch.cuda()
+        # batch = {k:v.to(args.device) for k,v in batch.items()}
 
     # Forward Pass
-    return model.graded_forward(**batch)
+    return model.graded_forward(batch)
 
 def backward_pass(args, loss, model, optimizer, lr_scheduler):
     optimizer.zero_grad()
@@ -31,7 +32,7 @@ def backward_pass(args, loss, model, optimizer, lr_scheduler):
     lr_scheduler.step()
 
 def train_step(args, model, optimizer, lr_scheduler, batch):
-    loss_results, forward_results = forward_pass(args, batch, model)
+    loss_results = forward_pass(args, batch, model)
     backward_pass(args, loss_results["loss"], model, optimizer, lr_scheduler)
 
     return loss_results

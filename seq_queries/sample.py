@@ -21,7 +21,7 @@ import torch
 import torch.nn as nn
 
 from tqdm import tqdm
-from .data import load_text, process_data
+# from .data import load_text, process_data
 from .model import CausalLM, MaskedLM
 from .utils import top_k_top_p_filtering
 
@@ -86,7 +86,7 @@ def lm_proposal(hists, sample_len, model, vocab_size, excluded_terms,
 
 @torch.no_grad()
 def mc_estimate(hist, num_mc_samples, sample_len, model, excluded_terms, proposal_func,
-                vocab_size, batch_size=128,temperature=1, top_k=None, top_p=None, device='cpu',
+                vocab_size, batch_size=128,temperature=1, top_k=0, top_p=0.0, device='cpu',
                 sub_estimates=None,**kwargs):
     assert(len(hist.shape) == 1)  # (hist_seq_len), Only conditions on a single history
     dist_estimate = None
@@ -106,7 +106,7 @@ def mc_estimate(hist, num_mc_samples, sample_len, model, excluded_terms, proposa
         )
         remaining_samples -= batch_size
         term_log_prob = sample_out["next_log_dist"] + sample_out["model_log_prob"] - sample_out["proposal_log_prob"]
-        dist_estimate = (term_log_prob.cpu() if dist_estimate is None
+        dist_estimate = (term_log_prob.exp().cpu() if dist_estimate is None
                          else torch.cat((dist_estimate,term_log_prob.exp().cpu()), dim=0))
 
     if sub_estimates is not None and len(sub_estimates) > 0:
@@ -167,7 +167,7 @@ def beam_search_lower_bound(hist, num_beams, sample_len, model, excluded_terms, 
         else:
             rnn_args = rnn_args[..., seq_inds, :]
 
-        print(n_cur, cur_log_probs.shape[0])
+        # print(n_cur, cur_log_probs.shape[0])
         num_beams_over_time.append(cur_log_probs.shape[0])
 
     logits, states = model.get_next_probs(beams, rnn_args=rnn_args, device=device, return_logits=True,

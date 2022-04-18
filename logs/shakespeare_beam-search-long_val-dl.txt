@@ -1,149 +1,69 @@
-[2022-04-18 09:15:31.419150] batch_size ........ 2048
-[2022-04-18 09:15:31.419183] checkpoint_path ... models/shakespeare/
-[2022-04-18 09:15:31.419193] cuda .............. True
-[2022-04-18 09:15:31.419199] data_path ......... data/shakespeare_input.txt
-[2022-04-18 09:15:31.419206] device_num ........ 7
-[2022-04-18 09:15:31.419212] disable_tqdm ...... True
-[2022-04-18 09:15:31.419219] do_test ........... False
-[2022-04-18 09:15:31.419225] dont_print_args ... False
-[2022-04-18 09:15:31.419232] dont_shuffle ...... None
-[2022-04-18 09:15:31.419242] dropout ........... 0.3
-[2022-04-18 09:15:31.419251] estimate_type ..... <function beam_search_lower_bound at 0x7ff1aad43940>
-[2022-04-18 09:15:31.419260] excluded_terms .... [1]
-[2022-04-18 09:15:31.419267] finetune .......... True
-[2022-04-18 09:15:31.419274] grad_clip ......... 1.0
-[2022-04-18 09:15:31.419281] hidden_size ....... 128
-[2022-04-18 09:15:31.419287] hist_len .......... 20
-[2022-04-18 09:15:31.419295] interp_func ....... <function lin_interp at 0x7ff1aad43820>
-[2022-04-18 09:15:31.419301] log_interval ...... 100
-[2022-04-18 09:15:31.419309] lr ................ 0.001
-[2022-04-18 09:15:31.419316] lr_decay_style .... constant
-[2022-04-18 09:15:31.419322] masked_lm ......... False
-[2022-04-18 09:15:31.419330] num_beams ......... 0.8
-[2022-04-18 09:15:31.419336] num_layers ........ 2
-[2022-04-18 09:15:31.419343] num_mc_samples .... 10000
-[2022-04-18 09:15:31.419349] num_workers ....... 0
-[2022-04-18 09:15:31.419355] optimizer ......... adam
-[2022-04-18 09:15:31.419362] proposal_func ..... <function lm_proposal at 0x7ff1aad435e0>
-[2022-04-18 09:15:31.419368] rnn_type .......... LSTM
-[2022-04-18 09:15:31.419375] save_epochs ....... 1
-[2022-04-18 09:15:31.419381] seed .............. 1234321
-[2022-04-18 09:15:31.419387] seq_len ........... 100
-[2022-04-18 09:15:31.419393] shuffle ........... True
-[2022-04-18 09:15:31.419400] sub_estimates ..... []
-[2022-04-18 09:15:31.419407] top_k ............. 0
-[2022-04-18 09:15:31.419413] top_p ............. 0
-[2022-04-18 09:15:31.419419] total_seq_len ..... 30
-[2022-04-18 09:15:31.419426] train_data_pct .... 0.9
-[2022-04-18 09:15:31.419432] train_epochs ...... 40
-[2022-04-18 09:15:31.419439] val_data_pct ...... 0.05
-[2022-04-18 09:15:31.419446] vocab_size ........ 68
-[2022-04-18 09:15:31.419453] warmup_pct ........ 0.01
-[2022-04-18 09:15:31.419460] weight_decay ...... 0.0
+[2022-04-18 09:45:11.185905] batch_size ........ 2048
+[2022-04-18 09:45:11.185926] checkpoint_path ... models/shakespeare/
+[2022-04-18 09:45:11.185931] cuda .............. True
+[2022-04-18 09:45:11.185935] data_path ......... data/shakespeare_input.txt
+[2022-04-18 09:45:11.185938] device_num ........ 7
+[2022-04-18 09:45:11.185942] disable_tqdm ...... True
+[2022-04-18 09:45:11.185945] do_test ........... False
+[2022-04-18 09:45:11.185948] dont_print_args ... False
+[2022-04-18 09:45:11.185952] dont_shuffle ...... None
+[2022-04-18 09:45:11.185957] dropout ........... 0.3
+[2022-04-18 09:45:11.185961] estimate_type ..... <function beam_search_lower_bound at 0x7fad97ad3940>
+[2022-04-18 09:45:11.185966] excluded_terms .... [1]
+[2022-04-18 09:45:11.185969] finetune .......... True
+[2022-04-18 09:45:11.185973] grad_clip ......... 1.0
+[2022-04-18 09:45:11.185976] hidden_size ....... 128
+[2022-04-18 09:45:11.185980] hist_len .......... 20
+[2022-04-18 09:45:11.185984] interp_func ....... <function lin_interp at 0x7fad97ad3820>
+[2022-04-18 09:45:11.185987] log_interval ...... 100
+[2022-04-18 09:45:11.185991] lr ................ 0.001
+[2022-04-18 09:45:11.185995] lr_decay_style .... constant
+[2022-04-18 09:45:11.185998] masked_lm ......... False
+[2022-04-18 09:45:11.186002] num_beams ......... 0.8
+[2022-04-18 09:45:11.186005] num_layers ........ 2
+[2022-04-18 09:45:11.186009] num_mc_samples .... 10000
+[2022-04-18 09:45:11.186012] num_workers ....... 0
+[2022-04-18 09:45:11.186015] optimizer ......... adam
+[2022-04-18 09:45:11.186019] proposal_func ..... <function lm_proposal at 0x7fad97ad35e0>
+[2022-04-18 09:45:11.186022] rnn_type .......... LSTM
+[2022-04-18 09:45:11.186025] save_epochs ....... 1
+[2022-04-18 09:45:11.186028] seed .............. 1234321
+[2022-04-18 09:45:11.186032] seq_len ........... 100
+[2022-04-18 09:45:11.186035] shuffle ........... True
+[2022-04-18 09:45:11.186039] sub_estimates ..... []
+[2022-04-18 09:45:11.186042] top_k ............. 0
+[2022-04-18 09:45:11.186045] top_p ............. 0
+[2022-04-18 09:45:11.186048] total_seq_len ..... 30
+[2022-04-18 09:45:11.186052] train_data_pct .... 0.9
+[2022-04-18 09:45:11.186055] train_epochs ...... 40
+[2022-04-18 09:45:11.186059] val_data_pct ...... 0.05
+[2022-04-18 09:45:11.186062] vocab_size ........ 68
+[2022-04-18 09:45:11.186066] warmup_pct ........ 0.01
+[2022-04-18 09:45:11.186069] weight_decay ...... 0.0
 ==================================================
 {'\n': 0, ' ': 1, '!': 2, '$': 3, '&': 4, "'": 5, ',': 6, '-': 7, '.': 8, '3': 9, ':': 10, ';': 11, '<BOS>': 12, '?': 13, 'A': 14, 'B': 15, 'C': 16, 'D': 17, 'E': 18, 'F': 19, 'G': 20, 'H': 21, 'I': 22, 'J': 23, 'K': 24, 'L': 25, 'M': 26, 'N': 27, 'O': 28, 'P': 29, 'Q': 30, 'R': 31, 'S': 32, 'T': 33, 'U': 34, 'V': 35, 'W': 36, 'X': 37, 'Y': 38, 'Z': 39, '[': 40, ']': 41, 'a': 42, 'b': 43, 'c': 44, 'd': 45, 'e': 46, 'f': 47, 'g': 48, 'h': 49, 'i': 50, 'j': 51, 'k': 52, 'l': 53, 'm': 54, 'n': 55, 'o': 56, 'p': 57, 'q': 58, 'r': 59, 's': 60, 't': 61, 'u': 62, 'v': 63, 'w': 64, 'x': 65, 'y': 66, 'z': 67}
-[2022-04-18 09:15:38.004950] Checkpoint path [models/shakespeare/] does exist.
-[2022-04-18 09:15:38.015530] Loaded model from models/shakespeare/shakespeare_model.pt
-Hist length 20 | Total Seq Length 30 | Coverage: 0.8
+[2022-04-18 09:45:14.325738] Checkpoint path [models/shakespeare/] does exist.
+[2022-04-18 09:45:14.328606] Loaded model from models/shakespeare/shakespeare_model.pt
+Hist length 20 | Total Seq Length 30 | Coverage: 0.6
 
-.0 14
-1 63
-2 312
-3 1553
-4 6678
-5 25509
-6 85038
-7 264982
-8 796428
-9 2339007
-0 7
-1 78
-2 416
-3 1845
-4 7801
-5 31816
-6 117734
-7 401749
-8 1248591
-9 3647079
-0 9
-1 44
-2 296
-3 1473
-4 6344
-5 21840
-6 70384
-7 220602
-8 689595
-9 2096343
-0 22
-1 119
-2 802
-3 3359
-4 14956
-5 61446
-6 253400
-7 995755
-8 3717778
-9 13114342
-0 8
-1 23
-2 96
-3 260
-4 1022
-5 4784
-6 20219
-7 80693
-8 305879
-9 1140312
-0 24
-1 128
-2 933
-3 4327
-4 20335
-5 87852
-6 368437
-7 1475179
-8 5555340
-9 19861349
-0 3
-1 3
-2 11
-3 40
-4 247
-5 1134
-6 5295
-7 17771
-8 57525
-9 173338
-0 14
-1 55
-2 109
-3 140
-4 226
-5 397
-6 667
-7 1250
-8 4026
-9 13171
-0 8
-1 15
-2 39
-3 106
-4 454
-5 1945
-6 7918
-7 28300
-8 94388
-9 303007
-0 1
-1 1
-2 1
-3 1
-4 1
-5 15
-6 77
-7 468
-8 1653
-9 6623
-.
+.............................................................................................................................................................................................................
+........................
+==================================================
+Hist length 15 | Total Seq Length 30 | Coverage: 0.5
+
+.Traceback (most recent call last):
+  File "/home/showalte/.conda/envs/nlpenv/lib/python3.8/runpy.py", line 194, in _run_module_as_main
+    return _run_code(code, main_globals, None,
+  File "/home/showalte/.conda/envs/nlpenv/lib/python3.8/runpy.py", line 87, in _run_code
+    exec(code, run_globals)
+  File "/home/showalte/research/prob_seq_queries/scratch.py", line 87, in <module>
+    estimates = sample_dynamic_target_token(args, val_dl, model)
+  File "/home/showalte/.conda/envs/nlpenv/lib/python3.8/site-packages/torch/autograd/grad_mode.py", line 27, in decorate_context
+    return func(*args, **kwargs)
+  File "/home/showalte/research/prob_seq_queries/seq_queries/experiments.py", line 76, in sample_dynamic_target_token
+    sample_output =args.estimate_type(sample,**kwargs)
+  File "/home/showalte/.conda/envs/nlpenv/lib/python3.8/site-packages/torch/autograd/grad_mode.py", line 27, in decorate_context
+    return func(*args, **kwargs)
+  File "/home/showalte/research/prob_seq_queries/seq_queries/sample.py", line 159, in beam_search_lower_bound
+    indices = torch.arange(0, next_log_probs.shape[0], device=beams.device)[next_log_probs != -float('inf')]
+RuntimeError: CUDA out of memory. Tried to allocate 9.73 GiB (GPU 7; 10.76 GiB total capacity; 477.74 MiB already allocated; 9.02 GiB free; 732.00 MiB reserved in total by PyTorch) If reserved memory is >> allocated memory try setting max_split_size_mb to avoid fragmentation.  See documentation for Memory Management and PYTORCH_CUDA_ALLOC_CONF

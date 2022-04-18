@@ -18,7 +18,7 @@ import torch
 import torch.nn as nn
 
 from tqdm import tqdm
-from .data import load_text, process_data
+# from .data import load_text, process_data
 from .model import CausalLM, MaskedLM
 from .arguments import get_args
 from .sample import *
@@ -74,6 +74,7 @@ def sample_dynamic_target_token(
             kwargs = vars(args)
             # print(''.join([args.text_dict['id_to_char'][s] for s in sample.tolist()]))
             sample_output =args.estimate_type(sample,**kwargs)
+            # print(sample_output['dist_lower_bound'].shape)
             data_list.append(sample_output)
             # data_list.append(args.estimate_type(sample,**kwargs)[:,args.excluded_tokens[0]].flatten())
 

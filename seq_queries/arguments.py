@@ -102,6 +102,7 @@ def general_args(parser):
     group.add_argument("--val_data_pct", type=float, default=0.05, help="Percent of data used for validation.")
     group.add_argument("--seq_len", type=int, default=100, help="Length of sequences of tokens to process.")
     group.add_argument("--do_test",type=_str2bool, default=True, help="Perform evaluation on testing set.")
+    group.add_argument("--do_valid",type=_str2bool, default=True, help="Perform evaluation on valid set.")
 
 def model_config_args(parser):
     group = parser.add_argument_group("Model configuration arguments.")

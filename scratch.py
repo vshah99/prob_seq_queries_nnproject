@@ -23,7 +23,7 @@ import torch
 
 from seq_queries.sample import sample
 from seq_queries.model import get_model
-from seq_queries.data import load_text, process_data
+from seq_queries.data import load_text, process_text_data, load_app_data, process_app_data
 from seq_queries.arguments import get_args
 from seq_queries.train import load_checkpoint
 from seq_queries.utils import write_pkl
@@ -37,10 +37,13 @@ from seq_queries.experiments import sample_token_centric, sample_dynamic_target_
 if __name__ == "__main__":
 
     args = get_args(manual_config="config/testing/sample.yaml")
-    text_dict= load_text(args.data_path)
+    # text_dict= load_text(args.data_path)
+    text_dict= load_app_data(args.data_path, seq_len=args.seq_len)
     args.text_dict = text_dict
     print(text_dict['char_to_id'])
-    train_dl, val_dl, test_dl = process_data(text_dict, args)
+    # train_dl, val_dl, test_dl = process_text_data(text_dict, args)
+    train_dl, val_dl, test_dl = process_app_data(text_dict, args)
+    sys.exit(1)
     model = get_model(args)
     if args.checkpoint_path:
         load_checkpoint(args, model)
@@ -58,9 +61,9 @@ if __name__ == "__main__":
         # (23,0.95),
         # (22,0.95),
         # (21,0.90),
-        (20,0.80),
-        (15,0.65),
-        (17,0.75),
+        (20,0.60),
+        (15,0.50),
+        (17,0.55),
     ]
 
     # for exp in sample_experiments:
@@ -81,14 +84,14 @@ if __name__ == "__main__":
     #     print("====="*10)
 
 
-    for exp in lb_experiments:
-        args.hist_len, args.num_beams = exp
-        print("Hist length {} | Total Seq Length {} | Coverage: {}".format(args.hist_len,args.total_seq_len, args.num_beams))
-        estimates = sample_dynamic_target_token(args, val_dl, model)
-        os.makedirs(f"data/beam_search/shakespeare/",exist_ok=True)
-        write_pkl(estimates,f"data/beam_search/shakespeare/val-dl_beam-search_{args.hist_len}h_{args.total_seq_len}s_{args.num_beams}c_exc-dynamic.pkl")
-        estimates = None
-        print("====="*10)
+    # for exp in lb_experiments:
+    #     args.hist_len, args.num_beams = exp
+    #     print("Hist length {} | Total Seq Length {} | Coverage: {}".format(args.hist_len,args.total_seq_len, args.num_beams))
+    #     estimates = sample_dynamic_target_token(args, val_dl, model)
+    #     os.makedirs(f"data/beam_search/shakespeare/",exist_ok=True)
+    #     write_pkl(estimates,f"data/beam_search/shakespeare/val-dl_beam-search_{args.hist_len}h_{args.total_seq_len}s_{args.num_beams}c_exc-dynamic.pkl")
+    #     estimates = None
+    #     print("====="*10)
 
     # output = sample_token_centric(args, val_dl, model)
     # output = sample(args,val_dl, model)
