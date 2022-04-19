@@ -5,7 +5,7 @@ cuda: true
 device_num: 0
 train_data_pct: 0.9
 val_data_pct: 0.05
-seq_len: 15
+seq_len: 100
 do_test: false
 do_test: true
 valid_epochs: 1
@@ -17,12 +17,12 @@ finetune: false
 dropout: 0.3
 num_layers: 2
 masked_lm: false
-checkpoint_path: /home/showalte/research/prob_seq_queries/models/apps
-vocab_size: 88
+checkpoint_path: /home/showalte/research/prob_seq_queries/models/shakespeare/
+vocab_size: 68
 
 # Data args
-# data_path: data/shakespeare_input.txt
-data_path: data/lsapp.tsv
+data_path: data/shakespeare_input.txt
+# data_path: data/lsapp.tsv
 batch_size: 2048
 
 # Training args not needed here
@@ -39,8 +39,8 @@ top_p: 0
 num_beams: 0.8
 num_mc_samples: 10000
 sub_estimates: []
-total_seq_len: 30
-hist_len: 20
+total_seq_len: 20
+hist_len: 18
 excluded_terms: [1]
 
 

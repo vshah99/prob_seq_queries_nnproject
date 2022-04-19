@@ -22,6 +22,7 @@ from tqdm import tqdm
 from .model import CausalLM, MaskedLM
 from .arguments import get_args
 from .sample import *
+from .tree import BeamSearchSampleTree
 
 #################################################################################
 #   Function-Class Declaration
@@ -73,7 +74,12 @@ def sample_dynamic_target_token(
             args.excluded_tokens = [dbatch[i,args.total_seq_len].cpu().item()]
             kwargs = vars(args)
             # print(''.join([args.text_dict['id_to_char'][s] for s in sample.tolist()]))
+            bs_tree = BeamSearchSampleTree(args.text_dict)
+            args.bs_tree = bs_tree
             sample_output =args.estimate_type(sample,**kwargs)
+            print(sample_output['tree'].depth_sizes)
+            bs_tree
+            sys.exit(1)
             # print(sample_output['dist_lower_bound'].shape)
             data_list.append(sample_output)
             # data_list.append(args.estimate_type(sample,**kwargs)[:,args.excluded_tokens[0]].flatten())

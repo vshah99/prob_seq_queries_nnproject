@@ -64,7 +64,7 @@ def prepare_mobile_app_data_by_user(
 #######################################################################
 
 
-def load_text(file_name):
+def load_text_data(file_name):
     with open(file_name, "r") as f:
         text = f.read().strip()
 

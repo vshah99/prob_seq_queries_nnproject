@@ -19,6 +19,8 @@ import torch
 import torch.nn as nn
 from collections import defaultdict
 
+from .utils import top_k_top_p_filtering, _tup_cpu, _hidden_state_select
+
 #################################################################################
 #   Function-Class Declaration
 #################################################################################
@@ -31,7 +33,9 @@ class BSNode(object):
         self,
         symbol,
         parent,
-        marginals,
+        log_q_conditionals,
+        log_p_conditionals,
+        hidden_state,
         depth,
     ):
         """TODO: to be defined.
@@ -41,9 +45,22 @@ class BSNode(object):
         """
         self.symbol = symbol
         self.parent = parent
-        self.marginals = marginals
         self.depth = depth
+        # Send in marginals, don't transform here
+        self.q_conditionals = log_q_conditionals.exp().cpu()
+        self.p_conditionals = log_p_conditionals.exp().cpu()
+        self.hidden_state = _tup_cpu(hidden_state)
         self.children = defaultdict(dict)
+        self.lineage = self._get_lineage()
+        self.total_mass = 1.0
+
+    def _get_lineage(self):
+        lineage = [self.symbol]
+        tracker = self.parent
+        while tracker is not None:
+            lineage.append(tracker.symbol)
+            tracker = tracker.parent
+        return reversed(lineage)
 
 class BeamSearchSampleTree(object):
 
@@ -65,134 +82,80 @@ class BeamSearchSampleTree(object):
         self.char_to_id = text_dict['char_to_id']
         self.vocab_size = len(self.char_to_id)
         self.BOS = self.char_to_id['<BOS>']
-        self.depth_sizes = [1]
-        self.depth_dict = defaultdict(dict)
-        self.rooted = False
+        self.depth_sizes = [0]
+        self.depth_dict = defaultdict(list)
 
     def add_root_node(
         self,
-        marginals,
+        log_q_conditionals,
+        log_p_conditionals,
+        hidden_state,
     ):
-        self.root = BSNode(self.BOS,None,marginals,depth=0)
+        self.root = BSNode(self.BOS,None,
+                           log_q_conditionals,
+                           log_p_conditionals,
+                           hidden_state,depth=0)
         self._add_depth(0,self.root)
+        return [self.root]
 
     def add_child_nodes(
-        self,
-        symbols,
-        parent_ids,
-        marginals,
-        depth,
+        self, symbols, parents,
+        log_q_conditionals,
+        log_p_conditionals,
+        hidden_states,
+        parent_ids,depth,
     ):
-        for s,pid,marg in zip(symbols,parent_ids,marginals):
-            self._add_child_node(s,pid,marg,depth)
+        #(beams x vocab)
+        new_parents = []
+        # Not right, should not be parents
+        assert torch.max(parent_ids) < len(parents),\
+            "Parent list of length {}, got index {}".format(len(parents),torch.max(parent_ids))
+        assert parent_ids.shape[0] == symbols.shape[0] == log_q_conditionals.shape[0] == log_p_conditionals.shape[0],\
+            "Parent ids were of shape {} but symbols were of shape {} and q was of shape {} and p was of shape {} and h_state was of shape {}"\
+            .format(parent_ids.shape,symbols.shape, log_q_conditionals.shape, log_p_conditionals.shape,hidden_states[0].shape)
+        for i in range(symbols.shape[0]):
+            s,pid,q,p,h = (symbols[i],parent_ids[i],log_q_conditionals[i],
+                            log_p_conditionals[i],_hidden_state_select(hidden_states,i))
+            new_parents.append(self._add_child_node(s.item(),parents[pid],q,p,h,depth))
+
+        return new_parents
 
     def _add_child_node(
-        self,
-        symbol,
-        parent_id,
-        marginals,
-        depth,
+        self, symbol, parent,
+        log_q_conditional,
+        log_p_conditional,
+        hidden_state, depth,
     ):
-        parent = self.depth_dict[depth-1][pid]
-        child_node = BSNode(symbol,parent,marginals,depth)
-
+        assert 0 <= symbol <= self.vocab_size,\
+            f"Invalid symbol: {symbol}, vocab size = {self.vocab_size}"
+        child_node = BSNode(symbol,parent,
+                            log_q_conditional,
+                            log_p_conditional,
+                            hidden_state,depth)
         parent.children[symbol] = child_node
-        self._add_depth(depth, node)
+        self._add_depth(depth, child_node)
+        return child_node
 
     def _add_depth(
         self,
         depth,
         node,
     ):
-        if len(self.depth_sizes) >= depth:
+        if len(self.depth_sizes) <= depth:
             self.depth_sizes.append(0)
-        self.depth_sizes += 1
-        self.depth_dict[depth][(node.parent.symbol, node.symbol)]=node
+        self.depth_sizes[depth] += 1
+        # Probably don't need this
+        self.depth_dict[depth].append(node)
 
-    def prune(
-        self,
-    ):
-        pass
-
-
-    @torch.no_grad()
-    def run_beam_search_lb(self,
-        hist, num_beams, sample_len, model, excluded_terms, interp_func,
-        batch_size, device, vocab_size, **kwargs):
-        assert(isinstance(num_beams, (int, float)))
-        assert(len(hist.shape) == 1)
-
-        beams, rnn_args = hist.unsqueeze(0), None  # beams only represents what needs to be processed by the model in the next step
-        sequences = None
-        cur_log_probs = torch.zeros((1,), dtype=torch.float32)  # (num of current beams,)
-        cur_restricted_log_probs = cur_log_probs.clone()  # sum of restricted probabilities
-        num_beams_over_time = []
-        for n_cur in range(sample_len):
-            logits, states = model.get_next_probs(beams, rnn_args=rnn_args, return_logits = True,
-                                                max_batch_size=batch_size,device=device)
-            next_log_probs = torch.log_softmax(logits, dim=-1)  # (num of current beams, vocab_size)
-            # We need this for each symbol, (tracked based on beams, could use sequence id)
-            next_log_probs[..., excluded_terms] = -float('inf')
-            next_restricted_log_probs = torch.log_softmax(next_log_probs, dim=-1)
-            if n_cur == 0: # Add root node
-                self.add_root_node(next_restricted_log_probs)
-            else:
-                self.add_child_nodes(symbols,curr_parents,
-                            next_restricted_log_probs,
-                            depth=n_cur)
-
-            next_log_probs = cur_log_probs.unsqueeze(-1) + next_log_probs
-            next_log_probs = next_log_probs.view(-1)
-            next_restricted_log_probs = cur_restricted_log_probs.unsqueeze(-1) + next_restricted_log_probs
-            next_restricted_log_probs = next_restricted_log_probs.view(-1)
-
-            if isinstance(num_beams, int):
-                next_restricted_log_probs = top_k_top_p_filtering(next_restricted_log_probs, top_k=num_beams, is_log_prob=True)
-            else:  # isinstance(num_beams, float)
-                num_beams_cur = interp_func(num_beams, n_cur, sample_len)
-                next_restricted_log_probs = top_k_top_p_filtering(next_restricted_log_probs, top_p=num_beams_cur, is_log_prob=True)
-
-            next_log_probs = next_log_probs.masked_fill(next_restricted_log_probs == -float('inf'), -float('inf'))
-            indices = torch.arange(0, next_log_probs.shape[0], device=beams.device)[next_log_probs != -float('inf')]
-            # Sequence indices we will need for next piece
-            seq_inds = torch.div(indices, vocab_size, rounding_mode='trunc')  # equivalent to: indices // args.vocab_size
-            # (beams x 1)
-            beams = (indices % vocab_size).unsqueeze(-1)
-            if sequences is None:
-                sequences = beams.clone()
-            else:
-                sequences =
-            cur_log_probs = next_log_probs[indices]
-            cur_restricted_log_probs = next_restricted_log_probs[indices]
-            rnn_args = states
-            if isinstance(rnn_args, tuple):
-                rnn_args = rnn_args[0][..., seq_inds, :], rnn_args[1][..., seq_inds, :]
-            else:
-                rnn_args = rnn_args[..., seq_inds, :]
-
-            # print(n_cur, cur_log_probs.shape[0])
-            num_beams_over_time.append(cur_log_probs.shape[0])
-
-        logits, states = model.get_next_probs(beams, rnn_args=rnn_args, device=device, return_logits=True,
-                                            max_batch_size=batch_size)
-        next_log_probs = cur_log_probs.unsqueeze(-1) + torch.log_softmax(logits, dim=-1)
-        return {
-            "dist_lower_bound": next_log_probs.exp().sum(dim=0).cpu(),
-            "true_coverage": cur_log_probs.exp().sum().cpu(),
-            "restricted_coverage": cur_restricted_log_probs.exp().sum().cpu(),
-            "num_beams": num_beams_over_time,
-        }
-
-
-#######################################################################
-# Sampling orchestration function
-#######################################################################
-
-
-
-#################################################################################
-#   Main Method
-#################################################################################
-
-
-
+#     def prune(self):
+#         """
+#         Prune back tree to only offer options in the
+#         correct partitioned support
+#         (and also restructure probabilities)
+#         """
+#         leaf_parent_depth = len(self.depth_sizes)-2
+#         leaf_parents = self.depth_dict[leaf_parent_depth]
+#         for lp in leaf_parents:
+#             self._respect_bs_support(lp)
+#         for i in reveraged(range(leaf_parent_depth)):
+#             self._adjust_marginal_probabilities_by_depth(i)
