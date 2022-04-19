@@ -142,6 +142,7 @@ def beam_search_lower_bound(hist, num_beams, sample_len, model, excluded_terms, 
         logits, states = model.get_next_probs(beams, rnn_args=rnn_args, return_logits = True,
                                               max_batch_size=batch_size,device=device)
         next_log_probs = torch.log_softmax(logits, dim=-1)  # (num of current beams, vocab_size)
+        # We need this for each symbol, (tracked based on beams, could use sequence id)
         next_log_probs[..., excluded_terms] = -float('inf')
         next_restricted_log_probs = torch.log_softmax(next_log_probs, dim=-1)
         next_log_probs = cur_log_probs.unsqueeze(-1) + next_log_probs
@@ -157,6 +158,7 @@ def beam_search_lower_bound(hist, num_beams, sample_len, model, excluded_terms, 
 
         next_log_probs = next_log_probs.masked_fill(next_restricted_log_probs == -float('inf'), -float('inf'))
         indices = torch.arange(0, next_log_probs.shape[0], device=beams.device)[next_log_probs != -float('inf')]
+        # Sequence indices we will need for next piece
         seq_inds = torch.div(indices, vocab_size, rounding_mode='trunc')  # equivalent to: indices // args.vocab_size
         beams = (indices % vocab_size).unsqueeze(-1)
         cur_log_probs = next_log_probs[indices]
