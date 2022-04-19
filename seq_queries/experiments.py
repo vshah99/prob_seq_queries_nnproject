@@ -74,17 +74,18 @@ def sample_dynamic_target_token(
             args.excluded_tokens = [dbatch[i,args.total_seq_len].cpu().item()]
             kwargs = vars(args)
             # print(''.join([args.text_dict['id_to_char'][s] for s in sample.tolist()]))
-            bs_tree = BeamSearchSampleTree(args.text_dict)
-            args.bs_tree = bs_tree
+            # bs_tree = BeamSearchSampleTree(args.text_dict)
+            # args.bs_tree = bs_tree
             sample_output =args.estimate_type(sample,**kwargs)
-            bs_tree = sample_output['tree']
-            print(bs_tree.depth_sizes)
-            print(bs_tree.depth_dict)
-            print()
-            bs_tree.prune()
-            print(bs_tree.depth_dict)
-            sys.exit(1)
-            # print(sample_output['dist_lower_bound'].shape)
+
+            # bs_tree = sample_output['tree']
+            # print(bs_tree.depth_sizes)
+            # print(bs_tree.depth_dict)
+            # print()
+            # bs_tree.prune()
+            # print(bs_tree.depth_dict)
+            # sys.exit(1)
+
             data_list.append(sample_output)
             # data_list.append(args.estimate_type(sample,**kwargs)[:,args.excluded_tokens[0]].flatten())
 
