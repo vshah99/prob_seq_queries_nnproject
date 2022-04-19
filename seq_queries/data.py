@@ -64,7 +64,7 @@ def prepare_mobile_app_data_by_user(
 #######################################################################
 
 
-def load_text(file_name):
+def load_text_data(file_name):
     with open(file_name, "r") as f:
         text = f.read().strip()
 
@@ -112,7 +112,6 @@ def process_app_data(text_dict, args): # batch_size, seq_len, dev=torch.device("
     split_pos = list(range(num_seqs))
     random.shuffle(split_pos)
     # split into training, validation, and test split tensors
-    print(ids.shape)
     train_ids = ids[split_pos[:int(num_seqs*tr_split)], :]
     valid_ids = ids[split_pos[int(num_seqs*tr_split):int(num_seqs*(tr_split+v_split))], :]
     test_ids = ids[split_pos[int(num_seqs*(tr_split+v_split)):], :]

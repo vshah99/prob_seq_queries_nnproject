@@ -89,7 +89,7 @@ def mc_estimate(hist, num_mc_samples, sample_len, model, excluded_terms, proposa
                 vocab_size, batch_size=128,temperature=1, top_k=0, top_p=0.0, device='cpu',
                 sub_estimates=None,**kwargs):
     assert(len(hist.shape) == 1)  # (hist_seq_len), Only conditions on a single history
-    dist_estimate = None
+    dist_estimate = []
     remaining_samples = num_mc_samples
     while remaining_samples > 0:
         sample_out = proposal_func(
@@ -106,9 +106,9 @@ def mc_estimate(hist, num_mc_samples, sample_len, model, excluded_terms, proposa
         )
         remaining_samples -= batch_size
         term_log_prob = sample_out["next_log_dist"] + sample_out["model_log_prob"] - sample_out["proposal_log_prob"]
-        dist_estimate = (term_log_prob.exp().cpu() if dist_estimate is None
-                         else torch.cat((dist_estimate,term_log_prob.exp().cpu()), dim=0))
+        dist_estimate.append(term_log_prob.exp().cpu())
 
+    dist_estimate = torch.cat(dist_estimate,dim=0)
     if sub_estimates is not None and len(sub_estimates) > 0:
         # (samples x vocab) -> (sub-estimates x vocab)
         dist_estimate = torch.stack(
@@ -130,7 +130,7 @@ def lin_interp(target_pct, n_current, n_end):
 
 @torch.no_grad()
 def beam_search_lower_bound(hist, num_beams, sample_len, model, excluded_terms, interp_func,
-                            batch_size, device, vocab_size, **kwargs):
+                            batch_size, device, vocab_size, bs_tree=None, **kwargs):
     assert(isinstance(num_beams, (int, float)))
     assert(len(hist.shape) == 1)
 
@@ -140,10 +140,14 @@ def beam_search_lower_bound(hist, num_beams, sample_len, model, excluded_terms, 
     num_beams_over_time = []
     for n_cur in range(sample_len):
         logits, states = model.get_next_probs(beams, rnn_args=rnn_args, return_logits = True,
-                                              max_batch_size=batch_size,device=device)
+                                            max_batch_size=batch_size,device=device)
         next_log_probs = torch.log_softmax(logits, dim=-1)  # (num of current beams, vocab_size)
+        stored_next_log_probs = next_log_probs.clone()
+        # We need this for each symbol, (tracked based on beams, could use sequence id)
         next_log_probs[..., excluded_terms] = -float('inf')
         next_restricted_log_probs = torch.log_softmax(next_log_probs, dim=-1)
+        stored_restricted_log_probs = next_restricted_log_probs.clone()
+
         next_log_probs = cur_log_probs.unsqueeze(-1) + next_log_probs
         next_log_probs = next_log_probs.view(-1)
         next_restricted_log_probs = cur_restricted_log_probs.unsqueeze(-1) + next_restricted_log_probs
@@ -156,7 +160,25 @@ def beam_search_lower_bound(hist, num_beams, sample_len, model, excluded_terms, 
             next_restricted_log_probs = top_k_top_p_filtering(next_restricted_log_probs, top_p=num_beams_cur, is_log_prob=True)
 
         next_log_probs = next_log_probs.masked_fill(next_restricted_log_probs == -float('inf'), -float('inf'))
+        if bs_tree is not None:
+            if n_cur == 0: # Add root node
+                parents = bs_tree.add_root_node(
+                            stored_restricted_log_probs,
+                            stored_next_log_probs,
+                            states,
+                )
+            else:
+                parents = bs_tree.add_child_nodes(
+                            beams,parents,
+                            stored_restricted_log_probs,
+                            stored_next_log_probs,
+                            states, seq_inds,
+                            depth=n_cur)
+
+        # (beams x 1)
         indices = torch.arange(0, next_log_probs.shape[0], device=beams.device)[next_log_probs != -float('inf')]
+        if n_cur ==0 and bs_tree is not None: parents = parents * indices.shape[0]
+        # Sequence indices we will need for next piece
         seq_inds = torch.div(indices, vocab_size, rounding_mode='trunc')  # equivalent to: indices // args.vocab_size
         beams = (indices % vocab_size).unsqueeze(-1)
         cur_log_probs = next_log_probs[indices]
@@ -171,9 +193,18 @@ def beam_search_lower_bound(hist, num_beams, sample_len, model, excluded_terms, 
         num_beams_over_time.append(cur_log_probs.shape[0])
 
     logits, states = model.get_next_probs(beams, rnn_args=rnn_args, device=device, return_logits=True,
-                                          max_batch_size=batch_size)
-    next_log_probs = cur_log_probs.unsqueeze(-1) + torch.log_softmax(logits, dim=-1)
+                                        max_batch_size=batch_size)
+    final_log_probs = torch.log_softmax(logits,dim=-1)
+    next_log_probs = cur_log_probs.unsqueeze(-1) + final_log_probs
+    if bs_tree is not None:
+        bs_tree.add_child_nodes(
+                    beams,parents,
+                    final_log_probs,
+                    next_log_probs,
+                    states, seq_inds,
+                    depth=n_cur+1)
     return {
+        "tree": bs_tree,
         "dist_lower_bound": next_log_probs.exp().sum(dim=0).cpu(),
         "true_coverage": cur_log_probs.exp().sum().cpu(),
         "restricted_coverage": cur_restricted_log_probs.exp().sum().cpu(),
@@ -185,7 +216,6 @@ def beam_search_lower_bound(hist, num_beams, sample_len, model, excluded_terms, 
 # Sampling orchestration function
 #######################################################################
 
-
 @torch.no_grad()
 def sample(
     args,
@@ -194,13 +224,11 @@ def sample(
     **kwargs,):
     """Sample from any of these methods given an
     input dataloader, arguments, and potentially a model
-
     :dataloader: TODO
     :args: TODO
     :model: TODO
     :: TODO
     :returns: TODO
-
     """
     args.model = model; print();
     output = {"sample_estimates":[]}
@@ -251,5 +279,10 @@ def sample(
     args.model = None
     output['metadata'] = vars(args)
     return output
+
+#################################################################################
+#   Main Method
+#################################################################################
+
 
 

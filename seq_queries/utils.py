@@ -12,6 +12,13 @@ from datetime import datetime
 # Data
 #######################################################################
 
+def _hidden_state_select(state,i):
+    if isinstance(state,tuple):
+        state = tuple([s[...,i,:] for s in state])
+    else:
+        state = s[...,i,:]
+    return state
+
 def _tup_cpu(tup):
     return tuple([t.cpu() for t in tup])
 
