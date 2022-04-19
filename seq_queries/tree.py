@@ -36,6 +36,7 @@ class BSNode(object):
         log_q_conditionals,
         log_p_conditionals,
         hidden_state,
+        tree,
         depth,
     ):
         """TODO: to be defined.
@@ -46,6 +47,7 @@ class BSNode(object):
         self.symbol = symbol
         self.parent = parent
         self.depth = depth
+        self.tree = tree
         # Send in marginals, don't transform here
         self.q_conditionals = log_q_conditionals.exp().flatten().cpu()
         self.p_conditionals = log_p_conditionals.exp().flatten().cpu()
@@ -64,17 +66,15 @@ class BSNode(object):
 
     def __str__(self):
         return "Node({})".format(
-            "->".join([str(s) for s in self.lineage]))
+            "".join([self.tree.id_to_char[s] for s in self.lineage]))
 
     def __unicode__(self):
         return u"Node({})".format(
-            "->".join([str(s) for s in self.lineage]))
+            "".join([self.tree.id_to_char[s] for s in self.lineage]))
 
     def __repr__(self):
         return "Node({})".format(
-            "->".join([str(s) for s in self.lineage]))
-
-
+            "".join([self.tree.id_to_char[s] for s in self.lineage]))
 
 class BeamSearchSampleTree(object):
 
@@ -108,7 +108,9 @@ class BeamSearchSampleTree(object):
         self.root = BSNode(self.BOS,None,
                            log_q_conditionals,
                            log_p_conditionals,
-                           hidden_state,depth=0)
+                           hidden_state,
+                           tree=self,
+                           depth=0)
         self._add_depth(0,self.root)
         return [self.root]
 
@@ -145,7 +147,7 @@ class BeamSearchSampleTree(object):
         child_node = BSNode(symbol,parent,
                             log_q_conditional,
                             log_p_conditional,
-                            hidden_state,depth)
+                            hidden_state,self,depth)
         parent.children[symbol] = child_node
         self._add_depth(depth, child_node)
         return child_node
