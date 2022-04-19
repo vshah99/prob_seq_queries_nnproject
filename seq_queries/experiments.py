@@ -82,6 +82,7 @@ def sample_dynamic_target_token(
             print(bs_tree.depth_dict)
             print()
             bs_tree.prune()
+            print(bs_tree.depth_dict)
             sys.exit(1)
             # print(sample_output['dist_lower_bound'].shape)
             data_list.append(sample_output)
