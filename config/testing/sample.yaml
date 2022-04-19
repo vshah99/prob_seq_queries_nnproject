@@ -36,7 +36,7 @@ proposal_func: lm
 interp_func: linear
 top_k: 0
 top_p: 0
-num_beams: 0.8
+num_beams: 0.7
 num_mc_samples: 10000
 sub_estimates: []
 total_seq_len: 20

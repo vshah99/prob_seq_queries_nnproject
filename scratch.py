@@ -42,7 +42,6 @@ class Test:
 
 if __name__ == "__main__":
 
-
     args = get_args(manual_config="config/testing/sample.yaml")
     text_dict= load_text_data(args.data_path)
     # text_dict= load_app_data(args.data_path, seq_len=args.seq_len)
