@@ -188,6 +188,12 @@ class BeamSearchSampleTree(object):
         for node in nodes_to_adjust:
             self._adjust_marginal_probabilities_by_node(node)
 
+    def _remove_terminal_depth(self):
+        leaf_nodes = self.depth_dict[len(self.depth_sizes)-1]
+        for ln in leaf_nodes:
+            parent = ln.parent
+            del parent.children[ln.symbol]
+
     def prune(self):
         """
         Prune back tree to only offer options in the
