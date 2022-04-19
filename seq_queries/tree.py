@@ -47,8 +47,8 @@ class BSNode(object):
         self.parent = parent
         self.depth = depth
         # Send in marginals, don't transform here
-        self.q_conditionals = log_q_conditionals.exp().cpu()
-        self.p_conditionals = log_p_conditionals.exp().cpu()
+        self.q_conditionals = log_q_conditionals.exp().flatten().cpu()
+        self.p_conditionals = log_p_conditionals.exp().flatten().cpu()
         self.hidden_state = _tup_cpu(hidden_state)
         self.children = defaultdict(dict)
         self.lineage = self._get_lineage()
@@ -60,7 +60,21 @@ class BSNode(object):
         while tracker is not None:
             lineage.append(tracker.symbol)
             tracker = tracker.parent
-        return reversed(lineage)
+        return list(reversed(lineage))
+
+    def __str__(self):
+        return "Node({})".format(
+            "->".join([str(s) for s in self.lineage]))
+
+    def __unicode__(self):
+        return u"Node({})".format(
+            "->".join([str(s) for s in self.lineage]))
+
+    def __repr__(self):
+        return "Node({})".format(
+            "->".join([str(s) for s in self.lineage]))
+
+
 
 class BeamSearchSampleTree(object):
 
@@ -147,15 +161,42 @@ class BeamSearchSampleTree(object):
         # Probably don't need this
         self.depth_dict[depth].append(node)
 
-#     def prune(self):
-#         """
-#         Prune back tree to only offer options in the
-#         correct partitioned support
-#         (and also restructure probabilities)
-#         """
-#         leaf_parent_depth = len(self.depth_sizes)-2
-#         leaf_parents = self.depth_dict[leaf_parent_depth]
-#         for lp in leaf_parents:
-#             self._respect_bs_support(lp)
-#         for i in reveraged(range(leaf_parent_depth)):
-#             self._adjust_marginal_probabilities_by_depth(i)
+    def _respect_bs_support(
+        self,
+        node
+    ):
+        child_symbols = torch.LongTensor([c.symbol for c in node.children.values()])
+        node.q_conditionals[child_symbols] *= 0
+        node.total_mass = node.q_conditionals.sum()
+
+    def _adjust_marginal_probabilities_by_node(self,node):
+        child_symbols = torch.LongTensor([c.symbol for c in node.children.values()])
+        child_mass = torch.Tensor([c.total_mass for c in node.children.values()])
+        adjusted_mass = torch.ones(self.vocab_size)
+        adjusted_mass[child_symbols] = child_mass
+        assert adjusted_mass.shape[0] == node.q_conditionals.shape[0],\
+            "Adjusted mass shape {} | Q conditional shape {}"\
+            .format(adjusted_mass.shape,
+                    node.q_conditionals.shape)
+
+        node.q_conditionals *= adjusted_mass
+        node.total_mass = node.q_conditionals.sum()
+
+    def _adjust_marginal_probabilities_by_depth(self,depth):
+
+        nodes_to_adjust = self.depth_dict[depth]
+        for node in nodes_to_adjust:
+            self._adjust_marginal_probabilities_by_node(node)
+
+    def prune(self):
+        """
+        Prune back tree to only offer options in the
+        correct partitioned support
+        (and also restructure probabilities)
+        """
+        leaf_parent_depth = len(self.depth_sizes)-2
+        leaf_parents = self.depth_dict[leaf_parent_depth]
+        for lp in leaf_parents:
+            self._respect_bs_support(lp)
+        for i in reversed(range(leaf_parent_depth)):
+            self._adjust_marginal_probabilities_by_depth(i)

@@ -77,8 +77,11 @@ def sample_dynamic_target_token(
             bs_tree = BeamSearchSampleTree(args.text_dict)
             args.bs_tree = bs_tree
             sample_output =args.estimate_type(sample,**kwargs)
-            print(sample_output['tree'].depth_sizes)
-            bs_tree
+            bs_tree = sample_output['tree']
+            print(bs_tree.depth_sizes)
+            print(bs_tree.depth_dict)
+            print()
+            bs_tree.prune()
             sys.exit(1)
             # print(sample_output['dist_lower_bound'].shape)
             data_list.append(sample_output)
