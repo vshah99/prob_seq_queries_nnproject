@@ -5,17 +5,59 @@ import pandas as pd
 import numpy as np
 
 random.seed(0)
+from .utils import read_pkl
 
 #######################################################################
 # Utilities for loading app data
 #######################################################################
 
-def read_amazon_review_data(data_path):
-    df = pd.read_csv(data_path)
-    df = df.sort_values(by=['user_id',
-                        'timestamp'])
-    vocab = set(df['category_id'].drop_duplicates().values)
-    return df.loc[:,['user_id','category_id']].values, vocab
+def load_amazon_data(data_path):
+    text_dict = read_pkl(data_path)
+    text_dict['vocab_size'] = len(text_dict['vocab'])
+    return text_dict
+
+
+def process_amazon_data(text_dict, args): # batch_size, seq_len, dev=torch.device("cpu"), splits=(0.9, 0.05, 0.05), **dl_args):
+    tr_split, v_split = args.train_data_pct, args.val_data_pct  # data split percentages for training and validation
+    seq_len, dev = args.seq_len, args.device
+
+    ids = text_dict['text'].long()
+
+    num_seqs = ids.shape[0]
+    split_pos = list(range(num_seqs))
+    random.shuffle(split_pos)
+    # split into training, validation, and test split tensors
+    train_ids = ids[split_pos[:int(num_seqs*tr_split)], :]
+    valid_ids = ids[split_pos[int(num_seqs*tr_split):int(num_seqs*(tr_split+v_split))], :]
+    test_ids = ids[split_pos[int(num_seqs*(tr_split+v_split)):], :]
+
+    train_dl = torch.utils.data.DataLoader(
+        train_ids,
+        batch_size=args.batch_size,
+        shuffle=True,
+        num_workers=args.num_workers,
+    )
+    valid_dl = torch.utils.data.DataLoader(
+        valid_ids,
+        batch_size=args.batch_size,
+        shuffle=False,
+        num_workers=args.num_workers,
+    )
+    test_dl = torch.utils.data.DataLoader(
+        test_ids,
+        batch_size=args.batch_size,
+        shuffle=False,
+        num_workers=args.num_workers,
+    )
+
+    return train_dl, valid_dl, test_dl
+
+#######################################################################
+# Main
+#######################################################################
+
+
+
 
 def read_mobile_app_data(data_path):
     df = pd.read_csv(data_path, sep='\t')
@@ -63,15 +105,6 @@ def prepare_mobile_app_data_by_user(
     df_sequences = get_user_sequences(df_list,seq_len)
     return df_sequences, vocab
 
-def prepare_amazon_review_data_by_user(
-    data_path,
-    seq_len,
-):
-
-    df, vocab = read_amazon_review_data(data_path)
-    df_list = stratify_data_by_user(df)
-    df_sequences = get_user_sequences(df_list,seq_len)
-    return df_sequences, vocab
 
 #######################################################################
 # General load information

@@ -1,0 +1,53 @@
+/home/showalte/research/prob_seq_queries
+[2022-04-20 16:30:21.058172] batch_size ........ 2048
+[2022-04-20 16:30:21.058188] checkpoint_path ... /home/showalte/research/prob_seq_queries/models/amazon/
+[2022-04-20 16:30:21.058193] cuda .............. True
+[2022-04-20 16:30:21.058197] data_path ......... data/amazon/amazon_text_dict.pkl
+[2022-04-20 16:30:21.058200] device_num ........ 2
+[2022-04-20 16:30:21.058203] disable_tqdm ...... True
+[2022-04-20 16:30:21.058206] do_test ........... False
+[2022-04-20 16:30:21.058209] do_valid .......... True
+[2022-04-20 16:30:21.058212] dont_print_args ... False
+[2022-04-20 16:30:21.058216] dont_shuffle ...... None
+[2022-04-20 16:30:21.058223] dropout ........... 0.3
+[2022-04-20 16:30:21.058228] estimate_type ..... <function beam_search_lower_bound at 0x7fea6b97c040>
+[2022-04-20 16:30:21.058233] excluded_terms .... [1]
+[2022-04-20 16:30:21.058236] finetune .......... False
+[2022-04-20 16:30:21.058240] grad_clip ......... 1.0
+[2022-04-20 16:30:21.058243] hidden_size ....... 128
+[2022-04-20 16:30:21.058246] hist_len .......... 18
+[2022-04-20 16:30:21.058250] interp_func ....... <function lin_interp at 0x7fea6b97bee0>
+[2022-04-20 16:30:21.058253] log_interval ...... 100
+[2022-04-20 16:30:21.058258] lr ................ 0.001
+[2022-04-20 16:30:21.058261] lr_decay_style .... constant
+[2022-04-20 16:30:21.058264] masked_lm ......... False
+[2022-04-20 16:30:21.058267] num_beams ......... 0.85
+[2022-04-20 16:30:21.058271] num_layers ........ 2
+[2022-04-20 16:30:21.058274] num_mc_samples .... 10000
+[2022-04-20 16:30:21.058279] num_workers ....... 0
+[2022-04-20 16:30:21.058282] optimizer ......... adam
+[2022-04-20 16:30:21.058286] proposal_func ..... <function lm_proposal at 0x7fea6b97bca0>
+[2022-04-20 16:30:21.058289] rnn_type .......... LSTM
+[2022-04-20 16:30:21.058292] save_epochs ....... 1
+[2022-04-20 16:30:21.058295] seed .............. 1234321
+[2022-04-20 16:30:21.058298] seq_len ........... 15
+[2022-04-20 16:30:21.058301] shuffle ........... True
+[2022-04-20 16:30:21.058304] sub_estimates ..... []
+[2022-04-20 16:30:21.058307] top_k ............. 0
+[2022-04-20 16:30:21.058310] top_p ............. 0
+[2022-04-20 16:30:21.058313] total_seq_len ..... 20
+[2022-04-20 16:30:21.058317] train_data_pct .... 0.9
+[2022-04-20 16:30:21.058320] train_epochs ...... 40
+[2022-04-20 16:30:21.058323] val_data_pct ...... 0.05
+[2022-04-20 16:30:21.058326] valid_epochs ...... 1
+[2022-04-20 16:30:21.058329] vocab_size ........ 68
+[2022-04-20 16:30:21.058332] warmup_pct ........ 0.01
+[2022-04-20 16:30:21.058336] weight_decay ...... 0.0
+==================================================
+{'Industrial & Scientific': 1, 'Tools & Home Improvement': 2, 'Patio, Lawn & Garden': 3, 'Arts, Crafts & Sewing': 4, 'Handmade': 5, 'Grocery & Gourmet Food': 6, 'Collectibles & Fine Art': 7, 'Home & Kitchen': 8, 'Automotive': 9, 'Home & Business Services': 10, 'Office Products': 11, 'Musical Instruments': 12, 'Books': 13, 'Appliances': 14, 'Software': 15, 'Electronics': 16, 'Digital Music': 17, 'CDs & Vinyl': 18, 'Video Games': 19, 'Gift Cards': 20, 'Alexa Skills': 21, 'Clothing, Shoes & Jewelry': 22, 'Cell Phones & Accessories': 23, 'Sports & Outdoors': 24, 'Movies & TV': 25, 'Magazine Subscriptions': 26, 'Toys & Games': 27, 'Kindle Store': 28, 'Pet Supplies': 29, '<BOS>': 0}
+==================================================
+[2022-04-20 16:31:54.843983] Setting up model, optimizer, and learning rate scheduler.
+[2022-04-20 16:31:57.504924]
+[2022-04-20 16:31:57.504947] Total Parameter Count: 242244
+[2022-04-20 16:31:57.504952]
+[2022-04-20 16:31:57.504957] Starting training.

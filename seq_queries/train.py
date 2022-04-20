@@ -18,7 +18,7 @@ from seq_queries.arguments import get_args
 
 def forward_pass(args, batch, model):
     if args.cuda:
-        batch = batch.cuda()
+        batch = batch.to(args.device)
         # batch = {k:v.to(args.device) for k,v in batch.items()}
 
     # Forward Pass
