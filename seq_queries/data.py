@@ -10,6 +10,12 @@ random.seed(0)
 # Utilities for loading app data
 #######################################################################
 
+def read_amazon_review_data(data_path):
+    df = pd.read_csv(data_path)
+    df = df.sort_values(by=['user_id',
+                        'timestamp'])
+    vocab = set(df['category_id'].drop_duplicates().values)
+    return df.loc[:,['user_id','category_id']].values, vocab
 
 def read_mobile_app_data(data_path):
     df = pd.read_csv(data_path, sep='\t')
@@ -18,27 +24,25 @@ def read_mobile_app_data(data_path):
                         'session_id',
                         'timestamp'])
     vocab = set(df['app_name'].drop_duplicates().values)
-    return df.loc[:,['user_id','session_id','app_name']].values, vocab
+    return df.loc[:,['user_id','app_name']].values, vocab
 
-def stratify_app_data_by_user(df):
+def stratify_data_by_user(df):
     seqs = []; curr_seq = []
-    curr_user, curr_session, token = df[0]
+    curr_user, token = df[0]
     curr_seq.append(token)
     for i in range(df.shape[0]):
-        user, session,token = df[i]
+        user,token = df[i]
         # New user and new session
         if user != curr_user:
             curr_user = user
             seqs.append(curr_seq)
             curr_seq = []
         # Just a new session, same user
-        elif session != curr_session:
-            curr_session = session
         curr_seq.append(token)
 
     return seqs
 
-def get_app_sequences(df_list,
+def get_user_sequences(df_list,
                       seq_len,
 ):
     flat_seqs = []
@@ -55,8 +59,18 @@ def prepare_mobile_app_data_by_user(
 ):
 
     df, vocab = read_mobile_app_data(data_path)
-    df_list = stratify_app_data_by_user(df)
-    df_sequences = get_app_sequences(df_list,seq_len)
+    df_list = stratify_data_by_user(df)
+    df_sequences = get_user_sequences(df_list,seq_len)
+    return df_sequences, vocab
+
+def prepare_amazon_review_data_by_user(
+    data_path,
+    seq_len,
+):
+
+    df, vocab = read_amazon_review_data(data_path)
+    df_list = stratify_data_by_user(df)
+    df_sequences = get_user_sequences(df_list,seq_len)
     return df_sequences, vocab
 
 #######################################################################
