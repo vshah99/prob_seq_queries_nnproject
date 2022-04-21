@@ -119,6 +119,95 @@ def mc_estimate(hist, num_mc_samples, sample_len, model, excluded_terms, proposa
 
     return dist_estimate
 
+@torch.no_grad()
+def tree_is_estimate(
+    tree, 
+    bs_lower_bound, 
+    num_samples, 
+    seq_len, 
+    model, 
+    excluded_terms, 
+    batch_size, 
+    device, 
+    sub_estimates=None,
+    **kwargs,
+):
+    # Sample each sequence individually from tree
+    log_p_totals, log_q_totals = [], []
+    hidden_states, num_remaining_steps = [], []
+    last_tokens = []
+
+    for _ in range(num_samples):
+        log_p, log_q, hs, depth_reached, last_token = tree.sample_sequence(seq_len)
+        log_p_totals.append(log_p)
+        log_q_totals.append(log_q)
+        hidden_states.append(hs)
+        num_remaining_steps.append(seq_len - depth_reached)
+        last_tokens.append(last_token)
+
+    log_p_totals = torch.stack(log_p_totals, dim=0)
+    log_q_totals = torch.stack(log_q_totals, dim=0)
+    if isinstance(hs, tuple):
+        hidden_states = (
+            torch.stack([h[0] for h in hidden_states], dim=1),
+            torch.stack([h[1] for h in hidden_states], dim=1),
+        )
+    else:
+        hidden_states = torch.stack(hidden_states, dim=1)
+    num_remaining_steps = torch.tensor(num_remaining_steps, dtype=torch.int32, device=hidden_states.device)
+    last_tokens = torch.stack(last_tokens, dim=0).unsqueeze(1)  # need to have a sequence length of 1
+
+    # Finish sampling incomplete sequences from model
+    while (num_remaining_steps > 0).all():
+        to_update = num_remaining_steps > 0
+        if isinstance(hidden_states, tuple):
+            rnn_args = (hidden_states[0][..., to_update, :], hidden_states[1][..., to_update, :])
+        else:
+            rnn_args = hidden_states[..., to_update, :]
+        logits, rnn_args = model.get_next_probs(
+            last_tokens[to_update, :], 
+            rnn_args=rnn_args, 
+            max_batch_size=batch_size,
+            device=device, 
+            return_logits=True,
+        )
+
+        proposal_logits = logits.clone()
+        proposal_logits[..., excluded_terms] = -float('inf')
+        logits, proposal_logits = torch.log_softmax(logits, dim=-1), torch.log_softmax(proposal_logits, dim=-1)
+        last_sample = torch.distributions.Categorical(logits=proposal_logits).sample().unsqueeze(-1)
+        log_q_totals[to_update] += torch.gather(proposal_logits, dim=-1, index=last_sample).squeeze(-1)
+        log_p_totals[to_update] += torch.gather(logits, dim=-1, index=last_sample).squeeze(-1)
+        if isinstance(hidden_states, tuple):
+            hidden_states[0][..., to_update, :] = rnn_args[0]
+            hidden_states[1][..., to_update, :] = rnn_args[1]
+        else:
+            hidden_states[..., to_update, :] = rnn_args
+        num_remaining_steps[to_update] -= 1
+        last_tokens[to_update, :] = last_sample
+
+    # Compute final distributions for estimate
+    next_log_dist, _ = model.get_next_probs(
+        last_tokens, 
+        hidden_states, 
+        max_batch_size=batch_size,
+        device=device, 
+        return_logits=True,
+    )
+    next_log_dist = torch.log_softmax(next_log_dist, dim=-1)  #E (num_seqs, vocab_size)
+    dist_estimate = next_log_dist + log_p_totals.unsqueeze(dim=-1) - log_q_totals.unsqueeze(dim=-1)
+    dist_estimate = dist_estimate.exp().cpu()
+
+    if sub_estimates is not None and len(sub_estimates) > 0:
+        # (samples x vocab) -> (sub-estimates x vocab)
+        dist_estimate = torch.stack(
+            # (vocab)
+            [dist_estimate[:s, :].mean(dim=0).flatten()
+             for s in sorted(sub_estimates)
+        ])
+
+    return bs_lower_bound + dist_estimate
+
 def geom_interp(target_pct, n_current, n_end):
     return target_pct ** ((n_current + 1) / n_end)  # add 1 due to 0-indexing
 
