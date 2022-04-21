@@ -53,10 +53,10 @@ class BSNode(object):
         self.p_conditionals = log_p_conditionals.exp().flatten().cpu()
         self.hidden_state = _tup_cpu(hidden_state)
         self.children = defaultdict(dict)
-        self.lineage = self._get_lineage()
         self.total_mass = 1.0
 
-    def _get_lineage(self):
+    @property
+    def lineage(self):
         lineage = [self.symbol]
         tracker = self.parent
         while tracker is not None:
