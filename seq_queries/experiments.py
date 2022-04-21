@@ -35,6 +35,8 @@ def sample_dynamic_target_token(
     args,
     dataloader,
     model = None,
+    mean_only = False,
+    variance_only = False,
     **kwargs,):
     """Sample from any of these methods given an
     input dataloader, arguments, and potentially a model
@@ -86,7 +88,11 @@ def sample_dynamic_target_token(
             # print(bs_tree.depth_dict)
             # sys.exit(1)
 
-            data_list.append(sample_output)
+            if variance_only:
+                data_list.append(torch.var(sample_output,dim=0))
+            elif mean_only:
+                data_list.append(sample_output.mean(dim=0))
+            else: data_list.append(sample_output)
             # data_list.append(args.estimate_type(sample,**kwargs)[:,args.excluded_tokens[0]].flatten())
 
 
@@ -107,6 +113,7 @@ def sample_dynamic_target_token(
     else:
         output['sample_estimates'] =torch.stack(output['sample_estimates'],
                                                 dim=0)
+        print(output['sample_estimates'].shape)
     args.model = None
     output['metadata'] = vars(args)
     return output

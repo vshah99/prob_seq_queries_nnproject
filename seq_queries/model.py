@@ -58,6 +58,7 @@ class CausalLM(LM, nn.Module):
         self.rnn = rnn
         self.out_transform = nn.Linear(embed_dim, vocab_size, bias=True)
         self.loss_func = nn.CrossEntropyLoss()
+        self.temperature = None
 
     def forward(self, src, rnn_args=None, **kwargs):
         """Takes in LongTensor `src` of size [batch_size, seq_len] and produces logits
@@ -95,6 +96,10 @@ class CausalLM(LM, nn.Module):
         term in a sequence. Returns this and resulting hidden state. Can specify a
         temperature to divide the logits by prior to performing a softmax to change
         how 'peaked' or 'flat' the distribution is."""
+
+        # Model temperature always defaults to 1, must set to None to overwrite
+        if self.temperature is not None:
+            temperature = self.temperature
         xs = torch.split(x,max_batch_size)
         if rnn_args is not None:
             if isinstance(rnn_args,tuple):
@@ -191,6 +196,7 @@ class MaskedLM(LM, nn.Module):
 
         self.vocab_size, self.embed_dim = vocab_size, embed_dim
         self.rnn = rnn
+        self.temperature = None
         self.out_transform = nn.Linear(embed_dim, vocab_size, bias=True)
         self.loss_func = nn.CrossEntropyLoss()
 

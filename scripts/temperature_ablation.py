@@ -1,8 +1,8 @@
 #################################################################################
 #
-#             Project Title:  Scratch Work
+#             Project Title:  Temperature ablations
 #             Author:         Sam Showalter
-#             Date:           2022-03-25
+#             Date:           2022-04-21
 #
 #################################################################################
 
@@ -14,6 +14,8 @@
 import os
 import sys
 import copy
+
+sys.path.insert(1, '/home/showalte/research/prob_seq_queries/')
 
 import numpy as np
 import torch
@@ -47,33 +49,18 @@ if __name__ == "__main__":
     if args.checkpoint_path:
         load_checkpoint(args, model)
     model.eval()
-    estimates = sample_dynamic_target_token(args, val_dl, model)
-    sys.exit(1)
+    # estimates = sample_dynamic_target_token(args, val_dl, model, variance_only=True)
 
     #(hist_len, num_mc_samples=100000)
-    sample_experiments = [10,15,20,25]
+    temperatures = [0.1,0.25,0.5,0.75,1.0,2,5,10]
 
-    # For all sequences, target is the 31st token
-    # (hist_len,coverage, total_seq_len=30,estimate_type=search)
-    lb_experiments = [
-        # (28,0.10),
-        # (25,0.99),
-        # (24,0.99),
-        # (23,0.95),
-        # (22,0.95),
-        # (21,0.90),
-        (20,0.60),
-        (15,0.50),
-        (17,0.55),
-    ]
-
-    # for exp in sample_experiments:
-    #     args.hist_len = exp
-    #     print("Hist length {} | Total Seq Length {} | Num samples: {} | Sample type: random".format(args.hist_len,args.total_seq_len, args.num_mc_samples))
-    #     estimates = sample_dynamic_target_token(args, val_dl, model)
-    #     os.makedirs(f"data/random_sampling/shakespeare/",exist_ok=True)
-    #     write_pkl(estimates,f"data/random_sampling/shakespeare/val-dl_random-sampling_{args.hist_len}h_{args.total_seq_len}s_exc-dynamic.pkl")
-    #     print("====="*10)
+    for temp in temperatures:
+        model.temperature = temp
+        print("Hist length {} | Total Seq Length {} | Num samples: {} | Temperature: {} |Sample type: importance".format(args.hist_len,args.total_seq_len, args.num_mc_samples,temp))
+        estimates = sample_dynamic_target_token(args, val_dl, model)
+        os.makedirs(f"data/importance_sampling/shakespeare/",exist_ok=True)
+        write_pkl(estimates,f"data/random_sampling/shakespeare/temp_ablation/val-dl_random-sampling_{args.hist_len}h_{args.total_seq_len}s_{temp}t_exc-dynamic.pkl")
+        print("====="*10)
 
     # args.proposal_func = lm_proposal
     # for exp in sample_experiments:
