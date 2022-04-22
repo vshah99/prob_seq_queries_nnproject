@@ -129,6 +129,7 @@ class BeamSearchSampleTree(object):
         assert parent_ids.shape[0] == symbols.shape[0] == log_q_conditionals.shape[0] == log_p_conditionals.shape[0],\
             "Parent ids were of shape {} but symbols were of shape {} and q was of shape {} and p was of shape {} and h_state was of shape {}"\
             .format(parent_ids.shape,symbols.shape, log_q_conditionals.shape, log_p_conditionals.shape,hidden_states[0].shape)
+        
         for i in range(symbols.shape[0]):
             s,pid,q,p,h = (symbols[i],parent_ids[i],log_q_conditionals[i],
                             log_p_conditionals[i],_hidden_state_select(hidden_states,i))

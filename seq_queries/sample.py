@@ -252,17 +252,20 @@ def beam_search_lower_bound(hist, num_beams, sample_len, model, excluded_terms, 
         if bs_tree is not None:
             if n_cur == 0: # Add root node
                 parents = bs_tree.add_root_node(
-                            stored_restricted_log_probs,
-                            stored_next_log_probs,
-                            states,
+                    log_q_conditionals=stored_restricted_log_probs,
+                    log_p_conditionals=stored_next_log_probs,
+                    hidden_state=states,
                 )
             else:
                 parents = bs_tree.add_child_nodes(
-                            beams,parents,
-                            stored_restricted_log_probs,
-                            stored_next_log_probs,
-                            states, seq_inds,
-                            depth=n_cur)
+                    symbols=beams, 
+                    parents=parents,
+                    log_q_conditionals=stored_restricted_log_probs,
+                    log_p_conditionals=stored_next_log_probs,
+                    hidden_states=states,
+                    parent_ids=seq_inds,
+                    depth=n_cur,
+                )
 
         # (beams x 1)
         indices = torch.arange(0, next_log_probs.shape[0], device=beams.device)[next_log_probs != -float('inf')]
