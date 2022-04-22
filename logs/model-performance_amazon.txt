@@ -1,0 +1,46 @@
+[2022-04-22 10:12:02.250337] batch_size ........ 2048
+[2022-04-22 10:12:02.250375] checkpoint_path ... /home/showalte/research/prob_seq_queries/models/amazon/
+[2022-04-22 10:12:02.250383] cuda .............. True
+[2022-04-22 10:12:02.250389] data_path ......... data/amazon/amazon_text_dict.pkl
+[2022-04-22 10:12:02.250394] device_num ........ 0
+[2022-04-22 10:12:02.250400] disable_tqdm ...... True
+[2022-04-22 10:12:02.250406] do_test ........... False
+[2022-04-22 10:12:02.250412] do_valid .......... True
+[2022-04-22 10:12:02.250417] dont_print_args ... False
+[2022-04-22 10:12:02.250423] dont_shuffle ...... None
+[2022-04-22 10:12:02.250434] dropout ........... 0.3
+[2022-04-22 10:12:02.250441] estimate_type ..... <function mc_estimate at 0x7fe4c0d40280>
+[2022-04-22 10:12:02.250449] excluded_terms .... [1]
+[2022-04-22 10:12:02.250455] finetune .......... False
+[2022-04-22 10:12:02.250461] grad_clip ......... 1.0
+[2022-04-22 10:12:02.250466] hidden_size ....... 128
+[2022-04-22 10:12:02.250472] hist_len .......... 18
+[2022-04-22 10:12:02.250478] interp_func ....... <function lin_interp at 0x7fe4c0d403a0>
+[2022-04-22 10:12:02.250484] log_interval ...... 100
+[2022-04-22 10:12:02.250491] lr ................ 0.001
+[2022-04-22 10:12:02.250496] lr_decay_style .... constant
+[2022-04-22 10:12:02.250502] masked_lm ......... False
+[2022-04-22 10:12:02.250508] num_beams ......... 0.85
+[2022-04-22 10:12:02.250514] num_layers ........ 2
+[2022-04-22 10:12:02.250519] num_mc_samples .... 10000
+[2022-04-22 10:12:02.250524] num_workers ....... 0
+[2022-04-22 10:12:02.250530] optimizer ......... adam
+[2022-04-22 10:12:02.250536] proposal_func ..... <function lm_proposal at 0x7fe4c0d40160>
+[2022-04-22 10:12:02.250541] rnn_type .......... LSTM
+[2022-04-22 10:12:02.250547] save_epochs ....... 1
+[2022-04-22 10:12:02.250552] seed .............. 1234321
+[2022-04-22 10:12:02.250557] seq_len ........... 15
+[2022-04-22 10:12:02.250563] shuffle ........... True
+[2022-04-22 10:12:02.250569] sub_estimates ..... []
+[2022-04-22 10:12:02.250574] top_k ............. 0
+[2022-04-22 10:12:02.250580] top_p ............. 0
+[2022-04-22 10:12:02.250585] total_seq_len ..... 20
+[2022-04-22 10:12:02.250591] train_data_pct .... 0.9
+[2022-04-22 10:12:02.250597] train_epochs ...... 40
+[2022-04-22 10:12:02.250603] val_data_pct ...... 0.05
+[2022-04-22 10:12:02.250608] valid_epochs ...... 1
+[2022-04-22 10:12:02.250613] vocab_size ........ 30
+[2022-04-22 10:12:02.250619] warmup_pct ........ 0.01
+[2022-04-22 10:12:02.250625] weight_decay ...... 0.0
+==================================================
+{'Industrial & Scientific': 1, 'Tools & Home Improvement': 2, 'Patio, Lawn & Garden': 3, 'Arts, Crafts & Sewing': 4, 'Handmade': 5, 'Grocery & Gourmet Food': 6, 'Collectibles & Fine Art': 7, 'Home & Kitchen': 8, 'Automotive': 9, 'Home & Business Services': 10, 'Office Products': 11, 'Musical Instruments': 12, 'Books': 13, 'Appliances': 14, 'Software': 15, 'Electronics': 16, 'Digital Music': 17, 'CDs & Vinyl': 18, 'Video Games': 19, 'Gift Cards': 20, 'Alexa Skills': 21, 'Clothing, Shoes & Jewelry': 22, 'Cell Phones & Accessories': 23, 'Sports & Outdoors': 24, 'Movies & TV': 25, 'Magazine Subscriptions': 26, 'Toys & Games': 27, 'Kindle Store': 28, 'Pet Supplies': 29, '<BOS>': 0}

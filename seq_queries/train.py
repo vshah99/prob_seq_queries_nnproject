@@ -69,7 +69,7 @@ def eval_epoch(args, model, dataloader, epoch_number):
     }
     data_len = len(dataloader)
 
-    validation_pbar = tqdm(dataloader)
+    validation_pbar = tqdm(dataloader,disable=args.disable_tqdm)
     for i, batch in enumerate(validation_pbar):
         output = eval_step(args, model, batch)
 
@@ -115,24 +115,27 @@ def save_checkpoint(args, model, optimizer, lr_scheduler, epoch):
     torch.save(model.state_dict(), final_path)
     print_log("Saved model at {}".format(final_path))
 
-def load_checkpoint(args, model):
-    folder_path = args.checkpoint_path
-    if not os.path.exists(folder_path):
-        print_log(f"Checkpoint path [{folder_path}] does not exist.")
-        return 0
+def load_checkpoint(args, model, checkpoint_path = None):
+    if checkpoint_path is None:
+        folder_path = args.checkpoint_path
+        if not os.path.exists(folder_path):
+            print_log(f"Checkpoint path [{folder_path}] does not exist.")
+            return 0
 
-    print_log(f"Checkpoint path [{folder_path}] does exist.")
-    files = [f for f in os.listdir(folder_path) if ".pt" in f]
-    if len(files) == 0:
-        print_log("No .pt files found in checkpoint path.")
-        return 0
+        print_log(f"Checkpoint path [{folder_path}] does exist.")
+        files = [f for f in os.listdir(folder_path) if ".pt" in f]
+        if len(files) == 0:
+            print_log("No .pt files found in checkpoint path.")
+            return 0
 
-    latest_model = sorted(files)[-1]
-    file_path = "{}/{}".format(folder_path.rstrip("/"), latest_model)
+        latest_model = sorted(files)[-1]
+        file_path = "{}/{}".format(folder_path.rstrip("/"), latest_model)
 
-    if not os.path.exists(file_path):
-        print_log(f"File [{file_path}] not found.")
-        return 0
+        if not os.path.exists(file_path):
+            print_log(f"File [{file_path}] not found.")
+            return 0
+    else:
+        file_path = checkpoint_path
 
     model.load_state_dict(torch.load(file_path, map_location=lambda storage, loc: storage))
     if args.cuda:

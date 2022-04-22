@@ -96,7 +96,6 @@ def sample_dynamic_target_token(
             # data_list.append(args.estimate_type(sample,**kwargs)[:,args.excluded_tokens[0]].flatten())
 
 
-        print("",flush=True)
         if "beam_search" in args.estimate_type.__name__:
             _stack_output('num_beams',data_list)
             _stack_output('dist_lower_bound',data_list)
@@ -105,6 +104,7 @@ def sample_dynamic_target_token(
         else:
             output['sample_estimates'] += data_list
 
+    print("Finished")
     if "beam_search" in args.estimate_type.__name__:
         _consolidate_output("num_beams")
         _consolidate_output("true_coverage")
@@ -113,7 +113,6 @@ def sample_dynamic_target_token(
     else:
         output['sample_estimates'] =torch.stack(output['sample_estimates'],
                                                 dim=0)
-        print(output['sample_estimates'].shape)
     args.model = None
     output['metadata'] = vars(args)
     return output

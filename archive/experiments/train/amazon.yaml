@@ -12,13 +12,13 @@ valid_epochs: 1
 
 # Model args
 rnn_type: LSTM
-hidden_size: 128
+hidden_size: 512
 finetune: false
 dropout: 0.3
 num_layers: 2
 masked_lm: false
 checkpoint_path: /home/showalte/research/prob_seq_queries/models/amazon/
-vocab_size: 68
+vocab_size: 30
 
 # Data args
 data_path: data/amazon/amazon_text_dict.pkl
