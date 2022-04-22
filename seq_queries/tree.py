@@ -217,7 +217,7 @@ class BeamSearchSampleTree(object):
         depth = 0
         log_p_total, log_q_total = 0.0, 0.0
         while depth < seq_len:
-            next_step = torch.distributions.Categorical(probabilities=cur_node.q_conditionals).sample()
+            next_step = torch.distributions.Categorical(probs=cur_node.q_conditionals).sample()
             log_p_total += cur_node.p_conditionals.log()[next_step]
             log_q_total += cur_node.q_conditionals.log()[next_step]
             depth += 1
