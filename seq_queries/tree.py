@@ -211,3 +211,20 @@ class BeamSearchSampleTree(object):
         for i in reversed(range(leaf_parent_depth)):
             self._adjust_marginal_probabilities_by_depth(i)
         self._remove_terminal_depth()
+
+    def sample_sequence(self, seq_len):
+        cur_node = self.root
+        depth = 0
+        log_p_total, log_q_total = 0.0, 0.0
+        while depth < seq_len:
+            next_step = torch.distributions.Categorical(probabilities=cur_node.q_conditionals).sample()
+            log_p_total += cur_node.p_conditionals.log()[next_step]
+            log_q_total += cur_node.q_conditionals.log()[next_step]
+            depth += 1
+            if next_step in cur_node.children:
+                cur_node = cur_node.children[next_step]
+            else:
+                break
+         
+         return log_p_total, log_q_total, cur_node.hidden_state, depth, next_step
+

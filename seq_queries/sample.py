@@ -194,7 +194,7 @@ def tree_is_estimate(
         device=device, 
         return_logits=True,
     )
-    next_log_dist = torch.log_softmax(next_log_dist, dim=-1)  #E (num_seqs, vocab_size)
+    next_log_dist = torch.log_softmax(next_log_dist, dim=-1)  # (num_seqs, vocab_size)
     dist_estimate = next_log_dist + log_p_totals.unsqueeze(dim=-1) - log_q_totals.unsqueeze(dim=-1)
     dist_estimate = dist_estimate.exp().cpu()
 
