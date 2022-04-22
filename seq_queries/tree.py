@@ -225,6 +225,5 @@ class BeamSearchSampleTree(object):
                 cur_node = cur_node.children[next_step]
             else:
                 break
-         
-         return log_p_total, log_q_total, cur_node.hidden_state, depth, next_step
-
+        
+        return log_p_total, log_q_total, cur_node.hidden_state, depth, next_step
