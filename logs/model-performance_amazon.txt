@@ -1,46 +1,109 @@
-[2022-04-22 10:12:02.250337] batch_size ........ 2048
-[2022-04-22 10:12:02.250375] checkpoint_path ... /home/showalte/research/prob_seq_queries/models/amazon/
-[2022-04-22 10:12:02.250383] cuda .............. True
-[2022-04-22 10:12:02.250389] data_path ......... data/amazon/amazon_text_dict.pkl
-[2022-04-22 10:12:02.250394] device_num ........ 0
-[2022-04-22 10:12:02.250400] disable_tqdm ...... True
-[2022-04-22 10:12:02.250406] do_test ........... False
-[2022-04-22 10:12:02.250412] do_valid .......... True
-[2022-04-22 10:12:02.250417] dont_print_args ... False
-[2022-04-22 10:12:02.250423] dont_shuffle ...... None
-[2022-04-22 10:12:02.250434] dropout ........... 0.3
-[2022-04-22 10:12:02.250441] estimate_type ..... <function mc_estimate at 0x7fe4c0d40280>
-[2022-04-22 10:12:02.250449] excluded_terms .... [1]
-[2022-04-22 10:12:02.250455] finetune .......... False
-[2022-04-22 10:12:02.250461] grad_clip ......... 1.0
-[2022-04-22 10:12:02.250466] hidden_size ....... 128
-[2022-04-22 10:12:02.250472] hist_len .......... 18
-[2022-04-22 10:12:02.250478] interp_func ....... <function lin_interp at 0x7fe4c0d403a0>
-[2022-04-22 10:12:02.250484] log_interval ...... 100
-[2022-04-22 10:12:02.250491] lr ................ 0.001
-[2022-04-22 10:12:02.250496] lr_decay_style .... constant
-[2022-04-22 10:12:02.250502] masked_lm ......... False
-[2022-04-22 10:12:02.250508] num_beams ......... 0.85
-[2022-04-22 10:12:02.250514] num_layers ........ 2
-[2022-04-22 10:12:02.250519] num_mc_samples .... 10000
-[2022-04-22 10:12:02.250524] num_workers ....... 0
-[2022-04-22 10:12:02.250530] optimizer ......... adam
-[2022-04-22 10:12:02.250536] proposal_func ..... <function lm_proposal at 0x7fe4c0d40160>
-[2022-04-22 10:12:02.250541] rnn_type .......... LSTM
-[2022-04-22 10:12:02.250547] save_epochs ....... 1
-[2022-04-22 10:12:02.250552] seed .............. 1234321
-[2022-04-22 10:12:02.250557] seq_len ........... 15
-[2022-04-22 10:12:02.250563] shuffle ........... True
-[2022-04-22 10:12:02.250569] sub_estimates ..... []
-[2022-04-22 10:12:02.250574] top_k ............. 0
-[2022-04-22 10:12:02.250580] top_p ............. 0
-[2022-04-22 10:12:02.250585] total_seq_len ..... 20
-[2022-04-22 10:12:02.250591] train_data_pct .... 0.9
-[2022-04-22 10:12:02.250597] train_epochs ...... 40
-[2022-04-22 10:12:02.250603] val_data_pct ...... 0.05
-[2022-04-22 10:12:02.250608] valid_epochs ...... 1
-[2022-04-22 10:12:02.250613] vocab_size ........ 30
-[2022-04-22 10:12:02.250619] warmup_pct ........ 0.01
-[2022-04-22 10:12:02.250625] weight_decay ...... 0.0
+[2022-04-22 10:22:09.767952] batch_size ........ 2048
+[2022-04-22 10:22:09.767977] checkpoint_path ... /home/showalte/research/prob_seq_queries/models/amazon/
+[2022-04-22 10:22:09.767984] cuda .............. True
+[2022-04-22 10:22:09.767990] data_path ......... data/amazon/amazon_text_dict.pkl
+[2022-04-22 10:22:09.767995] device_num ........ 0
+[2022-04-22 10:22:09.768001] disable_tqdm ...... True
+[2022-04-22 10:22:09.768007] do_test ........... False
+[2022-04-22 10:22:09.768013] do_valid .......... True
+[2022-04-22 10:22:09.768018] dont_print_args ... False
+[2022-04-22 10:22:09.768025] dont_shuffle ...... None
+[2022-04-22 10:22:09.768035] dropout ........... 0.3
+[2022-04-22 10:22:09.768042] estimate_type ..... <function mc_estimate at 0x7ff91b8a2280>
+[2022-04-22 10:22:09.768049] excluded_terms .... [1]
+[2022-04-22 10:22:09.768055] finetune .......... False
+[2022-04-22 10:22:09.768062] grad_clip ......... 1.0
+[2022-04-22 10:22:09.768067] hidden_size ....... 512
+[2022-04-22 10:22:09.768073] hist_len .......... 18
+[2022-04-22 10:22:09.768079] interp_func ....... <function lin_interp at 0x7ff91b8a23a0>
+[2022-04-22 10:22:09.768085] log_interval ...... 100
+[2022-04-22 10:22:09.768092] lr ................ 0.001
+[2022-04-22 10:22:09.768097] lr_decay_style .... constant
+[2022-04-22 10:22:09.768103] masked_lm ......... False
+[2022-04-22 10:22:09.768109] num_beams ......... 0.85
+[2022-04-22 10:22:09.768115] num_layers ........ 2
+[2022-04-22 10:22:09.768121] num_mc_samples .... 10000
+[2022-04-22 10:22:09.768126] num_workers ....... 0
+[2022-04-22 10:22:09.768132] optimizer ......... adam
+[2022-04-22 10:22:09.768138] proposal_func ..... <function lm_proposal at 0x7ff91b8a2160>
+[2022-04-22 10:22:09.768144] rnn_type .......... LSTM
+[2022-04-22 10:22:09.768149] save_epochs ....... 1
+[2022-04-22 10:22:09.768155] seed .............. 1234321
+[2022-04-22 10:22:09.768160] seq_len ........... 15
+[2022-04-22 10:22:09.768166] shuffle ........... True
+[2022-04-22 10:22:09.768172] sub_estimates ..... []
+[2022-04-22 10:22:09.768177] top_k ............. 0
+[2022-04-22 10:22:09.768183] top_p ............. 0
+[2022-04-22 10:22:09.768188] total_seq_len ..... 20
+[2022-04-22 10:22:09.768194] train_data_pct .... 0.9
+[2022-04-22 10:22:09.768200] train_epochs ...... 40
+[2022-04-22 10:22:09.768206] val_data_pct ...... 0.05
+[2022-04-22 10:22:09.768211] valid_epochs ...... 1
+[2022-04-22 10:22:09.768217] vocab_size ........ 30
+[2022-04-22 10:22:09.768223] warmup_pct ........ 0.01
+[2022-04-22 10:22:09.768228] weight_decay ...... 0.0
 ==================================================
 {'Industrial & Scientific': 1, 'Tools & Home Improvement': 2, 'Patio, Lawn & Garden': 3, 'Arts, Crafts & Sewing': 4, 'Handmade': 5, 'Grocery & Gourmet Food': 6, 'Collectibles & Fine Art': 7, 'Home & Kitchen': 8, 'Automotive': 9, 'Home & Business Services': 10, 'Office Products': 11, 'Musical Instruments': 12, 'Books': 13, 'Appliances': 14, 'Software': 15, 'Electronics': 16, 'Digital Music': 17, 'CDs & Vinyl': 18, 'Video Games': 19, 'Gift Cards': 20, 'Alexa Skills': 21, 'Clothing, Shoes & Jewelry': 22, 'Cell Phones & Accessories': 23, 'Sports & Outdoors': 24, 'Movies & TV': 25, 'Magazine Subscriptions': 26, 'Toys & Games': 27, 'Kindle Store': 28, 'Pet Supplies': 29, '<BOS>': 0}
+[2022-04-22 10:23:38.816781] Loaded model from /home/showalte/research/prob_seq_queries/models/amazon/model_000.pt
+{'loss': 1.734103251681104}
+==================================================
+[2022-04-22 10:24:13.378230] Loaded model from /home/showalte/research/prob_seq_queries/models/amazon/model_001.pt
+{'loss': 1.7329609405543271}
+==================================================
+[2022-04-22 10:24:51.672186] Loaded model from /home/showalte/research/prob_seq_queries/models/amazon/model_002.pt
+{'loss': 1.731702653011348}
+==================================================
+[2022-04-22 10:25:28.787467] Loaded model from /home/showalte/research/prob_seq_queries/models/amazon/model_003.pt
+{'loss': 1.7307793397487476}
+==================================================
+[2022-04-22 10:26:03.952722] Loaded model from /home/showalte/research/prob_seq_queries/models/amazon/model_004.pt
+{'loss': 1.7300729863226145}
+==================================================
+[2022-04-22 10:26:39.289350] Loaded model from /home/showalte/research/prob_seq_queries/models/amazon/model_005.pt
+{'loss': 1.7294530210929324}
+==================================================
+[2022-04-22 10:27:14.687321] Loaded model from /home/showalte/research/prob_seq_queries/models/amazon/model_006.pt
+{'loss': 1.7290186726794623}
+==================================================
+[2022-04-22 10:27:50.116945] Loaded model from /home/showalte/research/prob_seq_queries/models/amazon/model_007.pt
+{'loss': 1.728675244709404}
+==================================================
+[2022-04-22 10:28:28.958948] Loaded model from /home/showalte/research/prob_seq_queries/models/amazon/model_008.pt
+{'loss': 1.728357741204189}
+==================================================
+[2022-04-22 10:29:07.898096] Loaded model from /home/showalte/research/prob_seq_queries/models/amazon/model_009.pt
+{'loss': 1.7281103110451055}
+==================================================
+[2022-04-22 10:29:46.361803] Loaded model from /home/showalte/research/prob_seq_queries/models/amazon/model_010.pt
+{'loss': 1.7279815618773162}
+==================================================
+[2022-04-22 10:30:22.928707] Loaded model from /home/showalte/research/prob_seq_queries/models/amazon/model_011.pt
+{'loss': 1.727803552663044}
+==================================================
+[2022-04-22 10:30:57.967895] Loaded model from /home/showalte/research/prob_seq_queries/models/amazon/model_012.pt
+{'loss': 1.7275059519095481}
+==================================================
+[2022-04-22 10:31:32.318987] Loaded model from /home/showalte/research/prob_seq_queries/models/amazon/model_013.pt
+{'loss': 1.7273994941907176}
+==================================================
+[2022-04-22 10:32:06.518445] Loaded model from /home/showalte/research/prob_seq_queries/models/amazon/model_014.pt
+{'loss': 1.7273479839255221}
+==================================================
+[2022-04-22 10:32:40.704459] Loaded model from /home/showalte/research/prob_seq_queries/models/amazon/model_015.pt
+{'loss': 1.7271129411332808}
+==================================================
+[2022-04-22 10:33:15.067475] Loaded model from /home/showalte/research/prob_seq_queries/models/amazon/model_016.pt
+{'loss': 1.727052773551501}
+==================================================
+[2022-04-22 10:33:49.334748] Loaded model from /home/showalte/research/prob_seq_queries/models/amazon/model_017.pt
+{'loss': 1.726906672053188}
+==================================================
+[2022-04-22 10:34:23.544954] Loaded model from /home/showalte/research/prob_seq_queries/models/amazon/model_018.pt
+{'loss': 1.726780993805397}
+==================================================
+[2022-04-22 10:34:57.767329] Loaded model from /home/showalte/research/prob_seq_queries/models/amazon/model_019.pt
+{'loss': 1.726754486675519}
+==================================================
+[2022-04-22 10:35:32.168533] Loaded model from /home/showalte/research/prob_seq_queries/models/amazon/model_020.pt
+{'loss': 1.7265926087185544}
+==================================================

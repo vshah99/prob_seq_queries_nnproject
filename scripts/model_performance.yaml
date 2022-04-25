@@ -12,7 +12,7 @@ valid_epochs: 1
 
 # Model args
 rnn_type: LSTM
-hidden_size: 128
+hidden_size: 512
 finetune: false
 dropout: 0.3
 num_layers: 2

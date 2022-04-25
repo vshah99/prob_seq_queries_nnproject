@@ -38,10 +38,13 @@ from seq_queries.experiments import sample_token_centric, sample_dynamic_target_
 
 if __name__ == "__main__":
 
-    args = get_args(manual_config="config/testing/sample.yaml")
+    args = get_args(manual_config="scripts/temp_ablation.yaml")
     text_dict= load_text_data(args.data_path)
+    # write_pkl(text_dict,"../shakespeare_text_dict.pkl")
+    # sys.exit(1)
+
     # text_dict= load_app_data(args.data_path, seq_len=args.seq_len)
-    args.text_dict = text_dict
+
     print(text_dict['char_to_id'])
     train_dl, val_dl, test_dl = process_text_data(text_dict, args)
     # train_dl, val_dl, test_dl = process_app_data(text_dict, args)
@@ -52,13 +55,13 @@ if __name__ == "__main__":
     # estimates = sample_dynamic_target_token(args, val_dl, model, variance_only=True)
 
     #(hist_len, num_mc_samples=100000)
-    temperatures = [0.05]
+    temperatures = [1.0,0.0005,0.001,0.05,0.1,0.25,0.5,0.75,1,2,3,4,5,6,7,8,9,10,50,100]
 
     for temp in temperatures:
         model.temperature = temp
         print("Hist length {} | Total Seq Length {} | Num samples: {} | Temperature: {} |Sample type: importance".format(args.hist_len,args.total_seq_len, args.num_mc_samples,temp))
-        estimates = sample_dynamic_target_token(args, val_dl, model, variance_only=True)
+        estimates = sample_dynamic_target_token(args, val_dl, model, keep_samples = True)
         os.makedirs(f"data/importance_sampling/shakespeare/temp_ablation/",exist_ok=True)
-        write_pkl(estimates,f"data/importance_sampling/shakespeare/temp_ablation/val-dl_importance-sampling_{args.hist_len}h_{args.total_seq_len}s_{temp}t_exc-dynamic.pkl")
+        write_pkl(estimates,f"data/importance_sampling/shakespeare/temp_ablation/val-dl_importance-sampling_{args.hist_len}h_{args.total_seq_len}s_{temp:03}t_exc-dynamic.pkl")
         print("====="*10)
 

@@ -35,8 +35,7 @@ def sample_dynamic_target_token(
     args,
     dataloader,
     model = None,
-    mean_only = False,
-    variance_only = False,
+    keep_samples = True,
     **kwargs,):
     """Sample from any of these methods given an
     input dataloader, arguments, and potentially a model
@@ -49,7 +48,7 @@ def sample_dynamic_target_token(
 
     """
     args.model = model; print();
-    output = {"sample_estimates":[]}
+    output = {"sample_estimates":[],"sample_est_means":[],"sample_est_std":[]}
 
     def _tensor_output(key, data,output=output):
         if key not in output: output[key] = []
@@ -63,8 +62,12 @@ def sample_dynamic_target_token(
     def _consolidate_output(key,output=output):
         output[key] = torch.cat(output[key])
 
+    all_excluded_terms = []
     for dbatch in tqdm(dataloader, disable=args.disable_tqdm):
         data_list = []
+        var_list = []
+        mean_list = []
+        all_excluded_terms.append(dbatch[:,args.total_seq_len].cpu())
         data_batch =[dbatch[i,:args.hist_len] for i in range(dbatch.shape[0])]
 
         for i in range(dbatch.shape[0]):
@@ -73,7 +76,7 @@ def sample_dynamic_target_token(
                 print(".",end="",flush=True)
             sample = data_batch[i]
             args.sample_len = args.total_seq_len - args.hist_len
-            args.excluded_tokens = [dbatch[i,args.total_seq_len].cpu().item()]
+            args.excluded_terms = [dbatch[i,args.total_seq_len].cpu().item()]
             kwargs = vars(args)
             # print(''.join([args.text_dict['id_to_char'][s] for s in sample.tolist()]))
             # bs_tree = BeamSearchSampleTree(args.text_dict)
@@ -88,14 +91,20 @@ def sample_dynamic_target_token(
             # print(bs_tree.depth_dict)
             # sys.exit(1)
 
-            if variance_only:
-                data_list.append(torch.var(sample_output,dim=0))
-            elif mean_only:
-                data_list.append(sample_output.mean(dim=0))
-            else: data_list.append(sample_output)
+#             print(sample_output.shape, sample_output.max(),sample_output.min())
+#             print(sample_output.flatten().shape)
+#             print((sample_output==1).sum(), (sample_output==0).sum())
+#             print(sample_output.shape, sample_output.mean(dim=0).max(),sample_output.var(dim=0).max())
+            # sys.exit(1)
+            var_list.append(torch.std(sample_output,dim=0))
+            mean_list.append(sample_output.mean(dim=0))
+            if keep_samples:
+                data_list.append(sample_output)
+
             # data_list.append(args.estimate_type(sample,**kwargs)[:,args.excluded_tokens[0]].flatten())
 
 
+        print("",flush=True)
         if "beam_search" in args.estimate_type.__name__:
             _stack_output('num_beams',data_list)
             _stack_output('dist_lower_bound',data_list)
@@ -103,18 +112,25 @@ def sample_dynamic_target_token(
             _tensor_output('restricted_coverage',data_list)
         else:
             output['sample_estimates'] += data_list
+            output['sample_est_std'] += var_list
+            output['sample_est_means'] += mean_list
 
-    print("Finished")
     if "beam_search" in args.estimate_type.__name__:
         _consolidate_output("num_beams")
         _consolidate_output("true_coverage")
         _consolidate_output("restricted_coverage")
         _consolidate_output("dist_lower_bound")
     else:
-        output['sample_estimates'] =torch.stack(output['sample_estimates'],
-                                                dim=0)
+        if keep_samples:
+            output['sample_estimates'] =torch.stack(output['sample_estimates'],
+                                                dim=0).cpu()
+        output['sample_est_means'] =torch.stack(output['sample_est_means'],
+                                                dim=0).cpu()
+        output['sample_est_std'] =torch.stack(output['sample_est_std'],
+                                                dim=0).cpu()
     args.model = None
     output['metadata'] = vars(args)
+    output['excluded_terms'] = torch.cat(all_excluded_terms,dim=0).cpu().numpy()
     return output
 
 

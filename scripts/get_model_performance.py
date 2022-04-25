@@ -62,7 +62,7 @@ if __name__ == "__main__":
             load_checkpoint(args, model, checkpoint)
             new_valid = eval_epoch(args, model, val_dl, 0)
             print(new_valid)
-            print("====="*10)
+            print("====="*10,flush=True)
 
     # args.proposal_func = lm_proposal
     # for exp in sample_experiments:
