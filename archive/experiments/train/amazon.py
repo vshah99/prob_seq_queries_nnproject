@@ -18,7 +18,6 @@ import torch.nn as nn
 
 # os.chdir("../../")
 import sys
-print(os.getcwd())
 sys.path.insert(1, '/home/showalte/research/prob_seq_queries/')
 
 from seq_queries.model import get_model
@@ -43,8 +42,6 @@ def get_optimizer(model, args):
 def train(args,train_dataloader, valid_dataloader):
     print_log("Setting up model, optimizer, and learning rate scheduler.")
     model, optimizer, lr_scheduler = setup_model_and_optim(args, len(train_dataloader))
-    print(model)
-    sys.exit(1)
 
     report_model_stats(model)
 

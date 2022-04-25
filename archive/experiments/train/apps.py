@@ -18,11 +18,10 @@ import torch.nn as nn
 
 # os.chdir("../../")
 import sys
-print(os.getcwd())
 sys.path.insert(1, '/home/showalte/research/prob_seq_queries/')
 
 from seq_queries.model import get_model
-from seq_queries.data import load_text, process_text_data, load_app_data, process_app_data
+from seq_queries.data import load_app_data, process_app_data
 from seq_queries.arguments import get_args
 from seq_queries.train import *
 from seq_queries.optim import *
@@ -78,7 +77,7 @@ def train(args,train_dataloader, valid_dataloader):
 
 def main():
 
-    args = get_args(manual_config="config/testing/sample.yaml")
+    args = get_args(manual_config="archive/experiments/train/apps.yaml")
     ROOT = os.path.normpath(os.path.join(__file__,"../../../"))
     DEVICE = args.device
     DISABLE_TQDM = args.disable_tqdm
@@ -88,6 +87,7 @@ def main():
     print(text_dict['char_to_id'])
     # train_dl, val_dl, test_dl = process_text_data(text_dict, args)
     train_dl, val_dl, test_dl = process_app_data(text_dict, args)
+    print("====="*10)
 
     model, results = train(
         args,
