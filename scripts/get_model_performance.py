@@ -42,11 +42,11 @@ if __name__ == "__main__":
 
     args = get_args(manual_config="scripts/model_performance.yaml")
 
-    # Amazon
-    text_dict= load_amazon_data(args.data_path)
-    args.text_dict = text_dict
-    print(text_dict['char_to_id'],flush=True)
-    train_dl, val_dl, test_dl = process_amazon_data(text_dict, args)
+    # # Amazon
+    # text_dict= load_amazon_data(args.data_path)
+    # args.text_dict = text_dict
+    # print(text_dict['char_to_id'],flush=True)
+    # train_dl, val_dl, test_dl = process_amazon_data(text_dict, args)
 
     # # Apps
     # text_dict= load_app_data(args.data_path)

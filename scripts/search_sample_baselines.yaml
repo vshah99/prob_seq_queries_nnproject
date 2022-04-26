@@ -11,9 +11,9 @@ val_data_pct: 0.00005
 # # Apps
 # checkpoint_path: /home/showalte/research/prob_seq_queries/models/apps/
 # vocab_size: 88
-# device: 3
+# device: 7
 # seq_len: 15
-# hidden_size: 128
+# hidden_size: 512
 # val_data_pct: 0.001
 # data_path: data/apps/lsapp.tsv
 
