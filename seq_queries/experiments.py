@@ -14,8 +14,10 @@
 import os
 import sys
 import numpy as np
+from collections import defaultdict
 import torch
 import torch.nn as nn
+import torch.nn.functional as F
 
 from tqdm import tqdm
 # from .data import load_text, process_data
@@ -28,14 +30,40 @@ from .tree import BeamSearchSampleTree
 #   Function-Class Declaration
 #################################################################################
 
+@torch.no_grad()
+def entropy_vs_variance_bad_idea(
+    data_dict,
+    temperatures=[0.001,0.01,0.1,0.25,0.5,0.75,1,2,3,4,5,6,7,8,9,10,50,100],
+ ):
+    logits = data_dict['logits']
 
+    ref_probs = torch.gather(data_dict['sample_estimates'],-1,
+                    data_dict['excluded_terms'].repeat(
+                    (data_dict['sample_estimates'].shape[1],1)).T.unsqueeze(-1)).squeeze()
+    samples = defaultdict(dict)
+    for t in temperatures:
+        temp_logits = logits/t # (seqs x samples x steps x vocab)
+        # samples: (seqs, samples, steps)
+        temp_log_probs_by_step = torch.gather(F.log_softmax(temp_logits,dim=-1),-1,
+                                              data_dict['samples'].unsqueeze(-1)).squeeze()
+        # (seqs x samples)
+        temp_log_probs = temp_log_probs_by_step.sum(dim=-1)
+
+        entropy_est = -((torch.exp(temp_log_probs)/ref_probs)*temp_log_probs).mean(dim=-1)
+        # (seqs, 1)
+        variance_est = torch.var(torch.exp(temp_log_probs), dim=-1)
+        assert variance_est.shape == entropy_est.shape,\
+            f"Variance shape: {variance_est.shape} | Entropy shape: {entropy_est.shape}"
+        samples[t] = {"entropy":entropy_est, "variance": variance_est}
+    return samples
 
 @torch.no_grad()
 def sample_dynamic_target_token(
     args,
     dataloader,
     model = None,
-    keep_samples = True,
+    sample_artifacts=["sample_estimates","samples","logits",'sample_est_var','sample_est_mean'],
+    search_artifacts = ["num_beams","true_coverage","restricted_coverage","dist_lower_bound",],
     **kwargs,):
     """Sample from any of these methods given an
     input dataloader, arguments, and potentially a model
@@ -48,19 +76,24 @@ def sample_dynamic_target_token(
 
     """
     args.model = model; print();
-    output = {"sample_estimates":[],"sample_est_means":[],"sample_est_std":[]}
+    output = {}
 
     def _tensor_output(key, data,output=output):
         if key not in output: output[key] = []
         output[key].append(torch.Tensor([db[key] for db in data]))
 
-    def _stack_output(key, data,output=output):
+    def _add_output(key, data,output=output):
         if key not in output: output[key] = []
-        output[key].append(torch.stack([
-            torch.Tensor(db[key]) for db in data]))
+        output_data =[db[key] for db in data]
+        if not isinstance(output_data[0], (torch.Tensor, torch.LongTensor)):
+            output_data =[torch.Tensor(db[key]) for db in data]
+        output[key] += output_data
 
-    def _consolidate_output(key,output=output):
-        output[key] = torch.cat(output[key])
+    def _consolidate_output(key,output=output, stack=True):
+        if stack:
+            output[key] = torch.stack(output[key])
+        else:
+            output[key] = torch.cat(output[key])
 
     all_excluded_terms = []
     for dbatch in tqdm(dataloader, disable=args.disable_tqdm):
@@ -82,6 +115,7 @@ def sample_dynamic_target_token(
             # bs_tree = BeamSearchSampleTree(args.text_dict)
             # args.bs_tree = bs_tree
             sample_output =args.estimate_type(sample,**kwargs)
+            data_list.append(sample_output)
 
             # bs_tree = sample_output['tree']
             # print(bs_tree.depth_sizes)
@@ -91,46 +125,24 @@ def sample_dynamic_target_token(
             # print(bs_tree.depth_dict)
             # sys.exit(1)
 
-#             print(sample_output.shape, sample_output.max(),sample_output.min())
-#             print(sample_output.flatten().shape)
-#             print((sample_output==1).sum(), (sample_output==0).sum())
-#             print(sample_output.shape, sample_output.mean(dim=0).max(),sample_output.var(dim=0).max())
-            # sys.exit(1)
-            var_list.append(torch.std(sample_output,dim=0))
-            mean_list.append(sample_output.mean(dim=0))
-            if keep_samples:
-                data_list.append(sample_output)
-
-            # data_list.append(args.estimate_type(sample,**kwargs)[:,args.excluded_tokens[0]].flatten())
-
-
         print("",flush=True)
         if "beam_search" in args.estimate_type.__name__:
-            _stack_output('num_beams',data_list)
-            _stack_output('dist_lower_bound',data_list)
+            _add_output('num_beams',data_list)
+            _add_output('dist_lower_bound',data_list)
             _tensor_output('true_coverage',data_list)
             _tensor_output('restricted_coverage',data_list)
         else:
-            output['sample_estimates'] += data_list
-            output['sample_est_std'] += var_list
-            output['sample_est_means'] += mean_list
+            for add_out in sample_artifacts:
+                _add_output(add_out,data_list)
 
     if "beam_search" in args.estimate_type.__name__:
-        _consolidate_output("num_beams")
-        _consolidate_output("true_coverage")
-        _consolidate_output("restricted_coverage")
-        _consolidate_output("dist_lower_bound")
+        for c in search_artifacts: _consolidate_output(c)
     else:
-        if keep_samples:
-            output['sample_estimates'] =torch.stack(output['sample_estimates'],
-                                                dim=0).cpu()
-        output['sample_est_means'] =torch.stack(output['sample_est_means'],
-                                                dim=0).cpu()
-        output['sample_est_std'] =torch.stack(output['sample_est_std'],
-                                                dim=0).cpu()
+        for c in sample_artifacts: _consolidate_output(c)
+
     args.model = None
     output['metadata'] = vars(args)
-    output['excluded_terms'] = torch.cat(all_excluded_terms,dim=0).cpu().numpy()
+    output['excluded_terms'] = torch.cat(all_excluded_terms,dim=0).cpu()
     return output
 
 

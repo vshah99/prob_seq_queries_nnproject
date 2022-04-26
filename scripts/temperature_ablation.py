@@ -31,7 +31,7 @@ from seq_queries.arguments import get_args
 from seq_queries.train import load_checkpoint
 from seq_queries.utils import write_pkl
 from seq_queries.sample import lm_proposal
-from seq_queries.experiments import sample_token_centric, sample_dynamic_target_token
+from seq_queries.experiments import sample_token_centric, sample_dynamic_target_token, entropy_vs_variance
 #################################################################################
 #   Function-Class Declaration
 #################################################################################
@@ -55,12 +55,15 @@ if __name__ == "__main__":
     # estimates = sample_dynamic_target_token(args, val_dl, model, variance_only=True)
 
     #(hist_len, num_mc_samples=100000)
-    temperatures = [1.0,0.0005,0.001,0.05,0.1,0.25,0.5,0.75,1,2,3,4,5,6,7,8,9,10,50,100]
+    temperatures = [0.0005,0.001,0.05,0.1,0.25,0.5,0.75,1,2,3,4,5,6,7,8,9,10,50,100]
 
     for temp in temperatures:
-        model.temperature = temp
+        # model.temperature = temp
         print("Hist length {} | Total Seq Length {} | Num samples: {} | Temperature: {} |Sample type: importance".format(args.hist_len,args.total_seq_len, args.num_mc_samples,temp))
         estimates = sample_dynamic_target_token(args, val_dl, model, keep_samples = True)
+        # samples = entropy_vs_variance(estimates)
+        # write_pkl(samples,"notebooks/entropy_test_samples.pkl")
+        # sys.exit(1)
         os.makedirs(f"data/importance_sampling/shakespeare/temp_ablation/",exist_ok=True)
         write_pkl(estimates,f"data/importance_sampling/shakespeare/temp_ablation/val-dl_importance-sampling_{args.hist_len}h_{args.total_seq_len}s_{temp:03}t_exc-dynamic.pkl")
         print("====="*10)

@@ -13,6 +13,7 @@
 import os
 import sys
 import copy
+from collections import defaultdict
 import pickle as pkl
 
 import numpy as np
@@ -49,6 +50,7 @@ def uniform_proposal(hists, sample_len, model, vocab_size, excluded_terms,
         "proposal_log_prob": -sample_len * np.log(vocab_size - len(excluded_terms)),
         "model_log_prob": model_log_prob.unsqueeze(-1),
         "samples": samples,
+        "logits": logits,
         "next_log_dist": torch.log_softmax(logits, dim=-1)[..., -1, :],
     }
 
@@ -57,11 +59,12 @@ def lm_proposal(hists, sample_len, model, vocab_size, excluded_terms,
     assert(len(hists.shape) == 2)
 
     proposal_log_prob, model_log_prob = 0.0, 0.0
-    samples = []
+    samples = []; all_logits = []
     last_sample, rnn_args = hists, None
     for _ in range(sample_len):
         logits, rnn_args = model.get_next_probs(last_sample, rnn_args=rnn_args, max_batch_size=batch_size,
                                                 device=device, return_logits=True)
+        all_logits.append(logits)
 
         proposal_logits = logits.clone()
         proposal_logits[..., excluded_terms] = -float('inf')
@@ -74,13 +77,14 @@ def lm_proposal(hists, sample_len, model, vocab_size, excluded_terms,
 
     logits, _ = model.get_next_probs(last_sample, rnn_args=rnn_args, device=device,
                                      max_batch_size=batch_size,return_logits=True)  # get last subsequent distribution
+    all_logits.append(logits)
 
-    samples = torch.cat(samples, dim=-1)
-
+    samples = torch.cat((samples + [torch.ones_like(samples[0])*excluded_terms[0]]), dim=-1)
     return {
         "proposal_log_prob": proposal_log_prob.unsqueeze(-1),
         "model_log_prob": model_log_prob.unsqueeze(-1),
         "samples": samples,
+        "logits": torch.stack(all_logits,dim=1),
         "next_log_dist": torch.log_softmax(logits, dim=-1),
     }
 
@@ -89,7 +93,8 @@ def mc_estimate(hist, num_mc_samples, sample_len, model, excluded_terms, proposa
                 vocab_size, batch_size=128,temperature=1, top_k=0, top_p=0.0, device='cpu',
                 sub_estimates=None,**kwargs):
     assert(len(hist.shape) == 1)  # (hist_seq_len), Only conditions on a single history
-    dist_estimate = []
+    out_dict = defaultdict(list)
+    cat_list = ['sample_estimates','samples','logits']
     remaining_samples = num_mc_samples
     while remaining_samples > 0:
         sample_out = proposal_func(
@@ -106,29 +111,36 @@ def mc_estimate(hist, num_mc_samples, sample_len, model, excluded_terms, proposa
         )
         remaining_samples -= batch_size
         term_log_prob = sample_out["next_log_dist"] + sample_out["model_log_prob"] - sample_out["proposal_log_prob"]
-        dist_estimate.append(term_log_prob.exp().cpu())
 
-    dist_estimate = torch.cat(dist_estimate,dim=0)
+        out_dict['sample_estimates'].append(term_log_prob.exp().cpu())
+        out_dict['samples'].append(sample_out['samples'])
+        out_dict['logits'].append(sample_out['logits'])
+
+    for item in cat_list:
+        out_dict[item] = torch.cat(out_dict[item],dim=0)
+
     if sub_estimates is not None and len(sub_estimates) > 0:
         # (samples x vocab) -> (sub-estimates x vocab)
-        dist_estimate = torch.stack(
+        out_dict['sample_estimates'] = torch.stack(
             # (vocab)
-            [dist_estimate[:s, :].mean(dim=0).flatten()
+            [out_dict['sample_estimates'][:s, :].mean(dim=0).flatten()
              for s in sorted(sub_estimates)
         ])
 
-    return dist_estimate
+    out_dict['sample_est_var'] =torch.var(out_dict['sample_estimates'],dim=0)
+    out_dict['sample_est_mean'] =out_dict['sample_estimates'].mean(dim=0)
+    return out_dict
 
 @torch.no_grad()
 def tree_is_estimate(
-    tree, 
-    bs_lower_bound, 
-    num_samples, 
-    seq_len, 
-    model, 
-    excluded_terms, 
-    batch_size, 
-    device, 
+    tree,
+    bs_lower_bound,
+    num_samples,
+    seq_len,
+    model,
+    excluded_terms,
+    batch_size,
+    device,
     sub_estimates=None,
     **kwargs,
 ):
@@ -165,10 +177,10 @@ def tree_is_estimate(
         else:
             rnn_args = hidden_states[..., to_update, :]
         logits, rnn_args = model.get_next_probs(
-            last_tokens[to_update, :], 
-            rnn_args=rnn_args, 
+            last_tokens[to_update, :],
+            rnn_args=rnn_args,
             max_batch_size=batch_size,
-            device=device, 
+            device=device,
             return_logits=True,
         )
 
@@ -188,10 +200,10 @@ def tree_is_estimate(
 
     # Compute final distributions for estimate
     next_log_dist, _ = model.get_next_probs(
-        last_tokens, 
-        hidden_states, 
+        last_tokens,
+        hidden_states,
         max_batch_size=batch_size,
-        device=device, 
+        device=device,
         return_logits=True,
     )
     next_log_dist = torch.log_softmax(next_log_dist, dim=-1)  # (num_seqs, vocab_size)
@@ -258,7 +270,7 @@ def beam_search_lower_bound(hist, num_beams, sample_len, model, excluded_terms, 
                 )
             else:
                 parents = bs_tree.add_child_nodes(
-                    symbols=beams, 
+                    symbols=beams,
                     parents=parents,
                     log_q_conditionals=stored_restricted_log_probs,
                     log_p_conditionals=stored_next_log_probs,
