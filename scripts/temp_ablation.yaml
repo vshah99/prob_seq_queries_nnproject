@@ -1,0 +1,64 @@
+# checkpoint_path: /home/showalte/research/prob_seq_queries/models/amazon/
+# data_path: data/amazon/amazon_text_dict.pkl
+# device:2
+# hidden_size: 512
+# vocab_size: 30
+# val_data_pct: 0.0001
+# seq_len: 15
+
+# # Apps
+# checkpoint_path: /home/showalte/research/prob_seq_queries/models/apps/
+# vocab_size: 88
+# device: 3
+# hidden_size: 128
+# val_data_pct: 0.001
+# data_path: data/apps/lsapp.tsv
+# seq_len: 15
+
+# Shakespeare
+checkpoint_path: /home/showalte/research/prob_seq_queries/models/shakespeare/
+vocab_size: 68
+device: 4
+hidden_size: 128
+val_data_pct: 0.05
+data_path: data/shakespeare/shakespeare_input.txt
+seq_len: 100
+
+
+seed: 1234321
+dont_print_args: False
+cuda: true
+train_data_pct: 0.9
+do_test: false
+do_valid: true
+valid_epochs: 1
+
+# Model args
+rnn_type: LSTM
+finetune: false
+dropout: 0.3
+num_layers: 2
+masked_lm: false
+
+# Data args
+batch_size: 2048
+
+# Training args not needed here
+# Evaluation arguments not needed here
+# Sampling arguments are provided by the testing script explicitly
+disable_tqdm: true
+
+# Sampling args
+estimate_type: sample
+proposal_func: lm
+interp_func: linear
+top_k: 0
+top_p: 0
+num_beams: 0.85
+num_mc_samples: 100
+sub_estimates: []
+total_seq_len: 20
+hist_len: 17
+excluded_terms: [1]
+
+

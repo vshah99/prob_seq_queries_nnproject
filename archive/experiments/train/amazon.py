@@ -1,6 +1,6 @@
 #################################################################################
 #
-#             Project Title:  Train shakespeare LM
+#             Project Title:  Train Amazon LM
 #             Author:         Sam Showalter
 #             Date:           2022-03-25
 #
@@ -21,7 +21,7 @@ import sys
 sys.path.insert(1, '/home/showalte/research/prob_seq_queries/')
 
 from seq_queries.model import get_model
-from seq_queries.data import load_app_data, process_app_data
+from seq_queries.data import load_amazon_data, process_amazon_data
 from seq_queries.arguments import get_args
 from seq_queries.train import *
 from seq_queries.optim import *
@@ -77,26 +77,27 @@ def train(args,train_dataloader, valid_dataloader):
 
 def main():
 
-    args = get_args(manual_config="archive/experiments/train/apps.yaml")
+    args = get_args(manual_config="/home/showalte/research/prob_seq_queries/archive/experiments/train/amazon.yaml")
     ROOT = os.path.normpath(os.path.join(__file__,"../../../"))
     DEVICE = args.device
     DISABLE_TQDM = args.disable_tqdm
     # text_dict= load_text(args.data_path)
-    text_dict= load_app_data(args.data_path, seq_len=args.seq_len)
+    text_dict= load_amazon_data(args.data_path)
     args.text_dict = text_dict
     print(text_dict['char_to_id'])
+    print("====="*10, flush=True)
     # train_dl, val_dl, test_dl = process_text_data(text_dict, args)
-    train_dl, val_dl, test_dl = process_app_data(text_dict, args)
-    print("====="*10)
+    train_dl, val_dl, test_dl = process_amazon_data(text_dict, args)
+    args.text_dict['text'] = None #Keep memory small
 
     model, results = train(
         args,
         train_dl, val_dl,
     )
 
-    save_path =os.path.join(ROOT,"models/apps/")
+    save_path =os.path.join(ROOT,"models/amazon/")
     os.makedirs(save_path,exist_ok = True)
-    torch.save(model.state_dict(), f"{save_path}/apps_model.pt")
+    torch.save(model.state_dict(), f"{save_path}/amazon_model.pt")
 
 #################################################################################
 #   Main Method

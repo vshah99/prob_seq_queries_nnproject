@@ -1,8 +1,9 @@
+
 #################################################################################
 #
-#             Project Title:  Scratch Work
+#             Project Title:  Temperature ablations
 #             Author:         Sam Showalter
-#             Date:           2022-03-25
+#             Date:           2022-04-21
 #
 #################################################################################
 
@@ -14,6 +15,9 @@
 import os
 import sys
 import copy
+import glob
+
+sys.path.insert(1, '/home/showalte/research/prob_seq_queries/')
 
 import numpy as np
 import torch
@@ -24,9 +28,9 @@ from collections import defaultdict
 
 from seq_queries.sample import sample
 from seq_queries.model import get_model
-from seq_queries.data import load_text_data, process_text_data, load_app_data, process_app_data
+from seq_queries.data import load_text_data, process_text_data, load_app_data, process_app_data, load_amazon_data, process_amazon_data
 from seq_queries.arguments import get_args
-from seq_queries.train import load_checkpoint
+from seq_queries.train import load_checkpoint, eval_epoch
 from seq_queries.utils import write_pkl
 from seq_queries.sample import lm_proposal
 from seq_queries.experiments import sample_token_centric, sample_dynamic_target_token
@@ -36,44 +40,29 @@ from seq_queries.experiments import sample_token_centric, sample_dynamic_target_
 
 if __name__ == "__main__":
 
-    args = get_args(manual_config="config/testing/sample.yaml")
-    text_dict= load_text_data(args.data_path)
-    # text_dict= load_app_data(args.data_path, seq_len=args.seq_len)
-    args.text_dict = text_dict
-    print(text_dict['char_to_id'])
-    train_dl, val_dl, test_dl = process_text_data(text_dict, args)
+    args = get_args(manual_config="scripts/model_performance.yaml")
+
+    # # Amazon
+    # text_dict= load_amazon_data(args.data_path)
+    # args.text_dict = text_dict
+    # print(text_dict['char_to_id'],flush=True)
+    # train_dl, val_dl, test_dl = process_amazon_data(text_dict, args)
+
+    # # Apps
+    # text_dict= load_app_data(args.data_path)
+    # args.text_dict = text_dict
+    # print(text_dict['char_to_id'],flush=True)
     # train_dl, val_dl, test_dl = process_app_data(text_dict, args)
+
     model = get_model(args)
+    valid_perfs = []
     if args.checkpoint_path:
-        load_checkpoint(args, model)
-    model.eval()
-    estimates = sample_dynamic_target_token(args, val_dl, model)
-    sys.exit(1)
-
-    #(hist_len, num_mc_samples=100000)
-    sample_experiments = [10,15,20,25]
-
-    # For all sequences, target is the 31st token
-    # (hist_len,coverage, total_seq_len=30,estimate_type=search)
-    lb_experiments = [
-        # (28,0.10),
-        # (25,0.99),
-        # (24,0.99),
-        # (23,0.95),
-        # (22,0.95),
-        # (21,0.90),
-        (20,0.60),
-        (15,0.50),
-        (17,0.55),
-    ]
-
-    # for exp in sample_experiments:
-    #     args.hist_len = exp
-    #     print("Hist length {} | Total Seq Length {} | Num samples: {} | Sample type: random".format(args.hist_len,args.total_seq_len, args.num_mc_samples))
-    #     estimates = sample_dynamic_target_token(args, val_dl, model)
-    #     os.makedirs(f"data/random_sampling/shakespeare/",exist_ok=True)
-    #     write_pkl(estimates,f"data/random_sampling/shakespeare/val-dl_random-sampling_{args.hist_len}h_{args.total_seq_len}s_exc-dynamic.pkl")
-    #     print("====="*10)
+        checkpoints = glob.glob(f"{args.checkpoint_path}/*.pt")
+        for checkpoint in checkpoints:
+            load_checkpoint(args, model, checkpoint)
+            new_valid = eval_epoch(args, model, val_dl, 0)
+            print(new_valid)
+            print("====="*10,flush=True)
 
     # args.proposal_func = lm_proposal
     # for exp in sample_experiments:
