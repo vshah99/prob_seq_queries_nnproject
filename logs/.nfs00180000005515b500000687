@@ -1,0 +1,52 @@
+[2022-04-26 10:54:25.065822] batch_size ........ 2048
+[2022-04-26 10:54:25.065841] checkpoint_path ... /home/showalte/research/prob_seq_queries/models/amazon/
+[2022-04-26 10:54:25.065845] cuda .............. True
+[2022-04-26 10:54:25.065848] data_path ......... data/amazon/amazon_text_dict.pkl
+[2022-04-26 10:54:25.065851] device_num ........ 2
+[2022-04-26 10:54:25.065854] disable_tqdm ...... True
+[2022-04-26 10:54:25.065857] do_test ........... False
+[2022-04-26 10:54:25.065860] do_valid .......... True
+[2022-04-26 10:54:25.065863] dont_print_args ... False
+[2022-04-26 10:54:25.065866] dont_shuffle ...... None
+[2022-04-26 10:54:25.065873] dropout ........... 0.3
+[2022-04-26 10:54:25.065877] estimate_type ..... <function mc_estimate at 0x7f4d93ec9430>
+[2022-04-26 10:54:25.065881] excluded_terms .... [1]
+[2022-04-26 10:54:25.065886] finetune .......... False
+[2022-04-26 10:54:25.065890] grad_clip ......... 1.0
+[2022-04-26 10:54:25.065893] hidden_size ....... 512
+[2022-04-26 10:54:25.065896] hist_len .......... 13
+[2022-04-26 10:54:25.065899] interp_func ....... <function lin_interp at 0x7f4d93ec9550>
+[2022-04-26 10:54:25.065902] log_interval ...... 100
+[2022-04-26 10:54:25.065906] lr ................ 0.001
+[2022-04-26 10:54:25.065909] lr_decay_style .... constant
+[2022-04-26 10:54:25.065912] masked_lm ......... False
+[2022-04-26 10:54:25.065915] num_beams ......... 0.85
+[2022-04-26 10:54:25.065918] num_layers ........ 2
+[2022-04-26 10:54:25.065921] num_mc_samples .... 10000
+[2022-04-26 10:54:25.065924] num_workers ....... 0
+[2022-04-26 10:54:25.065926] optimizer ......... adam
+[2022-04-26 10:54:25.065930] proposal_func ..... <function lm_proposal at 0x7f4d93ec9310>
+[2022-04-26 10:54:25.065933] rnn_type .......... LSTM
+[2022-04-26 10:54:25.065935] save_epochs ....... 1
+[2022-04-26 10:54:25.065938] seed .............. 1234321
+[2022-04-26 10:54:25.065941] seq_len ........... 15
+[2022-04-26 10:54:25.065944] shuffle ........... True
+[2022-04-26 10:54:25.065947] sub_estimates ..... []
+[2022-04-26 10:54:25.065949] top_k ............. 0
+[2022-04-26 10:54:25.065952] top_p ............. 0
+[2022-04-26 10:54:25.065955] total_seq_len ..... 15
+[2022-04-26 10:54:25.065958] train_data_pct .... 0.9
+[2022-04-26 10:54:25.065961] train_epochs ...... 40
+[2022-04-26 10:54:25.065966] val_data_pct ...... 0.001
+[2022-04-26 10:54:25.065968] valid_epochs ...... 1
+[2022-04-26 10:54:25.065971] vocab_size ........ 30
+[2022-04-26 10:54:25.065974] warmup_pct ........ 0.01
+[2022-04-26 10:54:25.065977] weight_decay ...... 0.0
+==================================================
+{'Industrial & Scientific': 1, 'Tools & Home Improvement': 2, 'Patio, Lawn & Garden': 3, 'Arts, Crafts & Sewing': 4, 'Handmade': 5, 'Grocery & Gourmet Food': 6, 'Collectibles & Fine Art': 7, 'Home & Kitchen': 8, 'Automotive': 9, 'Home & Business Services': 10, 'Office Products': 11, 'Musical Instruments': 12, 'Books': 13, 'Appliances': 14, 'Software': 15, 'Electronics': 16, 'Digital Music': 17, 'CDs & Vinyl': 18, 'Video Games': 19, 'Gift Cards': 20, 'Alexa Skills': 21, 'Clothing, Shoes & Jewelry': 22, 'Cell Phones & Accessories': 23, 'Sports & Outdoors': 24, 'Movies & TV': 25, 'Magazine Subscriptions': 26, 'Toys & Games': 27, 'Kindle Store': 28, 'Pet Supplies': 29, '<BOS>': 0}
+[2022-04-26 10:55:34.582679] Checkpoint path [/home/showalte/research/prob_seq_queries/models/amazon/] does exist.
+[2022-04-26 10:55:34.643099] Loaded model from /home/showalte/research/prob_seq_queries/models/amazon/model_100.pt
+Hist length 12 | Total Seq Length 15 | Num samples: 10000 | |Sample type: importance
+
+.............................................................................................................................................................................................................
+.............................................................................................................................
