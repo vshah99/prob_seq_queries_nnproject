@@ -44,3 +44,8 @@
 [2022-04-26 10:54:25.065977] weight_decay ...... 0.0
 ==================================================
 {'Industrial & Scientific': 1, 'Tools & Home Improvement': 2, 'Patio, Lawn & Garden': 3, 'Arts, Crafts & Sewing': 4, 'Handmade': 5, 'Grocery & Gourmet Food': 6, 'Collectibles & Fine Art': 7, 'Home & Kitchen': 8, 'Automotive': 9, 'Home & Business Services': 10, 'Office Products': 11, 'Musical Instruments': 12, 'Books': 13, 'Appliances': 14, 'Software': 15, 'Electronics': 16, 'Digital Music': 17, 'CDs & Vinyl': 18, 'Video Games': 19, 'Gift Cards': 20, 'Alexa Skills': 21, 'Clothing, Shoes & Jewelry': 22, 'Cell Phones & Accessories': 23, 'Sports & Outdoors': 24, 'Movies & TV': 25, 'Magazine Subscriptions': 26, 'Toys & Games': 27, 'Kindle Store': 28, 'Pet Supplies': 29, '<BOS>': 0}
+[2022-04-26 10:55:34.582679] Checkpoint path [/home/showalte/research/prob_seq_queries/models/amazon/] does exist.
+[2022-04-26 10:55:34.643099] Loaded model from /home/showalte/research/prob_seq_queries/models/amazon/model_100.pt
+Hist length 12 | Total Seq Length 15 | Num samples: 10000 | |Sample type: importance
+
+................
