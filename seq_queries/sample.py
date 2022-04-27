@@ -91,10 +91,10 @@ def lm_proposal(hists, sample_len, model, vocab_size, excluded_terms,
 @torch.no_grad()
 def mc_estimate(hist, num_mc_samples, sample_len, model, excluded_terms, proposal_func,
                 vocab_size, batch_size=128,temperature=1, top_k=0, top_p=0.0, device='cpu',
+                cat_list = ['sample_estimates','q_log_prob'],
                 sub_estimates=None,**kwargs):
     assert(len(hist.shape) == 1)  # (hist_seq_len), Only conditions on a single history
     out_dict = defaultdict(list)
-    cat_list = ['sample_estimates','samples','logits']
     remaining_samples = num_mc_samples
     while remaining_samples > 0:
         sample_out = proposal_func(
@@ -113,8 +113,9 @@ def mc_estimate(hist, num_mc_samples, sample_len, model, excluded_terms, proposa
         term_log_prob = sample_out["next_log_dist"] + sample_out["model_log_prob"] - sample_out["proposal_log_prob"]
 
         out_dict['sample_estimates'].append(term_log_prob.exp().cpu())
-        out_dict['samples'].append(sample_out['samples'])
-        out_dict['logits'].append(sample_out['logits'])
+        out_dict['q_log_prob'].append(sample_out['proposal_log_prob'])
+        # out_dict['samples'].append(sample_out['samples'])
+        # out_dict['logits'].append(sample_out['logits'])
 
     for item in cat_list:
         out_dict[item] = torch.cat(out_dict[item],dim=0)

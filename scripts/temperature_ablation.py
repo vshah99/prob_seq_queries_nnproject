@@ -31,7 +31,7 @@ from seq_queries.arguments import get_args
 from seq_queries.train import load_checkpoint
 from seq_queries.utils import write_pkl
 from seq_queries.sample import lm_proposal
-from seq_queries.experiments import sample_token_centric, sample_dynamic_target_token, entropy_vs_variance
+from seq_queries.experiments import sample_token_centric, sample_dynamic_target_token
 #################################################################################
 #   Function-Class Declaration
 #################################################################################
@@ -66,5 +66,6 @@ if __name__ == "__main__":
         # sys.exit(1)
         os.makedirs(f"data/importance_sampling/shakespeare/temp_ablation/",exist_ok=True)
         write_pkl(estimates,f"data/importance_sampling/shakespeare/temp_ablation/val-dl_importance-sampling_{args.hist_len}h_{args.total_seq_len}s_{temp:03}t_exc-dynamic.pkl")
+        # sys.exit(1)
         print("====="*10)
 

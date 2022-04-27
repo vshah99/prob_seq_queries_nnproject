@@ -7,6 +7,7 @@ import json
 import ast
 
 from datetime import datetime
+import torch.nn.functional as F
 
 #######################################################################
 # Data
@@ -47,6 +48,16 @@ def read_json(filepath):
 def write_json(data,filepath):
     with open(filepath,'w') as file:
         json.dump(data,file)
+
+
+#######################################################################
+# Model evaluation metrics
+#######################################################################
+
+def accuracy_score(gt, logits):
+    preds = torch.argmax(F.softmax(logits,dim=-1),dim=-1).flatten()
+    return ((preds == gt).sum()/preds.shape[0])*100
+
 
 #######################################################################
 # Classes

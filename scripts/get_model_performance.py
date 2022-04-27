@@ -48,11 +48,12 @@ if __name__ == "__main__":
     # print(text_dict['char_to_id'],flush=True)
     # train_dl, val_dl, test_dl = process_amazon_data(text_dict, args)
 
-    # # Apps
-    # text_dict= load_app_data(args.data_path)
-    # args.text_dict = text_dict
-    # print(text_dict['char_to_id'],flush=True)
-    # train_dl, val_dl, test_dl = process_app_data(text_dict, args)
+    # Apps
+    text_dict= load_app_data(args.data_path)
+    args.text_dict = text_dict
+    print(text_dict['char_to_id'],flush=True)
+    print("====="*10,flush=True)
+    train_dl, val_dl, test_dl = process_app_data(text_dict, args)
 
     model = get_model(args)
     valid_perfs = []

@@ -122,6 +122,7 @@ def training_args(parser):
     group.add_argument("--batch_size", type=int, default=32, help="Number of samples per batch.")
     group.add_argument("--log_interval", type=int, default=100, help="Number of batches to complete before printing intermediate results.")
     group.add_argument("--save_epochs", type=int, default=1, help="Number of training epochs to complete between model checkpoint saves.")
+    group.add_argument("--val_metrics", type=_str2list, default=['accuracy'], help="Validation metrics to track for models")
     group.add_argument("--valid_epochs", type=int, default=1, help="Valid epochs for evaluating on validation dataset.")
     group.add_argument("--optimizer", type=str, default="adam", help="Type of optimization algorithm to use.")
     group.add_argument("--grad_clip", type=float, default=1.0, help="Threshold for gradient clipping.")

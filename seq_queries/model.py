@@ -19,7 +19,7 @@ import torch.nn.functional as F
 import random
 
 from abc import ABC, abstractmethod
-from .utils import _tup_cpu
+from .utils import _tup_cpu, accuracy_score
 
 #################################################################################
 #   Function-Class Declaration
@@ -73,7 +73,7 @@ class CausalLM(LM, nn.Module):
             "misc_output": misc_out
         }
 
-    def graded_forward(self, src, tgt=None, **kwargs):
+    def graded_forward(self, src, tgt=None,val_metrics=None, **kwargs):
         """Forward pass during training. Computes self-supervised mean cross-entropy
         loss."""
         if tgt is None:
@@ -82,11 +82,23 @@ class CausalLM(LM, nn.Module):
         else:
             x_in, x_tgt = src, tgt
 
+        val_metric_roster = {
+            "accuracy": accuracy_score,
+        }
+
+
         output = self.forward(x_in)
         output["loss"] = self.loss_func(
             output["logits"].reshape(-1, self.vocab_size),
             x_tgt.reshape(-1),
         )
+
+        if val_metrics is not None:
+            for metric in val_metrics:
+                assert metric in val_metric_roster,\
+                    f"Metric {metric} not found in roster"
+            output[metric] = val_metric_roster[metric](x_tgt.reshape(-1),
+                                                       output['logits'].reshape(-1,self.vocab_size))
 
         return output
 

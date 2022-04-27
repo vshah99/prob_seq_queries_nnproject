@@ -30,39 +30,39 @@ from .tree import BeamSearchSampleTree
 #   Function-Class Declaration
 #################################################################################
 
-@torch.no_grad()
-def entropy_vs_variance_bad_idea(
-    data_dict,
-    temperatures=[0.001,0.01,0.1,0.25,0.5,0.75,1,2,3,4,5,6,7,8,9,10,50,100],
- ):
-    logits = data_dict['logits']
+# @torch.no_grad()
+# def entropy_vs_variance_bad_idea(
+#     data_dict,
+#     temperatures=[0.001,0.01,0.1,0.25,0.5,0.75,1,2,3,4,5,6,7,8,9,10,50,100],
+#  ):
+#     logits = data_dict['logits']
 
-    ref_probs = torch.gather(data_dict['sample_estimates'],-1,
-                    data_dict['excluded_terms'].repeat(
-                    (data_dict['sample_estimates'].shape[1],1)).T.unsqueeze(-1)).squeeze()
-    samples = defaultdict(dict)
-    for t in temperatures:
-        temp_logits = logits/t # (seqs x samples x steps x vocab)
-        # samples: (seqs, samples, steps)
-        temp_log_probs_by_step = torch.gather(F.log_softmax(temp_logits,dim=-1),-1,
-                                              data_dict['samples'].unsqueeze(-1)).squeeze()
-        # (seqs x samples)
-        temp_log_probs = temp_log_probs_by_step.sum(dim=-1)
+#     ref_probs = torch.gather(data_dict['sample_estimates'],-1,
+#                     data_dict['excluded_terms'].repeat(
+#                     (data_dict['sample_estimates'].shape[1],1)).T.unsqueeze(-1)).squeeze()
+#     samples = defaultdict(dict)
+#     for t in temperatures:
+#         temp_logits = logits/t # (seqs x samples x steps x vocab)
+#         # samples: (seqs, samples, steps)
+#         temp_log_probs_by_step = torch.gather(F.log_softmax(temp_logits,dim=-1),-1,
+#                                               data_dict['samples'].unsqueeze(-1)).squeeze()
+#         # (seqs x samples)
+#         temp_log_probs = temp_log_probs_by_step.sum(dim=-1)
 
-        entropy_est = -((torch.exp(temp_log_probs)/ref_probs)*temp_log_probs).mean(dim=-1)
-        # (seqs, 1)
-        variance_est = torch.var(torch.exp(temp_log_probs), dim=-1)
-        assert variance_est.shape == entropy_est.shape,\
-            f"Variance shape: {variance_est.shape} | Entropy shape: {entropy_est.shape}"
-        samples[t] = {"entropy":entropy_est, "variance": variance_est}
-    return samples
+#         entropy_est = -((torch.exp(temp_log_probs)/ref_probs)*temp_log_probs).mean(dim=-1)
+#         # (seqs, 1)
+#         variance_est = torch.var(torch.exp(temp_log_probs), dim=-1)
+#         assert variance_est.shape == entropy_est.shape,\
+#             f"Variance shape: {variance_est.shape} | Entropy shape: {entropy_est.shape}"
+#         samples[t] = {"entropy":entropy_est, "variance": variance_est}
+#     return samples
 
 @torch.no_grad()
 def sample_dynamic_target_token(
     args,
     dataloader,
     model = None,
-    sample_artifacts=["sample_estimates","samples","logits",'sample_est_var','sample_est_mean'],
+    sample_artifacts=["sample_estimates",'q_log_prob','sample_est_var','sample_est_mean'],
     search_artifacts = ["num_beams","true_coverage","restricted_coverage","dist_lower_bound",],
     **kwargs,):
     """Sample from any of these methods given an

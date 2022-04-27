@@ -22,7 +22,7 @@ def forward_pass(args, batch, model):
         # batch = {k:v.to(args.device) for k,v in batch.items()}
 
     # Forward Pass
-    return model.graded_forward(batch)
+    return model.graded_forward(batch, val_metrics=args.val_metrics)
 
 def backward_pass(args, loss, model, optimizer, lr_scheduler):
     optimizer.zero_grad()
