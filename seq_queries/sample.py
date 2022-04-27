@@ -138,7 +138,7 @@ def tree_is_estimate(
     last_tokens = []
 
     for _ in range(num_samples):
-        log_p, log_q, hs, depth_reached, last_token = tree.sample_sequence(seq_len)
+        log_p, log_q, hs, depth_reached, last_token, _ = tree.sample_sequence(seq_len)
         log_p_totals.append(log_p)
         log_q_totals.append(log_q)
         hidden_states.append(hs)
@@ -154,11 +154,11 @@ def tree_is_estimate(
         )
     else:
         hidden_states = torch.stack(hidden_states, dim=1)
-    num_remaining_steps = torch.tensor(num_remaining_steps, dtype=torch.int32, device=hidden_states.device)
+    num_remaining_steps = torch.tensor(num_remaining_steps, dtype=torch.int32, device=log_p_totals.device)
     last_tokens = torch.stack(last_tokens, dim=0).unsqueeze(1)  # need to have a sequence length of 1
 
     # Finish sampling incomplete sequences from model
-    while (num_remaining_steps > 0).all():
+    while (num_remaining_steps > 0).any():
         to_update = num_remaining_steps > 0
         if isinstance(hidden_states, tuple):
             rnn_args = (hidden_states[0][..., to_update, :], hidden_states[1][..., to_update, :])
@@ -292,7 +292,7 @@ def beam_search_lower_bound(hist, num_beams, sample_len, model, excluded_terms, 
         bs_tree.add_child_nodes(
                     beams,parents,
                     final_log_probs,
-                    next_log_probs,
+                    final_log_probs.clone(), #next_log_probs,
                     states, seq_inds,
                     depth=n_cur+1)
     return {

@@ -19,8 +19,11 @@ def _hidden_state_select(state,i):
         state = state[...,i,:]
     return state
 
-def _tup_cpu(tup):
-    return tuple([t.cpu() for t in tup])
+def _tup_cpu(tup, force=True):
+    if force or isinstance(tup, tuple):
+        return tuple([t.cpu() for t in tup])
+    else:
+        return tup.cpu()
 
 def read_yaml(filename):
     if filename is None: return None
