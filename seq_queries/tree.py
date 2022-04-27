@@ -51,7 +51,7 @@ class BSNode(object):
         # Send in marginals, don't transform here
         self.q_conditionals = log_q_conditionals.exp().flatten().cpu()
         self.p_conditionals = log_p_conditionals.exp().flatten().cpu()
-        self.hidden_state = _tup_cpu(hidden_state)
+        self.hidden_state = _tup_cpu(hidden_state, force=False)
         self.children = defaultdict(dict)
         self.total_mass = 1.0
 
@@ -108,7 +108,7 @@ class BeamSearchSampleTree(object):
         self.root = BSNode(self.BOS,None,
                            log_q_conditionals,
                            log_p_conditionals,
-                           hidden_state,
+                           _hidden_state_select(hidden_state,0),
                            tree=self,
                            depth=0)
         self._add_depth(0,self.root)
@@ -171,6 +171,7 @@ class BeamSearchSampleTree(object):
         child_symbols = torch.LongTensor([c.symbol for c in node.children.values()])
         node.q_conditionals[child_symbols] *= 0
         node.total_mass = node.q_conditionals.sum()
+        node.q_conditionals = node.q_conditionals / node.total_mass
 
     def _adjust_marginal_probabilities_by_node(self,node):
         child_symbols = torch.LongTensor([c.symbol for c in node.children.values()])
@@ -184,6 +185,7 @@ class BeamSearchSampleTree(object):
 
         node.q_conditionals *= adjusted_mass
         node.total_mass = node.q_conditionals.sum()
+        node.q_conditionals = node.q_conditionals / node.total_mass
 
     def _adjust_marginal_probabilities_by_depth(self,depth):
 
@@ -217,14 +219,16 @@ class BeamSearchSampleTree(object):
         cur_node = self.root
         depth = 0
         log_p_total, log_q_total = 0.0, 0.0
+        sample = []
         while depth < seq_len:
             next_step = torch.distributions.Categorical(probs=cur_node.q_conditionals).sample()
+            sample.append(next_step.item())
             log_p_total += cur_node.p_conditionals.log()[next_step]
             log_q_total += cur_node.q_conditionals.log()[next_step]
             depth += 1
-            if next_step in cur_node.children:
-                cur_node = cur_node.children[next_step]
+            if next_step.item() in cur_node.children:
+                cur_node = cur_node.children[next_step.item()]
             else:
                 break
         
-        return log_p_total, log_q_total, cur_node.hidden_state, depth, next_step
+        return log_p_total, log_q_total, cur_node.hidden_state, depth, next_step, sample
