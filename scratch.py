@@ -41,6 +41,7 @@ if __name__ == "__main__":
     # text_dict= load_app_data(args.data_path, seq_len=args.seq_len)
     args.text_dict = text_dict
     print(text_dict['char_to_id'])
+    print("====="*10)
     train_dl, val_dl, test_dl = process_text_data(text_dict, args)
     # train_dl, val_dl, test_dl = process_app_data(text_dict, args)
     model = get_model(args)
@@ -48,7 +49,6 @@ if __name__ == "__main__":
         load_checkpoint(args, model)
     model.eval()
     estimates = sample_dynamic_target_token(args, val_dl, model)
-    sys.exit(1)
 
     #(hist_len, num_mc_samples=100000)
     sample_experiments = [10,15,20,25]

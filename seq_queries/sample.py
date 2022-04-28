@@ -24,7 +24,7 @@ import torch.nn as nn
 from tqdm import tqdm
 # from .data import load_text, process_data
 from .model import CausalLM, MaskedLM
-from .utils import top_k_top_p_filtering
+from .utils import top_k_top_p_filtering, min_variance_top_k
 
 #################################################################################
 #   Function-Class Declaration
@@ -233,7 +233,7 @@ def lin_interp(target_pct, n_current, n_end):
 @torch.no_grad()
 def beam_search_lower_bound(hist, num_beams, sample_len, model, excluded_terms, interp_func,
                             batch_size, device, vocab_size, bs_tree=None,
-                            min_var=False,min_var_reduction=0.0, **kwargs):
+                            min_variance=False,min_var_reduction=0.0, **kwargs):
     assert(isinstance(num_beams, (int, float)))
     assert(len(hist.shape) == 1)
 
@@ -256,8 +256,8 @@ def beam_search_lower_bound(hist, num_beams, sample_len, model, excluded_terms, 
         next_restricted_log_probs = cur_restricted_log_probs.unsqueeze(-1) + next_restricted_log_probs
         next_restricted_log_probs = next_restricted_log_probs.view(-1)
 
-        if min_var:
-                next_restricted_log_probs = min_variance_reduction(next_restricted_log_probs, min_var_reduction, is_log_prob=True)
+        if min_variance:
+                next_restricted_log_probs = min_variance_top_k(next_restricted_log_probs, min_var_reduction=min_var_reduction, is_log_prob=True)
         elif isinstance(num_beams, int):
                 next_restricted_log_probs = top_k_top_p_filtering(next_restricted_log_probs, top_k=num_beams, is_log_prob=True)
         else:  # isinstance(num_beams, float)

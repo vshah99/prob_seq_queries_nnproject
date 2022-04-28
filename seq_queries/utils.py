@@ -140,33 +140,34 @@ def flatten(list_of_lists):
     return [item for sublist in list_of_lists for item in sublist]
 
 #######################################################################
-# Top k top p
+# Top k top p and minimum variance reduction
 #######################################################################
 
 def min_variance_top_k(logits, min_var_reduction = 0.0,
                        filter_value=-float('Inf'),
-                       eps = 1e-10, is_log_prob=False):
+                       inf_placeholder = -100,
+                       is_log_prob=False):
     num_logits = logits.shape[0]
-    probs = (logits + eps).exp()
+    temp_logits = logits.clone()
+    temp_logits[temp_logits == -float("Inf")] = inf_placeholder
+    probs, prob_inds = torch.sort(temp_logits.exp(),
+                                  descending=True)
+
     global_var = probs.var()
     local_vars = torch.Tensor([
-        (probs[:i].var() + probs[i:].var())
-        for i in range(1,num_logits,1)
+        (probs[:i].var(unbiased=False) + probs[i:].var(unbiased=False))
+        for i in range(1,num_logits-1,1)
     ])
     min_idx = torch.argmin(local_vars)
     min_sep_var = local_vars[min_idx]
 
     # Satisfies variance criteria
     if (min_sep_var/global_var) <= (1 - min_var_reduction):
-        indices_to_remove = torch.arange(min_idx+1, num_logits)
-        logits = logits.masked_fill(indices_to_remove, filter_value)
+        indices_to_remove = prob_inds[min_idx+1:]
+        logits[indices_to_remove] = filter_value
+    # print(global_var,min_sep_var,indices_to_remove.shape)
 
     return logits
-
-
-
-
-
 
 
 
