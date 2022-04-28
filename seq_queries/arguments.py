@@ -146,6 +146,8 @@ def sampling_args(parser):
     group.add_argument("--excluded_terms", type=_str2list, default=[], help="List of excluded terms")
     group.add_argument("--sub_estimates", type=_str2list, default=[], help="Sub-estimates (to track noise), all must be <= num_samples")
     group.add_argument("--top_k", type=int, default=1, help="Top k beams/samples to take")
+    group.add_argument("--min_var", type=_str2bool, default=False, help="Use minimum variance to set beam search beam widths")
+    group.add_argument("--min_var_reduction", type=float, default=0.0, help="Minimum variance reduction for minimum variance technique (otherwise, take all beams)")
     group.add_argument("--top_p", type=_int_or_float, default=1, help="Top p coverage to take")
     group.add_argument("--num_beams", type=_int_or_float, default=10, help="Beam coverage (or number)")
     group.add_argument("--num_mc_samples", type=int, default=10, help="Number of MC samples")

@@ -142,7 +142,35 @@ def flatten(list_of_lists):
 #######################################################################
 # Top k top p
 #######################################################################
-def top_k_top_p_filtering(logits, top_k=0, top_p=0.0, filter_value=-float('Inf'), is_log_prob=False):
+
+def min_variance_top_k(logits, min_var_reduction = 0.0,
+                       filter_value=-float('Inf'),
+                       eps = 1e-10, is_log_prob=False):
+    num_logits = logits.shape[0]
+    probs = (logits + eps).exp()
+    global_var = probs.var()
+    local_vars = torch.Tensor([
+        (probs[:i].var() + probs[i:].var())
+        for i in range(1,num_logits,1)
+    ])
+    min_idx = torch.argmin(local_vars)
+    min_sep_var = local_vars[min_idx]
+
+    # Satisfies variance criteria
+    if (min_sep_var/global_var) <= (1 - min_var_reduction):
+        indices_to_remove = torch.arange(min_idx+1, num_logits)
+        logits = logits.masked_fill(indices_to_remove, filter_value)
+
+    return logits
+
+
+
+
+
+
+
+
+def top_k_top_p_filtering(logits, top_k=0, top_p=0.0,min_var=False, filter_value=-float('Inf'), is_log_prob=False):
     """ Filter a distribution of logits using top-k and/or nucleus (top-p) filtering.
         Currently only supports a batch size of 1.
         Adapted from https://gist.github.com/thomwolf/1a5a29f6962089e871b94cbd09daf317
