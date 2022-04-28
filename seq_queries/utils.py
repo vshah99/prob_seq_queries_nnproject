@@ -145,13 +145,9 @@ def flatten(list_of_lists):
 
 def min_variance_top_k(logits, min_var_reduction = 0.0,
                        filter_value=-float('Inf'),
-                       inf_placeholder = -100,
                        is_log_prob=False):
     num_logits = logits.shape[0]
-    temp_logits = logits.clone()
-    temp_logits[temp_logits == -float("Inf")] = inf_placeholder
-    probs, prob_inds = torch.sort(temp_logits.exp(),
-                                  descending=True)
+    probs, prob_inds = torch.sort(logits.exp(), descending=True)
 
     global_var = probs.var()
     local_vars = torch.Tensor([
@@ -165,7 +161,6 @@ def min_variance_top_k(logits, min_var_reduction = 0.0,
     if (min_sep_var/global_var) <= (1 - min_var_reduction):
         indices_to_remove = prob_inds[min_idx+1:]
         logits[indices_to_remove] = filter_value
-    # print(global_var,min_sep_var,indices_to_remove.shape)
 
     return logits
 
