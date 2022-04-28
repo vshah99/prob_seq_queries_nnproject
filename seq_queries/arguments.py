@@ -12,7 +12,7 @@ from datetime import datetime
 
 from .utils import print_log, read_yaml
 from .sample import (
-    mc_estimate, beam_search_lower_bound, uniform_proposal, lm_proposal,
+    mc_estimate, beam_search_lower_bound,beam_search_is_hybrid, uniform_proposal, lm_proposal,
     geom_interp, lin_interp)
 
 
@@ -25,6 +25,7 @@ def _str2estimate(estimate):
         "Estimate must be [search, sample], got {}".format(estimate)
     roster = {"sample":mc_estimate,
               "search":beam_search_lower_bound,
+              "search_sample":beam_search_is_hybrid,
               }
     return roster[estimate]
 

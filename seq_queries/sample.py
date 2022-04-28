@@ -25,6 +25,7 @@ from tqdm import tqdm
 # from .data import load_text, process_data
 from .model import CausalLM, MaskedLM
 from .utils import top_k_top_p_filtering, min_variance_top_k
+from .tree import BeamSearchSampleTree
 
 #################################################################################
 #   Function-Class Declaration
@@ -131,6 +132,28 @@ def mc_estimate(hist, num_mc_samples, sample_len, model, excluded_terms, proposa
     out_dict['sample_est_var'] =torch.var(out_dict['sample_estimates'],dim=0)
     out_dict['sample_est_mean'] =out_dict['sample_estimates'].mean(dim=0)
     return out_dict
+
+@torch.no_grad()
+def beam_search_is_hybrid(hist, num_beams, sample_len, model, excluded_terms, interp_func,
+                            batch_size, device, vocab_size, bs_tree=None,
+                          min_variance=False,min_var_reduction=0.0,text_dict=None, **kwargs):
+    beam_search_output =beam_search_lower_bound(
+        hist, num_beams, sample_len, model, excluded_terms, interp_func,
+        batch_size, device, vocab_size, bs_tree=BeamSearchSampleTree(text_dict),
+        min_variance=False,min_var_reduction=0.0, **kwargs)
+    tree = beam_search_output['tree']
+    tree.prune()
+
+    hybrid_estimate = tree_is_estimate(
+        tree,
+        beam_search_output['dist_lower_bound'],
+        num_samples, seq_len, model,
+        excluded_terms, batch_size, device,
+        sub_estimates=kwargs['sub_estimates'],
+        **kwargs
+    )
+
+
 
 @torch.no_grad()
 def tree_is_estimate(
