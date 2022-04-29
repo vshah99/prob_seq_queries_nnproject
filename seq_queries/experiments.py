@@ -15,6 +15,7 @@ import os
 import sys
 import numpy as np
 from collections import defaultdict
+from itertools import product
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
@@ -36,6 +37,8 @@ def sample_dynamic_target_token(
     dataloader,
     model = None,
     sample_artifacts=["sample_estimates",'q_log_prob','sample_est_var','sample_est_mean'],
+    hybrid_artifacts=["bs_lower_bound",'is_estimate','hybrid_bs_is_estimate','model_runs',
+                      'hybrid_var','hybrid_mean'],
     search_artifacts = ["num_beams","true_coverage","restricted_coverage","dist_lower_bound",],
     **kwargs,):
     """Sample from any of these methods given an
@@ -81,26 +84,21 @@ def sample_dynamic_target_token(
             if i%10 == 0 and args.disable_tqdm:
                 print(".",end="",flush=True)
             sample = data_batch[i]
-            args.sample_len = args.total_seq_len - args.hist_len
+            args.seq_len = args.total_seq_len - args.hist_len
             args.excluded_terms = [dbatch[i,args.total_seq_len].cpu().item()]
             kwargs = vars(args)
             # print(''.join([args.text_dict['id_to_char'][s] for s in sample.tolist()]))
             # bs_tree = BeamSearchSampleTree(args.text_dict)
             # args.bs_tree = bs_tree
             sample_output =args.estimate_type(sample,**kwargs)
-            sys.exit(1)
             data_list.append(sample_output)
 
-            # bs_tree = sample_output['tree']
-            # print(bs_tree.depth_sizes)
-            # print(bs_tree.depth_dict)
-            # print()
-            # bs_tree.prune()
-            # print(bs_tree.depth_dict)
-            # sys.exit(1)
 
         print("",flush=True)
-        if "beam_search" in args.estimate_type.__name__:
+        if "is_hybrid" in args.estimate_type.__name__:
+            for add_out in hybrid_artifacts:
+                _add_output(add_out,data_list)
+        elif "beam_search" in args.estimate_type.__name__:
             _add_output('num_beams',data_list)
             _add_output('dist_lower_bound',data_list)
             _tensor_output('true_coverage',data_list)
@@ -109,7 +107,9 @@ def sample_dynamic_target_token(
             for add_out in sample_artifacts:
                 _add_output(add_out,data_list)
 
-    if "beam_search" in args.estimate_type.__name__:
+    if "is_hybrid" in args.estimate_type.__name__:
+        for c in hybrid_artifacts: _consolidate_output(c)
+    elif "beam_search" in args.estimate_type.__name__:
         for c in search_artifacts: _consolidate_output(c)
     else:
         for c in sample_artifacts: _consolidate_output(c)
@@ -120,90 +120,69 @@ def sample_dynamic_target_token(
     return output
 
 
+#######################################################################
+# Comparison of Variance
+#######################################################################
 
-def sample_token_centric(
-    args,
-    dataloader,
-    model = None,
-    **kwargs,
-):
-    """Samples queries where we know a certain token occurs within
-    a certain range of the token in question. This process ensures that
-    our estimates rest as high above zero as possible for long queries.
+def variance_ablation(
+    hist, seq_len, model, interp_func,excluded_terms,
+    batch_size, device, vocab_size, num_intervals=1000, **kwargs
+ ):
+     # (beams)
+     all_log_probs = _get_joint_log_prob_of_all_seqs(
+        hist, seq_len, model, interp_func,excluded_terms,
+        batch_size, device, vocab_size, **kwargs)
+     all_log_probs, inds = torch.sort(all_log_probs,
+                                      descending=True)
 
-    :args: TODO
-    :model: TODO
-    :: TODO
-    :returns: TODO
+     beam_search_step_size = int(all_log_probs.shape[0]/num_intervals)
+     variances = []
+
+     for i in range(num_intervals):
+         q_log_prob = all_log_probs[i*beam_search_step_size:]
+         q_prob = q_log_prob.exp()
+         q_prob = q_prob/q_prob.sum()
+         variances.append(q_prob.var())
+
+     return torch.Tensor(variances)
+
+
+def _get_joint_log_prob_of_all_seqs(
+    hist, seq_len, model, interp_func,excluded_terms,
+    batch_size, device, vocab_size, **kwargs):
+    """
+    Examines the variance of the importance sampling estimate
+    of the number of paths remaining before and after beam search.
 
     """
-    roster = {
-        "beam_search": sample_beam_search,
-        "mc_random": (mc_sample_random_batch if
-        args.sample_args['coverage_type'] == "fixed_width"
-                      else mc_sample_random_list),
-        "mc_importance": mc_sample_importance,
-    };
-    sampler = roster[args.sample_type]
-    args.model = model;
-    output = {"settings":vars(args)}
 
-    all_seqs = []; all_probs = []; all_beams = []; all_covs = []; all_sample_probs = []
-    assert len(args.excluded) == 1,"Must only have one excluded token"
-    excluded_token = args.excluded[0]
-    for dbatch in dataloader:
-        batched = False
-        args.old_hist_len = args.hist_len
-        if isinstance(args.hist_len,list):
-            args.old_hist_len = args.hist_len[0]
+    all_seqs = torch.LongTensor(
+        list(product(range(vocab_size),
+                    repeat=seq_len))
+    )
 
-        data_batch = dbatch[torch.eq(dbatch,excluded_token).sum(dim=-1).bool()]
-        token_occ = torch.argmax((data_batch == excluded_token).float(), dim = -1, keepdim = True).flatten()
-        data_batch = data_batch[token_occ > 0]; token_occ = token_occ[token_occ > 0]
+    hists=hist.unsqueeze(0).expand(all_seqs.shape[0], -1)
+    logits, hidden_state = model.get_next_probs(
+        torch.cat((hists,all_seqs), dim=-1),
+        return_forward_only=True,
+        rnn_args=None,
+        device=device,
+        max_batch_size=batch_size,
+        return_logits=True,
+    )
 
-        args.hist_len = torch.clamp(token_occ - args.old_hist_len-1,min=1)
-        data_batch = data_batch[args.hist_len > 5]
-        # print(data_batch.shape)
-        args.hist_len = args.hist_len[args.hist_len > 1]
-        args.total_seq_lens = (args.hist_len + (args.total_seq_lens-args.old_hist_len)).tolist()
-        args.hist_len = args.hist_len.tolist()
-        data_batch =[data_batch[i,:args.hist_len[i]].cpu() for i in range(data_batch.shape[0])]
-        kwargs = vars(args)
+    # All but the last probability q(x_1:k)
+    model_log_prob = torch.log_softmax(logits, dim=-1)[..., -(seq_len):, :]
+    model_log_prob = torch.gather(model_log_prob, dim=-1,
+                                  index=all_seqs.unsqueeze(-1)).squeeze(-1).sum(dim=-1)
 
-        seqs, probs, beams_covs = sampler(data_batch,**kwargs)
-        sample_probs = None
-        if isinstance(probs,tuple):
-            probs, sample_probs = probs
+    return model_log_prob
 
-        #Tensors
-        seqs = [seq.numpy() for seq in seqs]
-        probs = ([None] if probs is None
-                 else ([prob.numpy() for prob in probs] if isinstance(seqs, list)
-                 else ([probs.numpy()])))
-        sample_probs = ([None] if sample_probs is None
-                 else ([sample_prob.numpy() for sample_prob in sample_probs] if isinstance(seqs, list)
-                 else ([sample_probs.numpy()])))
-        all_seqs += seqs
-        all_probs += probs
-        all_sample_probs += sample_probs
 
-        # Lists
-        if beams_covs is not None:
-            all_beams += beams_covs[0]
-            all_covs += beams_covs[1]
 
-    output['beams'] = all_beams
-    output['probs'] = all_probs
-    output['sample_probs'] = all_sample_probs
-    output['seqs'] = all_seqs
-    output['covs'] = all_covs
-    args.model = None
 
-    return output
 
-#################################################################################
-#   Main Method
-#################################################################################
+
 
 
 

@@ -154,7 +154,7 @@ def process_app_data(text_dict, args): # batch_size, seq_len, dev=torch.device("
     # ids = torch.LongTensor(ids[:-(len(ids) % seq_len)])  # ensure length is even multiple of `seq_len`
     ids = ids.view(-1, seq_len)
     bos_pad = torch.full((ids.shape[0], 1), text_dict["char_to_id"]["<BOS>"])
-    ids = torch.cat((bos_pad, ids), dim=-1).to(dev)
+    ids = torch.cat((bos_pad, ids), dim=-1)
 
     num_seqs = ids.shape[0]
     split_pos = list(range(num_seqs))
@@ -199,7 +199,7 @@ def process_text_data(text_dict, args): # batch_size, seq_len, dev=torch.device(
     ids = torch.LongTensor(ids[:-(len(ids) % seq_len)])  # ensure length is even multiple of `seq_len`
     ids = ids.view(-1, seq_len)
     bos_pad = torch.full((ids.shape[0], 1), text_dict["char_to_id"]["<BOS>"])
-    ids = torch.cat((bos_pad, ids), dim=-1).to(dev)
+    ids = torch.cat((bos_pad, ids), dim=-1)
 
     num_seqs = ids.shape[0]
     split_pos = list(range(num_seqs))

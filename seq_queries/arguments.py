@@ -21,8 +21,8 @@ from .sample import (
 #######################################################################
 
 def _str2estimate(estimate):
-    assert estimate in ["search","sample"],\
-        "Estimate must be [search, sample], got {}".format(estimate)
+    assert estimate in ["search","sample","search_sample"],\
+        "Estimate must be [search, sample, search_sample], got {}".format(estimate)
     roster = {"sample":mc_estimate,
               "search":beam_search_lower_bound,
               "search_sample":beam_search_is_hybrid,

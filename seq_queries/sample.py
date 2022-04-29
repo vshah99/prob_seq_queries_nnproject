@@ -32,37 +32,37 @@ from .tree import BeamSearchSampleTree
 #################################################################################
 
 
-def uniform_proposal(hists, sample_len, model, vocab_size, excluded_terms,
+def uniform_proposal(hists, seq_len, model, vocab_size, excluded_terms,
                      batch_size, device='cpu', **kwargs):
     assert(len(hists.shape) == 2)
 
     # Uniformly sample across the restricted vocabulary indices
-    samples = torch.randint(low=0, high=vocab_size-len(excluded_terms), size=(hists.shape[0], sample_len), device=hists.device)
+    samples = torch.randint(low=0, high=vocab_size-len(excluded_terms), size=(hists.shape[0], seq_len), device=hists.device)
     for item in sorted(excluded_terms):
         samples[samples>=item] += 1
     assert(samples.max() < vocab_size)
 
     output = model.forward(src=torch.cat((hists, samples), dim=-1))  #, device=device)
     logits = output["logits"]
-    model_log_prob = torch.log_softmax(logits, dim=-1)[..., -(sample_len+1):-1, :]
+    model_log_prob = torch.log_softmax(logits, dim=-1)[..., -(seq_len+1):-1, :]
     model_log_prob = torch.gather(model_log_prob, dim=-1, index=samples.unsqueeze(-1)).squeeze(-1).sum(dim=-1)  # grab specific log probabilities
 
     return {
-        "proposal_log_prob": -sample_len * np.log(vocab_size - len(excluded_terms)),
+        "proposal_log_prob": -seq_len * np.log(vocab_size - len(excluded_terms)),
         "model_log_prob": model_log_prob.unsqueeze(-1),
         "samples": samples,
         "logits": logits,
         "next_log_dist": torch.log_softmax(logits, dim=-1)[..., -1, :],
     }
 
-def lm_proposal(hists, sample_len, model, vocab_size, excluded_terms,
+def lm_proposal(hists, seq_len, model, vocab_size, excluded_terms,
                 batch_size=128,device='cpu',top_k=0, top_p=1.0, temperature=1.0,  **kwargs):
     assert(len(hists.shape) == 2)
 
     proposal_log_prob, model_log_prob = 0.0, 0.0
     samples = []; all_logits = []
     last_sample, rnn_args = hists, None
-    for _ in range(sample_len):
+    for _ in range(seq_len):
         logits, rnn_args = model.get_next_probs(last_sample, rnn_args=rnn_args, max_batch_size=batch_size,
                                                 device=device, return_logits=True)
         all_logits.append(logits)
@@ -90,7 +90,7 @@ def lm_proposal(hists, sample_len, model, vocab_size, excluded_terms,
     }
 
 @torch.no_grad()
-def mc_estimate(hist, num_mc_samples, sample_len, model, excluded_terms, proposal_func,
+def mc_estimate(hist, num_mc_samples, seq_len, model, excluded_terms, proposal_func,
                 vocab_size, batch_size=128,temperature=1, top_k=0, top_p=0.0, device='cpu',
                 cat_list = ['sample_estimates','q_log_prob'],
                 sub_estimates=None,**kwargs):
@@ -100,7 +100,7 @@ def mc_estimate(hist, num_mc_samples, sample_len, model, excluded_terms, proposa
     while remaining_samples > 0:
         sample_out = proposal_func(
             hists=hist.unsqueeze(0).expand(min(remaining_samples, batch_size), -1),
-            sample_len=sample_len,
+            seq_len=seq_len,
             model=model,
             vocab_size=vocab_size,
             excluded_terms=excluded_terms,
@@ -134,11 +134,12 @@ def mc_estimate(hist, num_mc_samples, sample_len, model, excluded_terms, proposa
     return out_dict
 
 @torch.no_grad()
-def beam_search_is_hybrid(hist, num_beams, sample_len, model, excluded_terms, interp_func,
-                            batch_size, device, vocab_size, bs_tree=None,
-                          min_variance=False,min_var_reduction=0.0,text_dict=None, **kwargs):
+def beam_search_is_hybrid(hist, num_beams,num_mc_samples, seq_len, model, excluded_terms, interp_func,
+                          batch_size, device, vocab_size,
+                          min_variance=False,min_var_reduction=0.0,
+                          text_dict=None, **kwargs):
     beam_search_output =beam_search_lower_bound(
-        hist, num_beams, sample_len, model, excluded_terms, interp_func,
+        hist, num_beams, seq_len, model, excluded_terms, interp_func,
         batch_size, device, vocab_size, bs_tree=BeamSearchSampleTree(text_dict),
         min_variance=False,min_var_reduction=0.0, **kwargs)
     tree = beam_search_output['tree']
@@ -147,11 +148,12 @@ def beam_search_is_hybrid(hist, num_beams, sample_len, model, excluded_terms, in
     hybrid_estimate = tree_is_estimate(
         tree,
         beam_search_output['dist_lower_bound'],
-        num_samples, seq_len, model,
+        num_mc_samples, seq_len, model,
         excluded_terms, batch_size, device,
-        sub_estimates=kwargs['sub_estimates'],
         **kwargs
     )
+
+    return hybrid_estimate
 
 
 
@@ -159,7 +161,7 @@ def beam_search_is_hybrid(hist, num_beams, sample_len, model, excluded_terms, in
 def tree_is_estimate(
     tree,
     bs_lower_bound,
-    num_samples,
+    num_mc_samples,
     seq_len,
     model,
     excluded_terms,
@@ -173,7 +175,7 @@ def tree_is_estimate(
     hidden_states, num_remaining_steps = [], []
     last_tokens = []
 
-    for _ in range(num_samples):
+    for _ in range(num_mc_samples):
         log_p, log_q, hs, depth_reached, last_token, _ = tree.sample_sequence(seq_len)
         log_p_totals.append(log_p)
         log_q_totals.append(log_q)
@@ -194,6 +196,7 @@ def tree_is_estimate(
     last_tokens = torch.stack(last_tokens, dim=0).unsqueeze(1)  # need to have a sequence length of 1
 
     # Finish sampling incomplete sequences from model
+    model_runs = num_remaining_steps.sum()
     while (num_remaining_steps > 0).any():
         to_update = num_remaining_steps > 0
         if isinstance(hidden_states, tuple):
@@ -242,7 +245,14 @@ def tree_is_estimate(
              for s in sorted(sub_estimates)
         ])
 
-    return bs_lower_bound + dist_estimate
+    return {
+        'bs_lower_bound':bs_lower_bound,
+        'is_estimate':dist_estimate,
+        'hybrid_bs_is_estimate': bs_lower_bound + dist_estimate,
+        'hybrid_var':torch.var(bs_lower_bound + dist_estimate,dim=0),
+        'hybrid_mean':(bs_lower_bound + dist_estimate).mean(dim=0),
+        'model_runs': model_runs,
+    }
 
 def geom_interp(target_pct, n_current, n_end):
     return target_pct ** ((n_current + 1) / n_end)  # add 1 due to 0-indexing
@@ -254,7 +264,7 @@ def lin_interp(target_pct, n_current, n_end):
     return a * (1 - t) + b * t
 
 @torch.no_grad()
-def beam_search_lower_bound(hist, num_beams, sample_len, model, excluded_terms, interp_func,
+def beam_search_lower_bound(hist, num_beams, seq_len, model, excluded_terms, interp_func,
                             batch_size, device, vocab_size, bs_tree=None,
                             min_variance=False,min_var_reduction=0.0, **kwargs):
     assert(isinstance(num_beams, (int, float)))
@@ -264,7 +274,7 @@ def beam_search_lower_bound(hist, num_beams, sample_len, model, excluded_terms, 
     cur_log_probs = torch.zeros((1,), dtype=torch.float32)  # (num of current beams,)
     cur_restricted_log_probs = cur_log_probs.clone()  # sum of restricted probabilities
     num_beams_over_time = []
-    for n_cur in range(sample_len):
+    for n_cur in range(seq_len):
         logits, states = model.get_next_probs(beams, rnn_args=rnn_args, return_logits = True,
                                             max_batch_size=batch_size,device=device)
         next_log_probs = torch.log_softmax(logits, dim=-1)  # (num of current beams, vocab_size)
@@ -284,7 +294,7 @@ def beam_search_lower_bound(hist, num_beams, sample_len, model, excluded_terms, 
         elif isinstance(num_beams, int):
                 next_restricted_log_probs = top_k_top_p_filtering(next_restricted_log_probs, top_k=num_beams, is_log_prob=True)
         else:  # isinstance(num_beams, float)
-            num_beams_cur = interp_func(num_beams, n_cur, sample_len)
+            num_beams_cur = interp_func(num_beams, n_cur, seq_len)
             next_restricted_log_probs = top_k_top_p_filtering(next_restricted_log_probs, top_p=num_beams_cur, is_log_prob=True)
 
         next_log_probs = next_log_probs.masked_fill(next_restricted_log_probs == -float('inf'), -float('inf'))
@@ -343,6 +353,7 @@ def beam_search_lower_bound(hist, num_beams, sample_len, model, excluded_terms, 
     }
 
 
+
 #######################################################################
 # Sampling orchestration function
 #######################################################################
@@ -384,7 +395,7 @@ def sample(
             if i%10 == 0 and args.disable_tqdm:
                 print(".",end="",flush=True)
             sample = data_batch[i]
-            args.sample_len = args.total_seq_len - args.hist_len
+            args.seq_lejn= args.total_seq_len - args.hist_len
             kwargs = vars(args)
             # print(''.join([args.text_dict['id_to_char'][s] for s in sample.tolist()]))
             data_list.append(args.estimate_type(sample,**kwargs))

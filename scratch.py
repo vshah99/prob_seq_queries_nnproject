@@ -29,7 +29,8 @@ from seq_queries.arguments import get_args
 from seq_queries.train import load_checkpoint
 from seq_queries.utils import write_pkl
 from seq_queries.sample import lm_proposal
-from seq_queries.experiments import sample_token_centric, sample_dynamic_target_token
+from seq_queries.experiments import sample_dynamic_target_token
+
 #################################################################################
 #   Function-Class Declaration
 #################################################################################
