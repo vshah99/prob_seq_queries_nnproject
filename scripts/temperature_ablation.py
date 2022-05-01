@@ -64,11 +64,13 @@ if __name__ == "__main__":
     for temp in temperatures:
         for sample_method,sample_name in sampling_methods:
             model.temperature = temp
+            args.min_variance=True
             args.estimate_type = sample_method
 
-            print("Hist length {} | Total Seq Length {} | Num samples: {} | Temperature: {} |Sample type: importance".format(args.hist_len,args.total_seq_len, args.num_mc_samples,temp))
+            print("Hist length {} | Total Seq Length {} | Num samples: {} | Temperature: {} |Sample type: {}".format(args.hist_len,args.total_seq_len, args.num_mc_samples,temp,sample_name))
             estimates = sample_dynamic_target_token(args, val_dl, model, keep_samples = True)
             # samples = entropy_vs_variance(estimates)
+            # sys.exit(1)
             # write_pkl(samples,"notebooks/entropy_test_samples.pkl")
             # sys.exit(1)
             os.makedirs(f"data/{sample_name}/shakespeare/is_v_hybrid/",exist_ok=True)

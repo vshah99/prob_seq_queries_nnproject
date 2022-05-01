@@ -136,6 +136,7 @@ def mc_estimate(hist, num_mc_samples, seq_len, model, excluded_terms, proposal_f
 @torch.no_grad()
 def beam_search_is_hybrid(hist, num_beams,num_mc_samples, seq_len, model, excluded_terms, interp_func,
                           batch_size, device, vocab_size,
+                          beam_search_outputs=['num_beams','true_coverage','restricted_coverage'],
                           min_variance=False,min_var_reduction=0.0,
                           text_dict=None, **kwargs):
     beam_search_output =beam_search_lower_bound(
@@ -152,6 +153,8 @@ def beam_search_is_hybrid(hist, num_beams,num_mc_samples, seq_len, model, exclud
         excluded_terms, batch_size, device,
         **kwargs
     )
+    for bso in beam_search_outputs:
+        hybrid_estimate[bso] = beam_search_output[bso]
 
     return hybrid_estimate
 

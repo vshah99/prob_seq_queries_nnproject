@@ -23,7 +23,7 @@ vocab_size: 68
 # Data args
 data_path: data/shakespeare/shakespeare_input.txt
 # data_path: data/lsapp.tsv
-batch_size: 2048
+batch_size: 128
 
 # Training args not needed here
 # Evaluation arguments not needed here
@@ -36,10 +36,10 @@ proposal_func: lm
 interp_func: linear
 top_k: 0
 top_p: 0
-min_variance: true
+min_variance: false
 min_var_reduction: 0.90
-num_beams: 0.85
-num_mc_samples: 10000
+num_beams: 0.0
+num_mc_samples: 100
 sub_estimates: []
 total_seq_len: 20
 hist_len: 18

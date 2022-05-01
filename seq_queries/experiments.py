@@ -38,7 +38,7 @@ def sample_dynamic_target_token(
     model = None,
     sample_artifacts=["sample_estimates",'q_log_prob','sample_est_var','sample_est_mean'],
     hybrid_artifacts=["bs_lower_bound",'is_estimate','hybrid_bs_is_estimate','model_runs',
-                      'hybrid_var','hybrid_mean'],
+                      'hybrid_var','hybrid_mean','num_beams','true_coverage','restricted_coverage'],
     search_artifacts = ["num_beams","true_coverage","restricted_coverage","dist_lower_bound",],
     **kwargs,):
     """Sample from any of these methods given an
@@ -71,7 +71,7 @@ def sample_dynamic_target_token(
         else:
             output[key] = torch.cat(output[key])
 
-    all_excluded_terms = []
+    all_excluded_terms = []; final_data_list = []
     for dbatch in tqdm(dataloader, disable=args.disable_tqdm):
         data_list = []
         var_list = []
@@ -90,22 +90,25 @@ def sample_dynamic_target_token(
             # print(''.join([args.text_dict['id_to_char'][s] for s in sample.tolist()]))
             # bs_tree = BeamSearchSampleTree(args.text_dict)
             # args.bs_tree = bs_tree
-            sample_output =args.estimate_type(sample,**kwargs)
-            data_list.append(sample_output)
+            sample_output = variance_ablation(sample, **kwargs)
+            # sys.exit(1)
+            # sample_output =args.estimate_type(sample,**kwargs)
+            final_data_list.append(sample_output)
 
 
         print("",flush=True)
-        if "is_hybrid" in args.estimate_type.__name__:
-            for add_out in hybrid_artifacts:
-                _add_output(add_out,data_list)
-        elif "beam_search" in args.estimate_type.__name__:
-            _add_output('num_beams',data_list)
-            _add_output('dist_lower_bound',data_list)
-            _tensor_output('true_coverage',data_list)
-            _tensor_output('restricted_coverage',data_list)
-        else:
-            for add_out in sample_artifacts:
-                _add_output(add_out,data_list)
+        # if "is_hybrid" in args.estimate_type.__name__:
+        #     for add_out in hybrid_artifacts:
+        #         _add_output(add_out,data_list)
+        # elif "beam_search" in args.estimate_type.__name__:
+        #     _add_output('num_beams',data_list)
+        #     _add_output('dist_lower_bound',data_list)
+        #     _tensor_output('true_coverage',data_list)
+        #     _tensor_output('restricted_coverage',data_list)
+        # else:
+        #     for add_out in sample_artifacts:
+        #         _add_output(add_out,data_list)
+    return final_data_list
 
     if "is_hybrid" in args.estimate_type.__name__:
         for c in hybrid_artifacts: _consolidate_output(c)
@@ -126,23 +129,32 @@ def sample_dynamic_target_token(
 
 def variance_ablation(
     hist, seq_len, model, interp_func,excluded_terms,
-    batch_size, device, vocab_size, num_intervals=1000, **kwargs
+    batch_size, device, vocab_size, num_intervals=100, **kwargs
  ):
      # (beams)
-     all_log_probs = _get_joint_log_prob_of_all_seqs(
+     q_log_probs, p_log_cond = _get_joint_log_prob_of_all_seqs(
         hist, seq_len, model, interp_func,excluded_terms,
         batch_size, device, vocab_size, **kwargs)
-     all_log_probs, inds = torch.sort(all_log_probs,
-                                      descending=True)
 
-     beam_search_step_size = int(all_log_probs.shape[0]/num_intervals)
-     variances = []
+     q_log_probs, inds = torch.sort(q_log_probs,
+                                descending=True)
+     p_log_cond = p_log_cond[inds]
+     p_log_joint = (q_log_probs + p_log_cond)
 
+     beam_search_step_size = int(q_log_probs.shape[0]/num_intervals)
+     variances = [];
+
+     global_var = None
      for i in range(num_intervals):
-         q_log_prob = all_log_probs[i*beam_search_step_size:]
-         q_prob = q_log_prob.exp()
-         q_prob = q_prob/q_prob.sum()
-         variances.append(q_prob.var())
+         part_p_joint = p_log_joint[i:].exp()
+         part_q_probs = q_log_probs[i:].exp()
+         part_q_probs /= part_q_probs.sum()
+
+         w_x = (part_p_joint/part_q_probs)
+         variance = (part_q_probs*torch.pow(w_x - w_x.mean(),2)).sum()
+         if i == 0:
+             global_var = variance
+         variances.append(variance/global_var)
 
      return torch.Tensor(variances)
 
@@ -156,10 +168,18 @@ def _get_joint_log_prob_of_all_seqs(
 
     """
 
+    assert len(excluded_terms) == 1,\
+        "Ambiguous choice of excluded term to use"
+    excluded_term = excluded_terms[0]
     all_seqs = torch.LongTensor(
         list(product(range(vocab_size),
-                    repeat=seq_len))
+            repeat=seq_len))
     )
+    all_seqs = torch.cat(
+        (all_seqs,
+         torch.ones((all_seqs.shape[0],1))*excluded_term
+        ), dim = 1
+    ).long()
 
     hists=hist.unsqueeze(0).expand(all_seqs.shape[0], -1)
     logits, hidden_state = model.get_next_probs(
@@ -172,11 +192,12 @@ def _get_joint_log_prob_of_all_seqs(
     )
 
     # All but the last probability q(x_1:k)
-    model_log_prob = torch.log_softmax(logits, dim=-1)[..., -(seq_len):, :]
-    model_log_prob = torch.gather(model_log_prob, dim=-1,
-                                  index=all_seqs.unsqueeze(-1)).squeeze(-1).sum(dim=-1)
+    model_log_probs = torch.gather(torch.log_softmax(logits[...,-(seq_len+1):,:],dim=-1),
+                                   dim=-1, index=all_seqs.unsqueeze(-1)).squeeze(-1)
+    q_log_prob = model_log_probs[...,:-1].sum(dim=-1)
+    p_log_cond = model_log_probs[...,-1]
 
-    return model_log_prob
+    return q_log_prob, p_log_cond
 
 
 

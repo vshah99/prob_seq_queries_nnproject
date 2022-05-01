@@ -50,6 +50,11 @@ if __name__ == "__main__":
         load_checkpoint(args, model)
     model.eval()
     estimates = sample_dynamic_target_token(args, val_dl, model)
+    estimates = torch.stack(estimates,dim=1).cpu()
+    print(estimates.shape)
+    os.makedirs("data/relative_variance/shakespeare",exist_ok=True)
+    write_pkl(estimates,f"data/relative_variance/shakespeare/val-dl_rel-var_reduction_{args.hist_len}h_{args.total_seq_len}s.pkl")
+    sys.exit(1)
 
     #(hist_len, num_mc_samples=100000)
     sample_experiments = [10,15,20,25]
