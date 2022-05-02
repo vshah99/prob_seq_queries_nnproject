@@ -24,12 +24,86 @@ from tqdm import tqdm
 # from .data import load_text, process_data
 from .model import CausalLM, MaskedLM
 from .arguments import get_args
-from .sample import *
 from .tree import BeamSearchSampleTree
+from .sample import *
+from .data import *
+from .train import load_checkpoint, get_model
 
 #################################################################################
 #   Function-Class Declaration
 #################################################################################
+
+
+def prep_experiment(
+    config_path,
+    name="shakespeare",
+    need_train=False,
+    need_test=False,
+    device=0,
+ ):
+    args = get_args(manual_config=config_path)
+    name = name.lower()
+    config_roster = {
+        "amazon": {
+            "checkpoint_path": "/home/showalte/research/prob_seq_queries/models/amazon/",
+            "data_path": "data/amazon/amazon_text_dict.pkl",
+            "hidden_size": 512,
+            "seq_len": 15,
+            "vocab_size": 30,
+            "val_data_pct": 0.0001,
+        },
+        "apps": {
+            "checkpoint_path": "/home/showalte/research/prob_seq_queries/models/apps/",
+            "data_path": "data/apps/lsapp.tsv",
+            "hidden_size": 512,
+            "seq_len": 15,
+            "vocab_size": 88,
+            "val_data_pct": 0.001,
+        },
+        "shakespeare": {
+            "checkpoint_path": "/home/showalte/research/prob_seq_queries/models/shakespeare/",
+            "data_path": "data/shakespeare/shakespeare_input.txt",
+            "hidden_size": 128,
+            "seq_len": 100,
+            "vocab_size": 68,
+            "val_data_pct": 0.05,
+        },
+    }
+
+    load_roster = {
+        "amazon": load_amazon_data,
+        "apps": load_app_data,
+        "shakespeare": load_text_data,
+    }
+    assert name in load_roster,\
+        "Dataset {} not found in roster"
+    process_roster = {
+        "amazon": process_amazon_data,
+        "apps": process_app_data,
+        "shakespeare": process_text_data,
+    }
+    for argument,details in config_roster[name].items():
+        args.__dict__[argument] = details
+    args.device=device
+    text_dict= load_roster[name](args.data_path)
+    args.text_dict = text_dict
+    # print(text_dict['char_to_id'],flush=True)
+    # print("====="*10)
+    train_dl, val_dl, test_dl = process_roster[name](text_dict, args)
+
+    model = get_model(args)
+    if args.checkpoint_path:
+        load_checkpoint(args, model)
+    model.eval()
+    print("====="*10)
+
+    return {
+        "train_dl": train_dl if need_train else None,
+        "test_dl": test_dl if need_test else None,
+        "val_dl": val_dl,
+        "args": args,
+        "model":model,
+    }
 
 @torch.no_grad()
 def sample_dynamic_target_token(

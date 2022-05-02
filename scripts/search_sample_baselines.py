@@ -31,7 +31,7 @@ from seq_queries.arguments import get_args
 from seq_queries.train import load_checkpoint
 from seq_queries.utils import write_pkl
 from seq_queries.sample import lm_proposal, uniform_proposal, beam_search_lower_bound, mc_estimate
-from seq_queries.experiments import sample_token_centric, sample_dynamic_target_token
+from seq_queries.experiments import sample_dynamic_target_token
 #################################################################################
 #   Function-Class Declaration
 #################################################################################
@@ -43,10 +43,6 @@ if __name__ == "__main__":
     args = get_args(manual_config="scripts/search_sample_baselines.yaml")
 
     # Amazon
-    text_dict= load_amazon_data(args.data_path)
-    args.text_dict = text_dict
-    print(text_dict['char_to_id'],flush=True)
-    train_dl, val_dl, test_dl = process_amazon_data(text_dict, args)
 
     # # Mobile app data
     # text_dict= load_app_data(args.data_path)

@@ -1,6 +1,6 @@
 # General args
 seed: 1234321
-dont_print_args: False
+dont_print_args: True
 cuda: true
 device_num: 0
 train_data_pct: 0.9
@@ -23,7 +23,7 @@ vocab_size: 68
 # Data args
 data_path: data/shakespeare/shakespeare_input.txt
 # data_path: data/lsapp.tsv
-batch_size: 128
+batch_size: 2048
 
 # Training args not needed here
 # Evaluation arguments not needed here
