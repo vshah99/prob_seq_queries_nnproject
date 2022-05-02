@@ -92,7 +92,7 @@ def lm_proposal(hists, seq_len, model, vocab_size, excluded_terms,
 @torch.no_grad()
 def mc_estimate(hist, num_mc_samples, seq_len, model, excluded_terms, proposal_func,
                 vocab_size, batch_size=128,temperature=1, top_k=0, top_p=0.0, device='cpu',
-                cat_list = ['sample_estimates','q_log_prob'],
+                cat_list = ['sample_estimates'],
                 sub_estimates=None,**kwargs):
     assert(len(hist.shape) == 1)  # (hist_seq_len), Only conditions on a single history
     out_dict = defaultdict(list)
@@ -114,9 +114,7 @@ def mc_estimate(hist, num_mc_samples, seq_len, model, excluded_terms, proposal_f
         term_log_prob = sample_out["next_log_dist"] + sample_out["model_log_prob"] - sample_out["proposal_log_prob"]
 
         out_dict['sample_estimates'].append(term_log_prob.exp().cpu())
-        out_dict['q_log_prob'].append(sample_out['proposal_log_prob'])
-        # out_dict['samples'].append(sample_out['samples'])
-        # out_dict['logits'].append(sample_out['logits'])
+        # out_dict['q_log_prob'].append(sample_out['proposal_log_prob'])
 
     for item in cat_list:
         out_dict[item] = torch.cat(out_dict[item],dim=0)
@@ -128,9 +126,15 @@ def mc_estimate(hist, num_mc_samples, seq_len, model, excluded_terms, proposal_f
             [out_dict['sample_estimates'][:s, :].mean(dim=0).flatten()
              for s in sorted(sub_estimates)
         ])
+        out_dict['sample_est_var'] = torch.stack(
+            # (vocab)
+            [out_dict['sample_estimates'][:s, :].var(dim=0).flatten()
+             for s in sorted(sub_estimates)
+        ])
 
-    out_dict['sample_est_var'] =torch.var(out_dict['sample_estimates'],dim=0)
-    out_dict['sample_est_mean'] =out_dict['sample_estimates'].mean(dim=0)
+    if not sub_estimates or len(sub_estimates) == 0:
+        out_dict['sample_est_var'] =torch.var(out_dict['sample_estimates'],dim=0)
+        out_dict['sample_est_mean'] =out_dict['sample_estimates'].mean(dim=0)
     return out_dict
 
 @torch.no_grad()
@@ -142,7 +146,7 @@ def beam_search_is_hybrid(hist, num_beams,num_mc_samples, seq_len, model, exclud
     beam_search_output =beam_search_lower_bound(
         hist, num_beams, seq_len, model, excluded_terms, interp_func,
         batch_size, device, vocab_size, bs_tree=BeamSearchSampleTree(text_dict),
-        min_variance=False,min_var_reduction=0.0, **kwargs)
+        min_variance=min_variance,min_var_reduction=min_var_reduction, **kwargs)
     tree = beam_search_output['tree']
     tree.prune()
 

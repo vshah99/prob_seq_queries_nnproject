@@ -57,7 +57,7 @@ for dataset_name in datasets:
     val_dl = prep_dict['val_dl']
     model = prep_dict['model']
     args.estimate_type=beam_search_lower_bound
-    args.num_beams=0.0
+    args.num_beams=1.0
     text_dict = args.text_dict
     args.text_dict = None
     print_args(vars(args))
@@ -73,6 +73,7 @@ for dataset_name in datasets:
             os.makedirs(f"data/{folder}/{dataset_name}/val_dl/",exist_ok=True)
             write_pkl(estimates,
                     f"data/{folder}/{dataset_name}/val_dl/val-dl_{dataset_name}_{folder.replace('_','-')}_{args.hist_len}h_{args.total_seq_len}s.pkl")
+            estimates=None
             print("====="*10)
 
 

@@ -60,6 +60,7 @@ for dataset_name in datasets:
     args.estimate_type = mc_estimate
     args.num_mc_samples = num_mc_samples
     args.proposal_func = lm_proposal
+    args.sub_estimates = [10,100,1000,10000,100000]
     text_dict = args.text_dict
     args.text_dict = None
     print_args(vars(args))
@@ -76,6 +77,7 @@ for dataset_name in datasets:
             os.makedirs(f"data/{folder}/{dataset_name}/val_dl/",exist_ok=True)
             write_pkl(estimates,
                     f"data/{folder}/{dataset_name}/val_dl/val-dl_{dataset_name}_{folder.replace('_','-')}_{args.hist_len}h_{args.total_seq_len}s_{args.num_mc_samples}mc.pkl")
+            estimates=None
             print("====="*10)
 
 

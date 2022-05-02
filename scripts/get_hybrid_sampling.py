@@ -36,7 +36,7 @@ from seq_queries.experiments import sample_dynamic_target_token, prep_experiment
 #################################################################################
 
 device=3
-num_mc_samples = 100000
+num_mc_samples = 10
 folders = ["beam_search_is_hybrid"]
 datasets = ["shakespeare","amazon","apps"]
 config_path = "config/testing/sample.yaml"
@@ -57,11 +57,12 @@ for dataset_name in datasets:
     args = prep_dict['args']
     val_dl = prep_dict['val_dl']
     model = prep_dict['model']
-    args.num_mc_samples = 10000
+    args.num_mc_samples = num_mc_samples
     args.estimate_type = beam_search_is_hybrid
     args.proposal_func = lm_proposal
     args.min_variance = True
     args.min_var_reduction = 0.1
+    args.num_beams = 0.0
     text_dict = args.text_dict
     args.text_dict = None
     print_args(vars(args))
@@ -78,6 +79,7 @@ for dataset_name in datasets:
             os.makedirs(f"data/{folder}/{dataset_name}/val_dl/",exist_ok=True)
             write_pkl(estimates,
                     f"data/{folder}/{dataset_name}/val_dl/val-dl_{dataset_name}_{folder.replace('_','-')}_{args.hist_len}h_{args.total_seq_len}s_{args.num_mc_samples}mc.pkl")
+            estimates=None
             print("====="*10)
 
 
