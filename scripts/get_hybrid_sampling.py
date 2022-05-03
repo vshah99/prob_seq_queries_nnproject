@@ -36,7 +36,7 @@ from seq_queries.experiments import sample_dynamic_target_token, prep_experiment
 #################################################################################
 
 device=3
-num_mc_samples = 10
+num_mc_samples = 10000
 folders = ["beam_search_is_hybrid"]
 datasets = ["shakespeare","amazon","apps"]
 config_path = "config/testing/sample.yaml"
