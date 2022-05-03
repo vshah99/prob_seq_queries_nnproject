@@ -74,6 +74,7 @@ for dataset_name in datasets:
                   .format(dataset_name,folder,args.num_beams,args.hist_len,args.total_seq_len))
             estimates = sample_dynamic_target_token(args, val_dl, model)
             os.makedirs(f"data/{folder}/{dataset_name}/val_dl/",exist_ok=True)
+            estimates['metadata']['text_dict']['text'] = None
             write_pkl(estimates,
                     f"data/{folder}/{dataset_name}/val_dl/val-dl_{dataset_name}_{folder.replace('_','-')}_{args.hist_len}h_{args.total_seq_len}s_{args.num_beams}b.pkl")
             print("====="*10)

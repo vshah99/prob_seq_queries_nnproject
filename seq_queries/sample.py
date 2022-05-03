@@ -123,12 +123,12 @@ def mc_estimate(hist, num_mc_samples, seq_len, model, excluded_terms, proposal_f
         # (samples x vocab) -> (sub-estimates x vocab)
         out_dict['sample_estimates'] = torch.stack(
             # (vocab)
-            [out_dict['sample_estimates'][:s, :].mean(dim=0).flatten()
+            [out_dict['sample_estimates'][:s].mean(dim=0).flatten()
              for s in sorted(sub_estimates)
         ])
         out_dict['sample_est_var'] = torch.stack(
             # (vocab)
-            [out_dict['sample_estimates'][:s, :].var(dim=0).flatten()
+            [out_dict['sample_estimates'][:s].var(dim=0).flatten()
              for s in sorted(sub_estimates)
         ])
 

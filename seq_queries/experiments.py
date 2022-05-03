@@ -187,7 +187,7 @@ def sample_dynamic_target_token(
                 _add_output(add_out,data_list)
 
     if "is_hybrid" in args.estimate_type.__name__:
-        _consolidate_output('bs_lower_bound',stack=False)
+        _consolidate_output('bs_lower_bound',stack=)
         _consolidate_output('restricted_coverage',stack=False)
         _consolidate_output('true_coverage',stack=False)
         _consolidate_output('num_beams',stack=True)
