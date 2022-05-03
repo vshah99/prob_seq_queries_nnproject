@@ -42,8 +42,7 @@ def uniform_proposal(hists, seq_len, model, vocab_size, excluded_terms,
         samples[samples>=item] += 1
     assert(samples.max() < vocab_size)
 
-    output = model.forward(src=torch.cat((hists, samples), dim=-1))  #, device=device)
-    logits = output["logits"]
+    logits,hidden_states = model.get_next_probs(torch.cat((hists, samples), dim=-1), return_forward_only=True)  #, device=device)
     model_log_prob = torch.log_softmax(logits, dim=-1)[..., -(seq_len+1):-1, :]
     model_log_prob = torch.gather(model_log_prob, dim=-1, index=samples.unsqueeze(-1)).squeeze(-1).sum(dim=-1)  # grab specific log probabilities
 
@@ -94,6 +93,7 @@ def mc_estimate(hist, num_mc_samples, seq_len, model, excluded_terms, proposal_f
                 vocab_size, batch_size=128,temperature=1, top_k=0, top_p=0.0, device='cpu',
                 cat_list = ['sample_estimates'],
                 sub_estimates=None,**kwargs):
+    model.model_iters = 0
     assert(len(hist.shape) == 1)  # (hist_seq_len), Only conditions on a single history
     out_dict = defaultdict(list)
     remaining_samples = num_mc_samples
@@ -118,6 +118,9 @@ def mc_estimate(hist, num_mc_samples, seq_len, model, excluded_terms, proposal_f
 
     for item in cat_list:
         out_dict[item] = torch.cat(out_dict[item],dim=0)
+    # We only care about last term
+    out_dict['sample_estimates'] = out_dict['sample_estimates'][:,excluded_terms[0]].flatten()
+
 
     if sub_estimates is not None and len(sub_estimates) > 0:
         # (samples x vocab) -> (sub-estimates x vocab)
@@ -125,14 +128,18 @@ def mc_estimate(hist, num_mc_samples, seq_len, model, excluded_terms, proposal_f
             # (vocab)
             [out_dict['sample_estimates'][:s].mean(dim=0).flatten()
              for s in sorted(sub_estimates)
-        ])
+        ]).flatten()
         out_dict['sample_est_var'] = torch.stack(
             # (vocab)
             [out_dict['sample_estimates'][:s].var(dim=0).flatten()
              for s in sorted(sub_estimates)
-        ])
+        ]).flatten()
+        out_dict['model_iters'] = torch.LongTensor(
+            [sub_est * (hist.shape[-1] + seq_len) for sub_est in sub_estimates]
+        )
 
-    if not sub_estimates or len(sub_estimates) == 0:
+    else:
+        out_dict['model_iters'] = torch.LongTensor([model.model_iters])
         out_dict['sample_est_var'] =torch.var(out_dict['sample_estimates'],dim=0)
         out_dict['sample_est_mean'] =out_dict['sample_estimates'].mean(dim=0)
     return out_dict
@@ -143,6 +150,7 @@ def beam_search_is_hybrid(hist, num_beams,num_mc_samples, seq_len, model, exclud
                           beam_search_outputs=['num_beams','true_coverage','restricted_coverage'],
                           min_variance=False,min_var_reduction=0.0,
                           text_dict=None, **kwargs):
+    model.model_iters = 0
     beam_search_output =beam_search_lower_bound(
         hist, num_beams, seq_len, model, excluded_terms, interp_func,
         batch_size, device, vocab_size, bs_tree=BeamSearchSampleTree(text_dict),
@@ -203,7 +211,23 @@ def tree_is_estimate(
     last_tokens = torch.stack(last_tokens, dim=0).unsqueeze(1)  # need to have a sequence length of 1
 
     # Finish sampling incomplete sequences from model
-    model_runs = num_remaining_steps.sum()
+    model_iters = [model.model_iters + num_remaining_steps.sum()]
+    if sub_estimates:
+        model_iters = []
+        remaining_iters = [
+            (num_remaining_steps == i).sum() for i in range(num_remaining_steps.max()+1)
+        ]; remaining_iters = np.cumsum(np.array(remaining_iters))
+        j = 0
+        for i in range(len(remaining_iters)):
+            while (j < len(sub_estimates) and
+                   sub_estimates[j] <= remaining_iters[i]):
+                if i ==0:
+                    model_iters.append(model.model_iters)
+                else:
+                    iter_diff = remaining_iters[i]-sub_estimates[j]
+                    model_iters.append(model.model_iters + remaining_iters[i] - iter_diff)
+                j += 1
+
     while (num_remaining_steps > 0).any():
         to_update = num_remaining_steps > 0
         if isinstance(hidden_states, tuple):
@@ -243,22 +267,30 @@ def tree_is_estimate(
     next_log_dist = torch.log_softmax(next_log_dist, dim=-1)  # (num_seqs, vocab_size)
     dist_estimate = next_log_dist + log_p_totals.unsqueeze(dim=-1) - log_q_totals.unsqueeze(dim=-1)
     dist_estimate = dist_estimate.exp().cpu()
+    dist_estimate = dist_estimate[:,excluded_terms[0]].flatten()
+    bs_lower_bound = bs_lower_bound[excluded_terms[0]].flatten()
+    dist_est_var = dist_estimate.var(dim=0)
 
     if sub_estimates is not None and len(sub_estimates) > 0:
         # (samples x vocab) -> (sub-estimates x vocab)
         dist_estimate = torch.stack(
             # (vocab)
-            [dist_estimate[:s, :].mean(dim=0).flatten()
+            [dist_estimate[:s].mean(dim=0).flatten()
              for s in sorted(sub_estimates)
-        ])
+        ]).flatten()
+        dist_est_var = torch.stack(
+            # (vocab)
+            [dist_estimate[:s].var(dim=0).flatten()
+             for s in sorted(sub_estimates)
+        ]).flatten()
 
     return {
         'bs_lower_bound':bs_lower_bound,
         'is_estimate':dist_estimate,
         'hybrid_bs_is_estimate': bs_lower_bound + dist_estimate,
-        'hybrid_var':torch.var(bs_lower_bound + dist_estimate,dim=0),
-        'hybrid_mean':(bs_lower_bound + dist_estimate).mean(dim=0),
-        'model_runs': model_runs,
+        'hybrid_var': bs_lower_bound + dist_est_var,
+        'hybrid_mean':(bs_lower_bound + dist_estimate).mean(dim=0) if not sub_estimates else torch.Tensor([]),
+        'model_iters': torch.LongTensor(model_iters),
     }
 
 def geom_interp(target_pct, n_current, n_end):
@@ -277,6 +309,7 @@ def beam_search_lower_bound(hist, num_beams, seq_len, model, excluded_terms, int
     assert(isinstance(num_beams, (int, float)))
     assert(len(hist.shape) == 1)
 
+    model.model_iters = 0
     beams, rnn_args = hist.unsqueeze(0), None  # beams only represents what needs to be processed by the model in the next step
     cur_log_probs = torch.zeros((1,), dtype=torch.float32)  # (num of current beams,)
     cur_restricted_log_probs = cur_log_probs.clone()  # sum of restricted probabilities
@@ -356,7 +389,8 @@ def beam_search_lower_bound(hist, num_beams, seq_len, model, excluded_terms, int
         "dist_lower_bound": next_log_probs.exp().sum(dim=0).cpu(),
         "true_coverage": cur_log_probs.exp().sum().cpu(),
         "restricted_coverage": cur_restricted_log_probs.exp().sum().cpu(),
-        "num_beams": num_beams_over_time,
+        "num_beams": torch.LongTensor(num_beams_over_time),
+        "model_iters": torch.LongTensor([model.model_iters]),
     }
 
 

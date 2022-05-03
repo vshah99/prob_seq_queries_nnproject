@@ -63,6 +63,7 @@ for dataset_name in datasets:
     args.min_variance = True
     args.min_var_reduction = 0.1
     args.num_beams = 0.0
+    args.sub_estimates = [10,100,1000,10000]
     text_dict = args.text_dict
     args.text_dict = None
     print_args(vars(args))
@@ -77,6 +78,7 @@ for dataset_name in datasets:
                   .format(dataset_name,folder,args.num_mc_samples,args.hist_len,args.total_seq_len))
             estimates = sample_dynamic_target_token(args, val_dl, model)
             os.makedirs(f"data/{folder}/{dataset_name}/val_dl/",exist_ok=True)
+            estimates['metadata']['text_dict']['text'] = None
             write_pkl(estimates,
                     f"data/{folder}/{dataset_name}/val_dl/val-dl_{dataset_name}_{folder.replace('_','-')}_{args.hist_len}h_{args.total_seq_len}s_{args.num_mc_samples}mc.pkl")
             estimates=None

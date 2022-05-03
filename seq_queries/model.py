@@ -54,6 +54,7 @@ class CausalLM(LM, nn.Module):
     ):
         super().__init__()
 
+        self.model_iters = 0
         self.vocab_size, self.embed_dim = vocab_size, embed_dim
         self.rnn = rnn
         self.out_transform = nn.Linear(embed_dim, vocab_size, bias=True)
@@ -111,6 +112,7 @@ class CausalLM(LM, nn.Module):
         how 'peaked' or 'flat' the distribution is."""
 
         # Model temperature always defaults to 1, must set to None to overwrite
+        self.model_iters += x.shape[0] * x.shape[1]
         if self.temperature is not None:
             temperature = self.temperature
         xs = torch.split(x,max_batch_size)

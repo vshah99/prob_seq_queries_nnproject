@@ -46,7 +46,7 @@ def prep_experiment(
     config_roster = {
         "amazon": {
             "checkpoint_path": "/home/showalte/research/prob_seq_queries/models/amazon/",
-            "data_path": "data/amazon/amazon_text_dict.pkl",
+            "data_path": "/srv/disk00/samshow/amazon/amazon_text_dict.pkl",
             "hidden_size": 512,
             "seq_len": 15,
             "vocab_size": 30,
@@ -110,9 +110,10 @@ def sample_dynamic_target_token(
     args,
     dataloader,
     model = None,
-    sample_artifacts=["sample_estimates",'q_log_prob','sample_est_var','sample_est_mean'],
-    hybrid_artifacts=["bs_lower_bound",'is_estimate','hybrid_bs_is_estimate','model_runs',
+    sample_artifacts=["sample_estimates",'sample_est_var','sample_est_mean','model_iters'],
+    hybrid_artifacts=["bs_lower_bound",'is_estimate','hybrid_bs_is_estimate','model_iters',
                       'hybrid_var','hybrid_mean','num_beams',],
+    search_artifacts=['true_coverage','restricted_coverage','num_beams','dist_lower_bound'],
     **kwargs,):
     """Sample from any of these methods given an
     input dataloader, arguments, and potentially a model
@@ -126,6 +127,11 @@ def sample_dynamic_target_token(
     """
     args.model = model; print();
     output = {}
+    artifact_store_roster = {
+        "beam_search_is_hybrid": hybrid_artifacts,
+        "beam_search_lower_bound":search_artifacts,
+        "mc_estimate":sample_artifacts,
+    }
 
     def _tensor_output(key, data,output=output):
         if key not in output: output[key] = []
@@ -138,15 +144,16 @@ def sample_dynamic_target_token(
             output_data =[torch.Tensor(db[key]) for db in data]
         output[key] += output_data
 
-    def _consolidate_output(key,output=output, stack=True):
+    def _consolidate_output(key,output=output):
         if isinstance(output[key],(torch.Tensor, torch.LongTensor)):
             return
-        elif stack:
-            output[key] = torch.stack(output[key])
-        else:
+        elif len(output[key][0].shape) == 1:
+            output[key] = torch.stack(output[key]).squeeze()
+        elif len(output[key][0].shape) >= 1:
             output[key] = torch.cat(output[key])
 
-    all_excluded_terms = [];
+    all_excluded_terms = []
+    artifacts = artifact_store_roster[args.estimate_type.__name__]
     for dbatch in tqdm(dataloader, disable=args.disable_tqdm):
         data_list = []
         var_list = []
@@ -172,33 +179,28 @@ def sample_dynamic_target_token(
 
 
         print("",flush=True)
-        if "is_hybrid" in args.estimate_type.__name__:
-            for add_out in hybrid_artifacts:
-                _add_output(add_out,data_list)
-            _tensor_output('true_coverage',data_list)
-            _tensor_output('restricted_coverage',data_list)
-        elif "beam_search" in args.estimate_type.__name__:
-            _add_output('num_beams',data_list)
-            _add_output('dist_lower_bound',data_list)
-            _tensor_output('true_coverage',data_list)
-            _tensor_output('restricted_coverage',data_list)
-        else:
-            for add_out in sample_artifacts:
-                _add_output(add_out,data_list)
+        assert args.estimate_type.__name__ in artifact_store_roster,\
+            f"Estimate type {args.estimate_type.__name__} not found"
+        artifacts = artifact_store_roster[args.estimate_type.__name__]
+        for art in artifacts:
+            _add_output(art,data_list)
+        break
 
-    if "is_hybrid" in args.estimate_type.__name__:
-        _consolidate_output('bs_lower_bound',stack=)
-        _consolidate_output('restricted_coverage',stack=False)
-        _consolidate_output('true_coverage',stack=False)
-        _consolidate_output('num_beams',stack=True)
-        for c in hybrid_artifacts: _consolidate_output(c)
-    elif "beam_search" in args.estimate_type.__name__:
-        _consolidate_output('dist_lower_bound',stack=False)
-        _consolidate_output('restricted_coverage',stack=False)
-        _consolidate_output('true_coverage',stack=False)
-        _consolidate_output('num_beams',stack=True)
-    else:
-        for c in sample_artifacts: _consolidate_output(c)
+    for art in artifacts:
+        _consolidate_output(art)
+    # if "is_hybrid" in args.estimate_type.__name__:
+    #     _consolidate_output('bs_lower_bound',stack=True)
+    #     _consolidate_output('restricted_coverage',stack=False)
+    #     _consolidate_output('true_coverage',stack=False)
+    #     _consolidate_output('num_beams',stack=True)
+    #     for c in hybrid_artifacts: _consolidate_output(c)
+    # elif "beam_search" in args.estimate_type.__name__:
+    #     _consolidate_output('dist_lower_bound',stack=False)
+    #     _consolidate_output('restricted_coverage',stack=False)
+    #     _consolidate_output('true_coverage',stack=False)
+    #     _consolidate_output('num_beams',stack=True)
+    # else:
+    #     for c in sample_artifacts: _consolidate_output(c)
 
     args.model = None
     output['metadata'] = vars(args)

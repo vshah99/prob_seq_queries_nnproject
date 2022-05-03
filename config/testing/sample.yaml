@@ -23,7 +23,7 @@ vocab_size: 68
 # Data args
 data_path: data/shakespeare/shakespeare_input.txt
 # data_path: data/lsapp.tsv
-batch_size: 2048
+batch_size: 4096
 
 # Training args not needed here
 # Evaluation arguments not needed here
