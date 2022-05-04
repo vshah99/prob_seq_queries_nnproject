@@ -32,28 +32,80 @@ from .utils import read_pkl, write_pkl
 # Visualizations for Search v. Sample Scatter plots
 #######################################################################
 
-def plot_search_vs_sample(gt_data_path, samp_data_path_imp, samp_data_path_rand,hist_len,seq_len,
-                   sample_sizes, shuffle = False,plot_cols=2, search_type="Ground truth"):
-    assert len(sample_sizes)%plot_cols == 0,"Must have number of samples ({}) divisible by plot_cols ({})"\
-        .format(len(sample_sizes),plot_cols)
+
+def plot_search_vs_sample_relative(gt_data_path, samp_data_path_imp, hist_len,seq_len, num_plots,
+                          sample_sizes = None,samp_data_path_rand=None, shuffle = False,plot_cols=2,
+                                   ylim=None,search_type="Ground truth"):
+    if sample_sizes:
+        assert num_plots%plot_cols == 0,"Must have number of samples ({}) divisible by plot_cols ({})"\
+            .format(num_plots,plot_cols)
     title = "Number of samples: {}"
-    fig, axs = plt.subplots(len(sample_sizes)//plot_cols,plot_cols, figsize = (len(sample_sizes)*3,plot_cols*6))
+    fig, axs = plt.subplots(num_plots//plot_cols,plot_cols, figsize = (num_plots*3,plot_cols*6))
     gt_data = read_pkl(gt_data_path)
     samp_data_imp = read_pkl(samp_data_path_imp)
-    samp_data_rand = read_pkl(samp_data_path_rand)
-    data_dict = {"gt_data":gt_data,
-                 "imp_samp":samp_data_imp,
-                 "rand_samp":samp_data_rand,}
+    if samp_data_path_rand:
+        samp_data_rand = read_pkl(samp_data_path_rand)
+    data_dict = {"gt_data":torch.gather(gt_data['dist_lower_bound'],1,gt_data['excluded_terms'].unsqueeze(-1)).squeeze(),
+                 "imp_samp":samp_data_imp['sample_estimates'],
+                 "hybrid_samp":None if not samp_data_path_rand else samp_data_rand['hybrid_bs_is_estimate'],}
     # Check if it is a dictionary
-    for key,data in data_dict.items():
-        if isinstance(data,dict):
-            data_dict[key] = data['sample_estimates']
+    # for key,data in data_dict.items():
+    #     if isinstance(data,dict):
+    #         data_dict[key] = data['sample_estimates']
 
-    for i in range(len(sample_sizes)):
+    # print(data_dict['gt_data'].shape, data_dict['imp_samp'].shape)
+
+    for i in range(num_plots):
         # data = read_pkl(paths[i])
         ref = np.arange(0,1,0.01)
-        axs[i//plot_cols][i%plot_cols].scatter(data_dict['gt_data'], data_dict['rand_samp'][:,:sample_sizes[i]].mean(axis = -1), color = "green", label = "random")
-        axs[i//plot_cols][i%plot_cols].scatter(data_dict['gt_data'], data_dict['imp_samp'][:,:sample_sizes[i]].mean(axis = -1), color = "blue", label = "importance")
+        # axs[i//plot_cols][i%plot_cols].scatter(data_dict['gt_data'], data_dict['imp_samp'][:,:sample_sizes[i]].mean(axis = -1), color = "blue", label = "importance")
+        imp_diff =np.abs(data_dict['imp_samp'][:,i]-data_dict['gt_data'])
+        hybrid_diff =np.abs(data_dict['hybrid_samp'][:,i]-data_dict['gt_data'])
+        axs[i//plot_cols][i%plot_cols].scatter(data_dict['gt_data'], imp_diff - hybrid_diff, color = "blue", label = "importance")
+        # axs[i//plot_cols][i%plot_cols].scatter(data_dict['gt_data'], data_dict['imp_samp'][:,i]-data_dict['gt_data'], color = "blue", label = "importance")
+        if samp_data_path_rand:
+            pass
+            # axs[i//plot_cols][i%plot_cols].scatter(data_dict['gt_data'], data_dict['rand_samp'][:,:sample_sizes[i]].mean(axis = -1), color = "green", label = "random")
+            # axs[i//plot_cols][i%plot_cols].scatter(data_dict['gt_data'], data_dict['rand_samp'][:,i] - data_dict['gt_data'], color = "green", label = "hybrid")
+        axs[i//plot_cols][i%plot_cols].set_title(title.format(sample_sizes[i]))
+        axs[i//plot_cols][i%plot_cols].legend()
+        if ylim:
+            axs[i//plot_cols][i%plot_cols].set_ylim(ylim)
+
+    fig.supxlabel(f"{search_type} Query probability: {hist_len}h-{seq_len}s")
+    fig.supylabel("Query probability ERROR from sampling")
+    plt.tight_layout()
+    return axs
+
+def plot_search_vs_sample(gt_data_path, samp_data_path_imp, hist_len,seq_len, num_plots,
+                          sample_sizes = None,samp_data_path_rand=None, shuffle = False,plot_cols=2, search_type="Ground truth"):
+    if sample_sizes:
+        assert num_plots%plot_cols == 0,"Must have number of samples ({}) divisible by plot_cols ({})"\
+            .format(num_plots,plot_cols)
+    title = "Number of samples: {}"
+    fig, axs = plt.subplots(num_plots//plot_cols,plot_cols, figsize = (num_plots*3,plot_cols*6))
+    gt_data = read_pkl(gt_data_path)
+    samp_data_imp = read_pkl(samp_data_path_imp)
+    if samp_data_path_rand:
+        samp_data_rand = read_pkl(samp_data_path_rand)
+    data_dict = {"gt_data":torch.gather(gt_data['dist_lower_bound'],1,gt_data['excluded_terms'].unsqueeze(-1)).squeeze(),
+                 "imp_samp":samp_data_imp['sample_estimates'],
+                 "rand_samp":None if not samp_data_path_rand else samp_data_rand['hybrid_bs_is_estimate'],}
+    # Check if it is a dictionary
+    # for key,data in data_dict.items():
+    #     if isinstance(data,dict):
+    #         data_dict[key] = data['sample_estimates']
+
+    # print(data_dict['gt_data'].shape, data_dict['imp_samp'].shape)
+
+    for i in range(num_plots):
+        # data = read_pkl(paths[i])
+        ref = np.arange(0,1,0.01)
+        # axs[i//plot_cols][i%plot_cols].scatter(data_dict['gt_data'], data_dict['imp_samp'][:,:sample_sizes[i]].mean(axis = -1), color = "blue", label = "importance")
+        axs[i//plot_cols][i%plot_cols].scatter(data_dict['gt_data'], data_dict['imp_samp'][:,i], color = "blue", label = "importance")
+        if samp_data_path_rand:
+            # axs[i//plot_cols][i%plot_cols].scatter(data_dict['gt_data'], data_dict['rand_samp'][:,:sample_sizes[i]].mean(axis = -1), color = "green", label = "random")
+            axs[i//plot_cols][i%plot_cols].scatter(data_dict['gt_data'], data_dict['rand_samp'][:,i], color = "green", label = "hybrid")
         axs[i//plot_cols][i%plot_cols].set_title(title.format(sample_sizes[i]))
         axs[i//plot_cols][i%plot_cols].plot(list(ref),list(ref),linestyle="dashed", color = "red",linewidth=2)
         axs[i//plot_cols][i%plot_cols].legend()
@@ -80,8 +132,8 @@ def plot_entropy_variance(
         # (vocab)
         entropy_est_vocab = -((temp_probs/ref_probs)*torch.log(temp_probs)).sum(dim=1)
         # (seqs, 1)
-        entropy_est = torch.gather(entropy_est_vocab, dim=1, data_dict['excluded_tokens'].unsqueeze(0)).flatten()
-        variance = torch.gather(torch.var(temp_probs,dim=1),dim=1,data_dict['excluded_tokens'].unsqueeze(0)).flatten()
+        entropy_est = torch.gather(entropy_est_vocab, 1, data_dict['excluded_tokens'].unsqueeze(0)).flatten()
+        variance = torch.gather(torch.var(temp_probs,dim=1),1,data_dict['excluded_tokens'].unsqueeze(0)).flatten()
         samples[t] = {"entropy":entropy_est, "variance": variance_est}
 
 

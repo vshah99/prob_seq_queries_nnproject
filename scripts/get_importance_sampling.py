@@ -36,9 +36,9 @@ from seq_queries.experiments import sample_dynamic_target_token, prep_experiment
 #################################################################################
 
 device=2
-num_mc_samples = 10000
+num_mc_samples = 100000
 folders = ["importance_sampling"]
-datasets = ["shakespeare","amazon","apps"]
+datasets = ["apps","amazon","shakespeare"]
 config_path = "config/testing/sample.yaml"
 lengths = {
     "amazon":[(h,15) for h in reversed(range(5,14,1))],
@@ -60,7 +60,7 @@ for dataset_name in datasets:
     args.estimate_type = mc_estimate
     args.num_mc_samples = num_mc_samples
     args.proposal_func = lm_proposal
-    args.sub_estimates = [10,100,1000,10000,10000]
+    args.sub_estimates = [10,100,1000,10000,100000]
     text_dict = args.text_dict
     args.text_dict = None
     print_args(vars(args))

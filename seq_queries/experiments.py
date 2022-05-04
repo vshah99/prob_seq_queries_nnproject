@@ -110,10 +110,10 @@ def sample_dynamic_target_token(
     args,
     dataloader,
     model = None,
-    sample_artifacts=["sample_estimates",'sample_est_var','sample_est_mean','model_iters'],
-    hybrid_artifacts=["bs_lower_bound",'is_estimate','hybrid_bs_is_estimate','model_iters',
-                      'hybrid_var','hybrid_mean','num_beams',],
-    search_artifacts=['true_coverage','restricted_coverage','num_beams','dist_lower_bound'],
+    sample_artifacts=["sample_estimates",'sample_estimate_var','sample_estimate_mean','model_iters'],
+    hybrid_artifacts=["bs_lower_bound",'is_estimates','sample_estimates','model_iters',
+                      'sample_estimate_var','sample_estimate_mean','num_beams',],
+    search_artifacts=['true_coverage','restricted_coverage','num_beams','bs_lower_bound'],
     **kwargs,):
     """Sample from any of these methods given an
     input dataloader, arguments, and potentially a model
@@ -147,7 +147,8 @@ def sample_dynamic_target_token(
     def _consolidate_output(key,output=output):
         if isinstance(output[key],(torch.Tensor, torch.LongTensor)):
             return
-        elif len(output[key][0].shape) == 1:
+        elif ((len(output[key][0].shape) == 1) or
+              (len(output[key][0].shape) == 2 and 'estimate' in key)):
             output[key] = torch.stack(output[key]).squeeze()
         elif len(output[key][0].shape) >= 1:
             output[key] = torch.cat(output[key])
@@ -156,8 +157,6 @@ def sample_dynamic_target_token(
     artifacts = artifact_store_roster[args.estimate_type.__name__]
     for dbatch in tqdm(dataloader, disable=args.disable_tqdm):
         data_list = []
-        var_list = []
-        mean_list = []
         all_excluded_terms.append(dbatch[:,args.total_seq_len].cpu())
         data_batch =[dbatch[i,:args.hist_len] for i in range(dbatch.shape[0])]
 
@@ -177,30 +176,15 @@ def sample_dynamic_target_token(
             sample_output =args.estimate_type(sample,**kwargs)
             data_list.append(sample_output)
 
-
         print("",flush=True)
         assert args.estimate_type.__name__ in artifact_store_roster,\
             f"Estimate type {args.estimate_type.__name__} not found"
         artifacts = artifact_store_roster[args.estimate_type.__name__]
         for art in artifacts:
             _add_output(art,data_list)
-        break
 
     for art in artifacts:
         _consolidate_output(art)
-    # if "is_hybrid" in args.estimate_type.__name__:
-    #     _consolidate_output('bs_lower_bound',stack=True)
-    #     _consolidate_output('restricted_coverage',stack=False)
-    #     _consolidate_output('true_coverage',stack=False)
-    #     _consolidate_output('num_beams',stack=True)
-    #     for c in hybrid_artifacts: _consolidate_output(c)
-    # elif "beam_search" in args.estimate_type.__name__:
-    #     _consolidate_output('dist_lower_bound',stack=False)
-    #     _consolidate_output('restricted_coverage',stack=False)
-    #     _consolidate_output('true_coverage',stack=False)
-    #     _consolidate_output('num_beams',stack=True)
-    # else:
-    #     for c in sample_artifacts: _consolidate_output(c)
 
     args.model = None
     output['metadata'] = vars(args)

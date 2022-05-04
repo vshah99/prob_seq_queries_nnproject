@@ -38,12 +38,12 @@ from seq_queries.experiments import sample_dynamic_target_token, prep_experiment
 device=3
 num_mc_samples = 10000
 folders = ["beam_search_is_hybrid"]
-datasets = ["shakespeare","amazon","apps"]
+datasets = ["apps","amazon","shakespeare"]
 config_path = "config/testing/sample.yaml"
 lengths = {
     "amazon":[(h,15) for h in reversed(range(8,14,1))],
     "apps":[(h,15) for h in reversed(range(10,14,1))],
-    "shakespeare": [(h,20) for h in reversed(range(12,19,1))],
+    "shakespeare": [(h,20) for h in reversed(range(14,19,1))],
 }
 
 for dataset_name in datasets:
