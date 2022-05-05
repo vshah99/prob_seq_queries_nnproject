@@ -213,21 +213,26 @@ def tree_is_estimate(
 
     # Finish sampling incomplete sequences from model
     model_iters = [model.model_iters + num_remaining_steps.sum()]
+
     if sub_estimates:
         model_iters = []
-        remaining_iters = [
-            (num_remaining_steps == i).sum() for i in range(num_remaining_steps.max()+1)
-        ]; remaining_iters = np.cumsum(np.array(remaining_iters))
+        samples_per_effort = [
+            (num_remaining_steps == i).sum().item() for i in range(num_remaining_steps.max()+1)
+        ];
         j = 0
-        for i in range(len(remaining_iters)):
-            while (j < len(sub_estimates) and
-                   sub_estimates[j] <= remaining_iters[i]):
-                if i ==0:
-                    model_iters.append(model.model_iters)
-                else:
-                    iter_diff = remaining_iters[i]-sub_estimates[j]
-                    model_iters.append(model.model_iters + remaining_iters[i] - iter_diff)
-                j += 1
+        for i in range(len(sub_estimates)):
+            total_samp = 0; total_cost = model.model_iters
+            curr_model_iters = model.model_iters
+            for j in range(len(samples_per_effort)):
+                if total_samp < sub_estimates[i]:
+                    samp_left = min(sub_estimates[i] - total_samp,
+                                    samples_per_effort[j])
+                    total_samp += samples_per_effort[j]
+                    # print(total_samp,sub_estimates[i])
+                    total_cost += j*samp_left
+                if (total_samp >= sub_estimates[i]):
+                    model_iters.append(total_cost)
+                    break
 
     while (num_remaining_steps > 0).any():
         to_update = num_remaining_steps > 0
@@ -369,7 +374,6 @@ def beam_search_lower_bound(hist, num_beams, seq_len, model, excluded_terms, int
         else:
             rnn_args = rnn_args[..., seq_inds, :]
 
-        # print(n_cur, cur_log_probs.shape[0])
         num_beams_over_time.append(cur_log_probs.shape[0])
 
     logits, states = model.get_next_probs(beams, rnn_args=rnn_args, device=device, return_logits=True,

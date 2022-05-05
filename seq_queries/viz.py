@@ -47,7 +47,8 @@ def plot_search_vs_sample_relative(gt_data_path, samp_data_path_imp, hist_len,se
         samp_data_rand = read_pkl(samp_data_path_rand)
     data_dict = {"gt_data":torch.gather(gt_data['dist_lower_bound'],1,gt_data['excluded_terms'].unsqueeze(-1)).squeeze(),
                  "imp_samp":samp_data_imp['sample_estimates'],
-                 "hybrid_samp":None if not samp_data_path_rand else samp_data_rand['hybrid_bs_is_estimate'],}
+                 "hybrid_samp":None if not samp_data_path_rand else samp_data_rand['sample_estimates'],}
+    excluded_terms = gt_data['excluded_terms']
     # Check if it is a dictionary
     # for key,data in data_dict.items():
     #     if isinstance(data,dict):
@@ -59,21 +60,22 @@ def plot_search_vs_sample_relative(gt_data_path, samp_data_path_imp, hist_len,se
         # data = read_pkl(paths[i])
         ref = np.arange(0,1,0.01)
         # axs[i//plot_cols][i%plot_cols].scatter(data_dict['gt_data'], data_dict['imp_samp'][:,:sample_sizes[i]].mean(axis = -1), color = "blue", label = "importance")
-        imp_diff =np.abs(data_dict['imp_samp'][:,i]-data_dict['gt_data'])
-        hybrid_diff =np.abs(data_dict['hybrid_samp'][:,i]-data_dict['gt_data'])
-        axs[i//plot_cols][i%plot_cols].scatter(data_dict['gt_data'], imp_diff - hybrid_diff, color = "blue", label = "importance")
-        # axs[i//plot_cols][i%plot_cols].scatter(data_dict['gt_data'], data_dict['imp_samp'][:,i]-data_dict['gt_data'], color = "blue", label = "importance")
+        # imp_diff =np.abs(data_dict['imp_samp'][:,i]-data_dict['gt_data'])
+        # hybrid_diff =np.abs(data_dict['hybrid_samp'][:,i]-data_dict['gt_data'])
+        imp_vec =torch.gather(data_dict['imp_samp'][:,i],1,gt_data['excluded_terms'].unsqueeze(-1)).squeeze().numpy()
+        axs[i//plot_cols][i%plot_cols].scatter(data_dict['gt_data'].numpy(), imp_vec, color = "blue", label = "importance")
+        axs[i//plot_cols][i%plot_cols].plot(list(ref),list(ref),linestyle="dashed", color = "red",linewidth=2)
         if samp_data_path_rand:
-            pass
             # axs[i//plot_cols][i%plot_cols].scatter(data_dict['gt_data'], data_dict['rand_samp'][:,:sample_sizes[i]].mean(axis = -1), color = "green", label = "random")
-            # axs[i//plot_cols][i%plot_cols].scatter(data_dict['gt_data'], data_dict['rand_samp'][:,i] - data_dict['gt_data'], color = "green", label = "hybrid")
+            hybrid_vec =torch.gather(data_dict['hybrid_samp'][:,i],1,gt_data['excluded_terms'].unsqueeze(-1)).squeeze().numpy()
+            axs[i//plot_cols][i%plot_cols].scatter(data_dict['gt_data'].numpy(), hybrid_vec, color = "green", label = "hybrid")
         axs[i//plot_cols][i%plot_cols].set_title(title.format(sample_sizes[i]))
         axs[i//plot_cols][i%plot_cols].legend()
         if ylim:
             axs[i//plot_cols][i%plot_cols].set_ylim(ylim)
 
     fig.supxlabel(f"{search_type} Query probability: {hist_len}h-{seq_len}s")
-    fig.supylabel("Query probability ERROR from sampling")
+    fig.supylabel("Query estimates v. ground truth")
     plt.tight_layout()
     return axs
 
