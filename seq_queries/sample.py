@@ -59,11 +59,12 @@ def lm_proposal(hists, seq_len, model, vocab_size, excluded_terms,
     assert(len(hists.shape) == 2)
 
     proposal_log_prob, model_log_prob = 0.0, 0.0
-    samples = []; all_logits = []
+    samples = []; all_logits = []; started = False
     last_sample, rnn_args = hists, None
     for _ in range(seq_len):
         logits, rnn_args = model.get_next_probs(last_sample, rnn_args=rnn_args, max_batch_size=batch_size,
                                                 device=device, return_logits=True)
+        if not started: model.model_iters = 0; started= True
         all_logits.append(logits)
 
         proposal_logits = logits.clone()
@@ -136,8 +137,9 @@ def mc_estimate(hist, num_mc_samples, seq_len, model, excluded_terms, proposal_f
              for s in sorted(sub_estimates)
         ]).squeeze()
         out_dict['model_iters'] = torch.LongTensor(
-            [sub_est * (hist.shape[-1] + seq_len) for sub_est in sub_estimates]
+            [sub_est * seq_len for sub_est in sub_estimates]
         )
+
 
     else:
         out_dict['model_iters'] = torch.LongTensor([model.model_iters])
@@ -274,6 +276,7 @@ def tree_is_estimate(
     dist_estimate = next_log_dist + log_p_totals.unsqueeze(dim=-1) - log_q_totals.unsqueeze(dim=-1)
     dist_estimate = dist_estimate.exp().cpu()
     dist_est_var = dist_estimate.var(dim=0)
+    model_iters = [model_iter + sub_est for model_iter, sub_est in zip(model_iters,sub_estimates)]
 
     if sub_estimates is not None and len(sub_estimates) > 0:
         # (samples x vocab) -> (sub-estimates x vocab)
@@ -313,7 +316,7 @@ def beam_search_lower_bound(hist, num_beams, seq_len, model, excluded_terms, int
     assert(isinstance(num_beams, (int, float)))
     assert(len(hist.shape) == 1)
 
-    model.model_iters = 0
+    model.model_iters = 0; started = False
     beams, rnn_args = hist.unsqueeze(0), None  # beams only represents what needs to be processed by the model in the next step
     cur_log_probs = torch.zeros((1,), dtype=torch.float32)  # (num of current beams,)
     cur_restricted_log_probs = cur_log_probs.clone()  # sum of restricted probabilities
@@ -321,6 +324,7 @@ def beam_search_lower_bound(hist, num_beams, seq_len, model, excluded_terms, int
     for n_cur in range(seq_len):
         logits, states = model.get_next_probs(beams, rnn_args=rnn_args, return_logits = True,
                                             max_batch_size=batch_size,device=device)
+        if not started: model.model_iters = 0; started= True
         next_log_probs = torch.log_softmax(logits, dim=-1)  # (num of current beams, vocab_size)
         stored_next_log_probs = next_log_probs.clone()
         # We need this for each symbol, (tracked based on beams, could use sequence id)

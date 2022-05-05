@@ -1,21 +1,21 @@
 
-# # Amazon
-# checkpoint_path: /home/showalte/research/prob_seq_queries/models/amazon/
-# device_num: 1
-# hidden_size: 512
-# vocab_size: 30
-# val_data_pct: 0.001
-# seq_len: 15
-# data_path: data/amazon/amazon_text_dict.pkl
-
-# Apps
-checkpoint_path: /home/showalte/research/prob_seq_queries/models/apps/
-data_path: data/apps/lsapp.tsv
+# Amazon
+checkpoint_path: /home/showalte/research/prob_seq_queries/models/amazon/
+device_num: 7
 hidden_size: 512
+vocab_size: 30
+val_data_pct: 0.0001
 seq_len: 15
-device_num: 2
-vocab_size: 88
-val_data_pct: 0.001
+data_path: /srv/disk00/samshow/amazon/amazon_text_dict.pkl
+
+# # Apps
+# checkpoint_path: /home/showalte/research/prob_seq_queries/models/apps/
+# data_path: data/apps/lsapp.tsv
+# hidden_size: 512
+# seq_len: 15
+# device_num: 2
+# vocab_size: 88
+# val_data_pct: 0.001
 
 # General args
 seed: 1234321
