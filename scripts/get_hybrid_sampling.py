@@ -35,15 +35,15 @@ from seq_queries.experiments import sample_dynamic_target_token, prep_experiment
 #   Function-Class Declaration
 #################################################################################
 
-device=3
+device=5
 num_mc_samples = 1000
 folders = ["beam_search_is_hybrid"]
-datasets = ["apps","amazon","shakespeare"]
+datasets = ["shakespeare","apps","amazon","shakespeare"]
 config_path = "config/testing/sample.yaml"
 lengths = {
     "amazon":[(h,15) for h in reversed(range(8,14,1))],
     "apps":[(h,15) for h in reversed(range(10,14,1))],
-    "shakespeare": [(h,20) for h in reversed(range(14,18,1))],
+    "shakespeare": [(h,20) for h in reversed(range(14,19,1))],
 }
 
 for dataset_name in datasets:

@@ -4,6 +4,7 @@ import random
 import pickle as pkl
 import pandas as pd
 import numpy as np
+import pandas as pd
 
 random.seed(0)
 from .utils import read_pkl
@@ -28,9 +29,14 @@ def process_amazon_data(text_dict, args): # batch_size, seq_len, dev=torch.devic
     split_pos = list(range(num_seqs))
     random.shuffle(split_pos)
     # split into training, validation, and test split tensors
-    train_ids = ids[split_pos[:int(num_seqs*tr_split)], :]
+    # train_ids = ids[split_pos[:int(num_seqs*tr_split)], :]
     valid_ids = ids[split_pos[int(num_seqs*tr_split):int(num_seqs*(tr_split+v_split))], :]
-    test_ids = ids[split_pos[int(num_seqs*(tr_split+v_split)):], :]
+    # test_ids = ids[split_pos[int(num_seqs*(tr_split+v_split)):], :]
+    df = pd.DataFrame(valid_ids.tolist())
+    df.to_csv("amazon_val_dl.csv",index = None)
+    sys.exit(1)
+
+
 
     train_dl = torch.utils.data.DataLoader(
         train_ids,
@@ -163,6 +169,9 @@ def process_app_data(text_dict, args): # batch_size, seq_len, dev=torch.device("
     train_ids = ids[split_pos[:int(num_seqs*tr_split)], :]
     valid_ids = ids[split_pos[int(num_seqs*tr_split):int(num_seqs*(tr_split+v_split))], :]
     test_ids = ids[split_pos[int(num_seqs*(tr_split+v_split)):], :]
+    df = pd.DataFrame(valid_ids.tolist())
+    df.to_csv("apps_val_dl.csv",index = None)
+    sys.exit(1)
 
     train_dl = torch.utils.data.DataLoader(
         train_ids,
