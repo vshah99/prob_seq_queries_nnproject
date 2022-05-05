@@ -36,9 +36,9 @@ from seq_queries.experiments import sample_dynamic_target_token, prep_experiment
 #################################################################################
 
 device=3
-num_mc_samples = 10000
+num_mc_samples = 1000
 folders = ["beam_search_is_hybrid"]
-datasets = ["apps","amazon","shakespeare"]
+datasets = ['shakespeare',"apps","amazon","shakespeare"]
 config_path = "config/testing/sample.yaml"
 lengths = {
     "amazon":[(h,15) for h in reversed(range(8,14,1))],
