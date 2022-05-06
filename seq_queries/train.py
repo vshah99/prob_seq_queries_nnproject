@@ -40,7 +40,7 @@ def train_step(args, model, optimizer, lr_scheduler, batch):
 def train_epoch(args, model, optimizer, lr_scheduler, dataloader, epoch_number):
     model.train()
 
-    avg_losses = {
+    avg_metrics = {
         "loss":0.0,
     }
     data_len = len(dataloader)
@@ -48,14 +48,15 @@ def train_epoch(args, model, optimizer, lr_scheduler, dataloader, epoch_number):
     training_pbar = tqdm(dataloader)
     for i, batch in enumerate(training_pbar):
         output = train_step(args, model, optimizer, lr_scheduler, batch)
+        print(output.keys())
 
-        for key in avg_losses.keys():
-            avg_losses[key] = (avg_losses[key]*i + output[key].item()) / (i+1)  # calculate average this way to always have an up to date, scale adjusted estimate
+        for key in avg_metrics.keys():
+            avg_metrics[key] = (avg_metrics[key]*i + output[key].item()) / (i+1)  # calculate average this way to always have an up to date, scale adjusted estimate
         if (i+1) % args.log_interval == 0:
-            training_pbar.set_description("[T] E={}, {}".format(epoch_number, ", ".join(["{}={:.4f}".format(k,v) for k,v in avg_losses.items()])))
-    training_pbar.set_description("[T] E={}, {}".format(epoch_number, ", ".join(["{}={:.4f}".format(k,v) for k,v in avg_losses.items()])))
+            training_pbar.set_description("[T] E={}, {}".format(epoch_number, ", ".join(["{}={:.4f}".format(k,v) for k,v in avg_metrics.items()])))
+    training_pbar.set_description("[T] E={}, {}".format(epoch_number, ", ".join(["{}={:.4f}".format(k,v) for k,v in avg_metrics.items()])))
 
-    return avg_losses
+    return avg_metrics
 
 @torch.no_grad()
 def eval_step(args, model, batch):
@@ -64,22 +65,25 @@ def eval_step(args, model, batch):
 def eval_epoch(args, model, dataloader, epoch_number):
     model.eval()
 
-    avg_losses = {
+    avg_metrics = {
         "loss":0.0,
     }
+    for met in args.val_metrics:
+        avg_metrics[met] = 0.0
+
     data_len = len(dataloader)
 
     validation_pbar = tqdm(dataloader,disable=args.disable_tqdm)
     for i, batch in enumerate(validation_pbar):
         output = eval_step(args, model, batch)
 
-        for key in avg_losses.keys():
-            avg_losses[key] = (avg_losses[key]*i + output[key].item()) / (i+1)  # calculate average this way to always have an up to date, scale adjusted estimate
+        for key in avg_metrics.keys():
+            avg_metrics[key] = (avg_metrics[key]*i + output[key].item()) / (i+1)  # calculate average this way to always have an up to date, scale adjusted estimate
         if (i+1) % args.log_interval == 0:
-            validation_pbar.set_description("[V] E={}, {}".format(epoch_number, ", ".join(["{}={:.4f}".format(k,v) for k,v in avg_losses.items()])))
-    validation_pbar.set_description("[V] E={}, {}".format(epoch_number, ", ".join(["{}={:.4f}".format(k,v) for k,v in avg_losses.items()])))
+            validation_pbar.set_description("[V] E={}, {}".format(epoch_number, ", ".join(["{}={:.4f}".format(k,v) for k,v in avg_metrics.items()])))
+    validation_pbar.set_description("[V] E={}, {}".format(epoch_number, ", ".join(["{}={:.4f}".format(k,v) for k,v in avg_metrics.items()])))
 
-    return avg_losses
+    return avg_metrics
 
 def set_random_seed(args):
     """Set random seed for reproducibility."""

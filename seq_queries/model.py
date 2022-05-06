@@ -74,7 +74,7 @@ class CausalLM(LM, nn.Module):
             "misc_output": misc_out
         }
 
-    def graded_forward(self, src, tgt=None,val_metrics=None, **kwargs):
+    def graded_forward(self, src,tgt=None,val_metrics=None, **kwargs):
         """Forward pass during training. Computes self-supervised mean cross-entropy
         loss."""
         if tgt is None:

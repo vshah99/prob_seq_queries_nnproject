@@ -38,7 +38,7 @@ from seq_queries.experiments import sample_dynamic_target_token, prep_experiment
 device=2
 num_mc_samples = 10000
 folders = ["importance_sampling"]
-datasets = ["apps","amazon","shakespeare"]
+datasets = ["amazon","apps","shakespeare"]
 config_path = "config/testing/sample.yaml"
 lengths = {
     "amazon":[(h,15) for h in reversed(range(5,14,1))],
@@ -46,14 +46,20 @@ lengths = {
     "shakespeare": [(h,20) for h in reversed(range(5,19,1))] + [(10,35),(10,60)],
 }
 
+# test = torch.randn(12,3)
+# print(test[torch.randn(12) > 0.5, :].shape)
+# sys.exit(1)
+
 for dataset_name in datasets:
     len_info = lengths[dataset_name]
     print("====="*10)
     print(f"* Running for dataset {dataset_name}")
     print("====="*10)
+    extra_args = {"min_phase_shift":5}
     prep_dict = prep_experiment(config_path,
                                 dataset_name,
-                                device=device)
+                                device=device,
+                                extra_args=extra_args)
     args = prep_dict['args']
     val_dl = prep_dict['val_dl']
     model = prep_dict['model']

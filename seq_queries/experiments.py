@@ -40,6 +40,7 @@ def prep_experiment(
     need_train=False,
     need_test=False,
     device=0,
+    extra_args = {}
  ):
     args = get_args(manual_config=config_path)
     name = name.lower()
@@ -83,6 +84,8 @@ def prep_experiment(
         "shakespeare": process_text_data,
     }
     for argument,details in config_roster[name].items():
+        args.__dict__[argument] = details
+    for argument,details in extra_args.items():
         args.__dict__[argument] = details
     args.device=device
     text_dict= load_roster[name](args.data_path)

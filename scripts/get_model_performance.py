@@ -33,7 +33,7 @@ from seq_queries.arguments import get_args
 from seq_queries.train import load_checkpoint, eval_epoch
 from seq_queries.utils import write_pkl
 from seq_queries.sample import lm_proposal
-from seq_queries.experiments import sample_dynamic_target_token
+from seq_queries.experiments import sample_dynamic_target_token, prep_experiment
 #################################################################################
 #   Function-Class Declaration
 #################################################################################
@@ -42,26 +42,21 @@ if __name__ == "__main__":
 
     args = get_args(manual_config="scripts/model_performance.yaml")
 
-    # Amazon
-    text_dict= load_amazon_data(args.data_path)
-    args.text_dict = text_dict
-    print(text_dict['char_to_id'],flush=True)
-    train_dl, val_dl, test_dl = process_amazon_data(text_dict, args)
+    dataset_name = "apps"
+    device = 7
+    prep_dict = prep_experiment("scripts/model_performance.yaml",
+                                dataset_name,
+                                device=device)
+    args = prep_dict['args']
+    val_dl = prep_dict['val_dl']
+    model = prep_dict['model']
 
-    # # Apps
-    # text_dict= load_app_data(args.data_path)
-    # args.text_dict = text_dict
-    # print(text_dict['char_to_id'],flush=True)
-    # print("====="*10,flush=True)
-    # train_dl, val_dl, test_dl = process_app_data(text_dict, args)
-
-    model = get_model(args)
     valid_perfs = []
     if args.checkpoint_path:
         checkpoints = glob.glob(f"{args.checkpoint_path}/*.pt")
         for checkpoint in checkpoints:
-            load_checkpoint(args, model, checkpoint)
-            new_valid = eval_epoch(args, model, val_dl, 0)
+            epoch = load_checkpoint(args, model, checkpoint)
+            new_valid = eval_epoch(args, model, val_dl, epoch)
             print(new_valid)
             print("====="*10,flush=True)
 

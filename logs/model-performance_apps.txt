@@ -1,0 +1,402 @@
+[2022-05-05 14:15:52.854860] batch_size .......... 2048
+[2022-05-05 14:15:52.854885] checkpoint_path ..... /home/showalte/research/prob_seq_queries/models/amazon/
+[2022-05-05 14:15:52.854894] cuda ................ True
+[2022-05-05 14:15:52.854900] data_path ........... /srv/disk00/samshow/amazon/amazon_text_dict.pkl
+[2022-05-05 14:15:52.854906] device_num .......... 7
+[2022-05-05 14:15:52.854912] disable_tqdm ........ True
+[2022-05-05 14:15:52.854918] do_test ............. False
+[2022-05-05 14:15:52.854925] do_valid ............ True
+[2022-05-05 14:15:52.854931] dont_print_args ..... False
+[2022-05-05 14:15:52.854937] dont_shuffle ........ None
+[2022-05-05 14:15:52.854949] dropout ............. 0.3
+[2022-05-05 14:15:52.854957] estimate_type ....... <function mc_estimate at 0x7f55213df430>
+[2022-05-05 14:15:52.854964] excluded_terms ...... [1]
+[2022-05-05 14:15:52.854970] finetune ............ False
+[2022-05-05 14:15:52.854976] grad_clip ........... 1.0
+[2022-05-05 14:15:52.854982] hidden_size ......... 512
+[2022-05-05 14:15:52.854987] hist_len ............ 18
+[2022-05-05 14:15:52.854994] interp_func ......... <function lin_interp at 0x7f55213df790>
+[2022-05-05 14:15:52.854999] log_interval ........ 100
+[2022-05-05 14:15:52.855006] lr .................. 0.001
+[2022-05-05 14:15:52.855012] lr_decay_style ...... constant
+[2022-05-05 14:15:52.855017] masked_lm ........... False
+[2022-05-05 14:15:52.855023] min_var_reduction ... 0.0
+[2022-05-05 14:15:52.855029] min_variance ........ False
+[2022-05-05 14:15:52.855035] num_beams ........... 0.85
+[2022-05-05 14:15:52.855041] num_layers .......... 2
+[2022-05-05 14:15:52.855047] num_mc_samples ...... 10000
+[2022-05-05 14:15:52.855053] num_workers ......... 0
+[2022-05-05 14:15:52.855059] optimizer ........... adam
+[2022-05-05 14:15:52.855066] proposal_func ....... <function lm_proposal at 0x7f55213d99d0>
+[2022-05-05 14:15:52.855072] rnn_type ............ LSTM
+[2022-05-05 14:15:52.855078] save_epochs ......... 1
+[2022-05-05 14:15:52.855084] seed ................ 1234321
+[2022-05-05 14:15:52.855089] seq_len ............. 15
+[2022-05-05 14:15:52.855095] shuffle ............. True
+[2022-05-05 14:15:52.855100] sub_estimates ....... []
+[2022-05-05 14:15:52.855106] top_k ............... 0
+[2022-05-05 14:15:52.855111] top_p ............... 0
+[2022-05-05 14:15:52.855117] total_seq_len ....... 20
+[2022-05-05 14:15:52.855123] train_data_pct ...... 0.9
+[2022-05-05 14:15:52.855128] train_epochs ........ 40
+[2022-05-05 14:15:52.855134] val_data_pct ........ 0.0001
+[2022-05-05 14:15:52.855144] val_metrics ......... ['accuracy']
+[2022-05-05 14:15:52.855150] valid_epochs ........ 1
+[2022-05-05 14:15:52.855155] vocab_size .......... 30
+[2022-05-05 14:15:52.855162] warmup_pct .......... 0.01
+[2022-05-05 14:15:52.855168] weight_decay ........ 0.0
+==================================================
+[2022-05-05 14:15:52.949799] batch_size .......... 2048
+[2022-05-05 14:15:52.949821] checkpoint_path ..... /home/showalte/research/prob_seq_queries/models/amazon/
+[2022-05-05 14:15:52.949829] cuda ................ True
+[2022-05-05 14:15:52.949835] data_path ........... /srv/disk00/samshow/amazon/amazon_text_dict.pkl
+[2022-05-05 14:15:52.949840] device_num .......... 7
+[2022-05-05 14:15:52.949847] disable_tqdm ........ True
+[2022-05-05 14:15:52.949852] do_test ............. False
+[2022-05-05 14:15:52.949858] do_valid ............ True
+[2022-05-05 14:15:52.949864] dont_print_args ..... False
+[2022-05-05 14:15:52.949870] dont_shuffle ........ None
+[2022-05-05 14:15:52.949881] dropout ............. 0.3
+[2022-05-05 14:15:52.949888] estimate_type ....... <function mc_estimate at 0x7f55213df430>
+[2022-05-05 14:15:52.949896] excluded_terms ...... [1]
+[2022-05-05 14:15:52.949901] finetune ............ False
+[2022-05-05 14:15:52.949909] grad_clip ........... 1.0
+[2022-05-05 14:15:52.949914] hidden_size ......... 512
+[2022-05-05 14:15:52.949919] hist_len ............ 18
+[2022-05-05 14:15:52.949926] interp_func ......... <function lin_interp at 0x7f55213df790>
+[2022-05-05 14:15:52.949931] log_interval ........ 100
+[2022-05-05 14:15:52.949938] lr .................. 0.001
+[2022-05-05 14:15:52.949943] lr_decay_style ...... constant
+[2022-05-05 14:15:52.949949] masked_lm ........... False
+[2022-05-05 14:15:52.949955] min_var_reduction ... 0.0
+[2022-05-05 14:15:52.949960] min_variance ........ False
+[2022-05-05 14:15:52.949966] num_beams ........... 0.85
+[2022-05-05 14:15:52.949972] num_layers .......... 2
+[2022-05-05 14:15:52.949977] num_mc_samples ...... 10000
+[2022-05-05 14:15:52.949983] num_workers ......... 0
+[2022-05-05 14:15:52.949988] optimizer ........... adam
+[2022-05-05 14:15:52.949994] proposal_func ....... <function lm_proposal at 0x7f55213d99d0>
+[2022-05-05 14:15:52.949999] rnn_type ............ LSTM
+[2022-05-05 14:15:52.950004] save_epochs ......... 1
+[2022-05-05 14:15:52.950010] seed ................ 1234321
+[2022-05-05 14:15:52.950016] seq_len ............. 15
+[2022-05-05 14:15:52.950021] shuffle ............. True
+[2022-05-05 14:15:52.950027] sub_estimates ....... []
+[2022-05-05 14:15:52.950032] top_k ............... 0
+[2022-05-05 14:15:52.950037] top_p ............... 0
+[2022-05-05 14:15:52.950043] total_seq_len ....... 20
+[2022-05-05 14:15:52.950049] train_data_pct ...... 0.9
+[2022-05-05 14:15:52.950054] train_epochs ........ 40
+[2022-05-05 14:15:52.950060] val_data_pct ........ 0.0001
+[2022-05-05 14:15:52.950067] val_metrics ......... ['accuracy']
+[2022-05-05 14:15:52.950072] valid_epochs ........ 1
+[2022-05-05 14:15:52.950078] vocab_size .......... 30
+[2022-05-05 14:15:52.950084] warmup_pct .......... 0.01
+[2022-05-05 14:15:52.950092] weight_decay ........ 0.0
+==================================================
+[2022-05-05 14:16:44.515453] Checkpoint path [/home/showalte/research/prob_seq_queries/models/apps/] does exist.
+[2022-05-05 14:16:44.532418] Loaded model from /home/showalte/research/prob_seq_queries/models/apps/model_100.pt
+==================================================
+[2022-05-05 14:16:44.630575] Loaded model from /home/showalte/research/prob_seq_queries/models/apps/model_000.pt
+{'loss': 0.7945700287818909, 'accuracy': 81.1512222290039}
+==================================================
+[2022-05-05 14:16:44.789157] Loaded model from /home/showalte/research/prob_seq_queries/models/apps/model_001.pt
+{'loss': 0.7423703372478485, 'accuracy': 82.78678131103516}
+==================================================
+[2022-05-05 14:16:44.935150] Loaded model from /home/showalte/research/prob_seq_queries/models/apps/model_002.pt
+{'loss': 0.7311106324195862, 'accuracy': 83.08217239379883}
+==================================================
+[2022-05-05 14:16:45.048294] Loaded model from /home/showalte/research/prob_seq_queries/models/apps/model_003.pt
+{'loss': 0.7244876623153687, 'accuracy': 83.27463912963867}
+==================================================
+[2022-05-05 14:16:45.157891] Loaded model from /home/showalte/research/prob_seq_queries/models/apps/model_004.pt
+{'loss': 0.7203137278556824, 'accuracy': 83.41040420532227}
+==================================================
+[2022-05-05 14:16:45.277423] Loaded model from /home/showalte/research/prob_seq_queries/models/apps/model_005.pt
+{'loss': 0.7153138220310211, 'accuracy': 83.42948913574219}
+==================================================
+[2022-05-05 14:16:45.400708] Loaded model from /home/showalte/research/prob_seq_queries/models/apps/model_006.pt
+{'loss': 0.7132547497749329, 'accuracy': 83.44818115234375}
+==================================================
+[2022-05-05 14:16:45.560528] Loaded model from /home/showalte/research/prob_seq_queries/models/apps/model_007.pt
+{'loss': 0.7096081674098969, 'accuracy': 83.61431884765625}
+==================================================
+[2022-05-05 14:16:45.693482] Loaded model from /home/showalte/research/prob_seq_queries/models/apps/model_008.pt
+{'loss': 0.7058411240577698, 'accuracy': 83.6953125}
+==================================================
+[2022-05-05 14:16:45.918021] Loaded model from /home/showalte/research/prob_seq_queries/models/apps/model_009.pt
+{'loss': 0.7035104334354401, 'accuracy': 83.69817352294922}
+==================================================
+[2022-05-05 14:16:46.088838] Loaded model from /home/showalte/research/prob_seq_queries/models/apps/model_010.pt
+{'loss': 0.6992084681987762, 'accuracy': 83.8567886352539}
+==================================================
+[2022-05-05 14:16:46.212050] Loaded model from /home/showalte/research/prob_seq_queries/models/apps/model_011.pt
+{'loss': 0.6955810487270355, 'accuracy': 83.8903579711914}
+==================================================
+[2022-05-05 14:16:46.368865] Loaded model from /home/showalte/research/prob_seq_queries/models/apps/model_012.pt
+{'loss': 0.6916130185127258, 'accuracy': 83.93789291381836}
+==================================================
+[2022-05-05 14:16:46.538542] Loaded model from /home/showalte/research/prob_seq_queries/models/apps/model_013.pt
+{'loss': 0.6879462599754333, 'accuracy': 84.087646484375}
+==================================================
+[2022-05-05 14:16:46.663757] Loaded model from /home/showalte/research/prob_seq_queries/models/apps/model_014.pt
+{'loss': 0.685386061668396, 'accuracy': 84.14685440063477}
+==================================================
+[2022-05-05 14:16:46.777544] Loaded model from /home/showalte/research/prob_seq_queries/models/apps/model_015.pt
+{'loss': 0.6830206513404846, 'accuracy': 84.21713256835938}
+==================================================
+[2022-05-05 14:16:46.885837] Loaded model from /home/showalte/research/prob_seq_queries/models/apps/model_016.pt
+{'loss': 0.68006232380867, 'accuracy': 84.2688217163086}
+==================================================
+[2022-05-05 14:16:47.009013] Loaded model from /home/showalte/research/prob_seq_queries/models/apps/model_017.pt
+{'loss': 0.6780381202697754, 'accuracy': 84.32411193847656}
+==================================================
+[2022-05-05 14:16:47.165400] Loaded model from /home/showalte/research/prob_seq_queries/models/apps/model_018.pt
+{'loss': 0.6757701635360718, 'accuracy': 84.37799072265625}
+==================================================
+[2022-05-05 14:16:47.276492] Loaded model from /home/showalte/research/prob_seq_queries/models/apps/model_019.pt
+{'loss': 0.6729814112186432, 'accuracy': 84.47385787963867}
+==================================================
+[2022-05-05 14:16:47.419675] Loaded model from /home/showalte/research/prob_seq_queries/models/apps/model_020.pt
+{'loss': 0.6719524264335632, 'accuracy': 84.46308135986328}
+==================================================
+[2022-05-05 14:16:47.587285] Loaded model from /home/showalte/research/prob_seq_queries/models/apps/model_021.pt
+{'loss': 0.6706223785877228, 'accuracy': 84.51252746582031}
+==================================================
+[2022-05-05 14:16:47.729982] Loaded model from /home/showalte/research/prob_seq_queries/models/apps/model_022.pt
+{'loss': 0.6688779294490814, 'accuracy': 84.52925491333008}
+==================================================
+[2022-05-05 14:16:47.849327] Loaded model from /home/showalte/research/prob_seq_queries/models/apps/model_023.pt
+{'loss': 0.6668046712875366, 'accuracy': 84.5765151977539}
+==================================================
+[2022-05-05 14:16:47.966393] Loaded model from /home/showalte/research/prob_seq_queries/models/apps/model_024.pt
+{'loss': 0.6665433049201965, 'accuracy': 84.64712142944336}
+==================================================
+[2022-05-05 14:16:48.082931] Loaded model from /home/showalte/research/prob_seq_queries/models/apps/model_025.pt
+{'loss': 0.6654062867164612, 'accuracy': 84.64616775512695}
+==================================================
+[2022-05-05 14:16:48.301526] Loaded model from /home/showalte/research/prob_seq_queries/models/apps/model_026.pt
+{'loss': 0.6650196313858032, 'accuracy': 84.59925079345703}
+==================================================
+[2022-05-05 14:16:48.428402] Loaded model from /home/showalte/research/prob_seq_queries/models/apps/model_027.pt
+{'loss': 0.6635647118091583, 'accuracy': 84.69741439819336}
+==================================================
+[2022-05-05 14:16:48.583416] Loaded model from /home/showalte/research/prob_seq_queries/models/apps/model_028.pt
+{'loss': 0.6638874113559723, 'accuracy': 84.66272735595703}
+==================================================
+[2022-05-05 14:16:48.819947] Loaded model from /home/showalte/research/prob_seq_queries/models/apps/model_029.pt
+{'loss': 0.6624896824359894, 'accuracy': 84.73197937011719}
+==================================================
+[2022-05-05 14:16:48.944002] Loaded model from /home/showalte/research/prob_seq_queries/models/apps/model_030.pt
+{'loss': 0.6623875498771667, 'accuracy': 84.7340087890625}
+==================================================
+[2022-05-05 14:16:49.078636] Loaded model from /home/showalte/research/prob_seq_queries/models/apps/model_031.pt
+{'loss': 0.6601376831531525, 'accuracy': 84.755615234375}
+==================================================
+[2022-05-05 14:16:49.221467] Loaded model from /home/showalte/research/prob_seq_queries/models/apps/model_032.pt
+{'loss': 0.6599861979484558, 'accuracy': 84.71070861816406}
+==================================================
+[2022-05-05 14:16:49.347579] Loaded model from /home/showalte/research/prob_seq_queries/models/apps/model_033.pt
+{'loss': 0.6599836647510529, 'accuracy': 84.7469711303711}
+==================================================
+[2022-05-05 14:16:49.465914] Loaded model from /home/showalte/research/prob_seq_queries/models/apps/model_034.pt
+{'loss': 0.6589827239513397, 'accuracy': 84.80590057373047}
+==================================================
+[2022-05-05 14:16:49.594384] Loaded model from /home/showalte/research/prob_seq_queries/models/apps/model_035.pt
+{'loss': 0.6591823995113373, 'accuracy': 84.80837631225586}
+==================================================
+[2022-05-05 14:16:49.716405] Loaded model from /home/showalte/research/prob_seq_queries/models/apps/model_036.pt
+{'loss': 0.6582114398479462, 'accuracy': 84.85052871704102}
+==================================================
+[2022-05-05 14:16:49.836033] Loaded model from /home/showalte/research/prob_seq_queries/models/apps/model_037.pt
+{'loss': 0.6593713164329529, 'accuracy': 84.77739334106445}
+==================================================
+[2022-05-05 14:16:49.972009] Loaded model from /home/showalte/research/prob_seq_queries/models/apps/model_038.pt
+{'loss': 0.6580369174480438, 'accuracy': 84.7896842956543}
+==================================================
+[2022-05-05 14:16:50.105869] Loaded model from /home/showalte/research/prob_seq_queries/models/apps/model_039.pt
+{'loss': 0.6579675674438477, 'accuracy': 84.83559799194336}
+==================================================
+[2022-05-05 14:16:50.299467] Loaded model from /home/showalte/research/prob_seq_queries/models/apps/model_040.pt
+{'loss': 0.6561374366283417, 'accuracy': 84.91418075561523}
+==================================================
+[2022-05-05 14:16:50.414932] Loaded model from /home/showalte/research/prob_seq_queries/models/apps/model_041.pt
+{'loss': 0.6567526757717133, 'accuracy': 84.82218551635742}
+==================================================
+[2022-05-05 14:16:50.552335] Loaded model from /home/showalte/research/prob_seq_queries/models/apps/model_042.pt
+{'loss': 0.6560144424438477, 'accuracy': 84.88240814208984}
+==================================================
+[2022-05-05 14:16:50.694098] Loaded model from /home/showalte/research/prob_seq_queries/models/apps/model_043.pt
+{'loss': 0.6563548743724823, 'accuracy': 84.8237533569336}
+==================================================
+[2022-05-05 14:16:50.845667] Loaded model from /home/showalte/research/prob_seq_queries/models/apps/model_044.pt
+{'loss': 0.655654639005661, 'accuracy': 84.82437133789062}
+==================================================
+[2022-05-05 14:16:51.097317] Loaded model from /home/showalte/research/prob_seq_queries/models/apps/model_045.pt
+{'loss': 0.6555696129798889, 'accuracy': 84.89576721191406}
+==================================================
+[2022-05-05 14:16:51.244184] Loaded model from /home/showalte/research/prob_seq_queries/models/apps/model_046.pt
+{'loss': 0.6554322242736816, 'accuracy': 84.81292343139648}
+==================================================
+[2022-05-05 14:16:51.410772] Loaded model from /home/showalte/research/prob_seq_queries/models/apps/model_047.pt
+{'loss': 0.6559275984764099, 'accuracy': 84.88537979125977}
+==================================================
+[2022-05-05 14:16:51.538712] Loaded model from /home/showalte/research/prob_seq_queries/models/apps/model_048.pt
+{'loss': 0.654432624578476, 'accuracy': 84.87129211425781}
+==================================================
+[2022-05-05 14:16:51.673267] Loaded model from /home/showalte/research/prob_seq_queries/models/apps/model_049.pt
+{'loss': 0.6542775332927704, 'accuracy': 84.86933135986328}
+==================================================
+[2022-05-05 14:16:51.785485] Loaded model from /home/showalte/research/prob_seq_queries/models/apps/model_050.pt
+{'loss': 0.6539498269557953, 'accuracy': 84.94908142089844}
+==================================================
+[2022-05-05 14:16:51.917705] Loaded model from /home/showalte/research/prob_seq_queries/models/apps/model_051.pt
+{'loss': 0.6539236903190613, 'accuracy': 84.87921142578125}
+==================================================
+[2022-05-05 14:16:52.050103] Loaded model from /home/showalte/research/prob_seq_queries/models/apps/model_052.pt
+{'loss': 0.6540559232234955, 'accuracy': 84.9342155456543}
+==================================================
+[2022-05-05 14:16:52.175823] Loaded model from /home/showalte/research/prob_seq_queries/models/apps/model_053.pt
+{'loss': 0.652996689081192, 'accuracy': 84.92124938964844}
+==================================================
+[2022-05-05 14:16:52.294433] Loaded model from /home/showalte/research/prob_seq_queries/models/apps/model_054.pt
+{'loss': 0.6536265909671783, 'accuracy': 84.91743469238281}
+==================================================
+[2022-05-05 14:16:52.476063] Loaded model from /home/showalte/research/prob_seq_queries/models/apps/model_055.pt
+{'loss': 0.6529479324817657, 'accuracy': 84.88246536254883}
+==================================================
+[2022-05-05 14:16:52.626588] Loaded model from /home/showalte/research/prob_seq_queries/models/apps/model_056.pt
+{'loss': 0.654477059841156, 'accuracy': 84.87040328979492}
+==================================================
+[2022-05-05 14:16:52.791954] Loaded model from /home/showalte/research/prob_seq_queries/models/apps/model_057.pt
+{'loss': 0.6538849771022797, 'accuracy': 84.92978286743164}
+==================================================
+[2022-05-05 14:16:52.998209] Loaded model from /home/showalte/research/prob_seq_queries/models/apps/model_058.pt
+{'loss': 0.6524464190006256, 'accuracy': 84.9388198852539}
+==================================================
+[2022-05-05 14:16:53.123909] Loaded model from /home/showalte/research/prob_seq_queries/models/apps/model_059.pt
+{'loss': 0.6537873148918152, 'accuracy': 84.92007064819336}
+==================================================
+[2022-05-05 14:16:53.314505] Loaded model from /home/showalte/research/prob_seq_queries/models/apps/model_060.pt
+{'loss': 0.6530659794807434, 'accuracy': 84.8812255859375}
+==================================================
+[2022-05-05 14:16:53.443073] Loaded model from /home/showalte/research/prob_seq_queries/models/apps/model_061.pt
+{'loss': 0.6530974209308624, 'accuracy': 84.91496658325195}
+==================================================
+[2022-05-05 14:16:53.606841] Loaded model from /home/showalte/research/prob_seq_queries/models/apps/model_062.pt
+{'loss': 0.653236448764801, 'accuracy': 84.93898391723633}
+==================================================
+[2022-05-05 14:16:53.731849] Loaded model from /home/showalte/research/prob_seq_queries/models/apps/model_063.pt
+{'loss': 0.6530590951442719, 'accuracy': 84.86276626586914}
+==================================================
+[2022-05-05 14:16:53.872831] Loaded model from /home/showalte/research/prob_seq_queries/models/apps/model_064.pt
+{'loss': 0.6514852344989777, 'accuracy': 84.92400360107422}
+==================================================
+[2022-05-05 14:16:54.027302] Loaded model from /home/showalte/research/prob_seq_queries/models/apps/model_065.pt
+{'loss': 0.6529359519481659, 'accuracy': 84.91827392578125}
+==================================================
+[2022-05-05 14:16:54.197442] Loaded model from /home/showalte/research/prob_seq_queries/models/apps/model_066.pt
+{'loss': 0.6520698666572571, 'accuracy': 84.96059036254883}
+==================================================
+[2022-05-05 14:16:54.373236] Loaded model from /home/showalte/research/prob_seq_queries/models/apps/model_067.pt
+{'loss': 0.6522146165370941, 'accuracy': 84.97372817993164}
+==================================================
+[2022-05-05 14:16:54.508584] Loaded model from /home/showalte/research/prob_seq_queries/models/apps/model_068.pt
+{'loss': 0.6519708931446075, 'accuracy': 84.90676879882812}
+==================================================
+[2022-05-05 14:16:54.669558] Loaded model from /home/showalte/research/prob_seq_queries/models/apps/model_069.pt
+{'loss': 0.6517037451267242, 'accuracy': 84.91996002197266}
+==================================================
+[2022-05-05 14:16:54.839243] Loaded model from /home/showalte/research/prob_seq_queries/models/apps/model_070.pt
+{'loss': 0.6516311466693878, 'accuracy': 85.00970458984375}
+==================================================
+[2022-05-05 14:16:54.994373] Loaded model from /home/showalte/research/prob_seq_queries/models/apps/model_071.pt
+{'loss': 0.6522215902805328, 'accuracy': 84.95946884155273}
+==================================================
+[2022-05-05 14:16:55.282535] Loaded model from /home/showalte/research/prob_seq_queries/models/apps/model_072.pt
+{'loss': 0.6514881253242493, 'accuracy': 84.91670608520508}
+==================================================
+[2022-05-05 14:16:55.580686] Loaded model from /home/showalte/research/prob_seq_queries/models/apps/model_073.pt
+{'loss': 0.6511250138282776, 'accuracy': 84.9626693725586}
+==================================================
+[2022-05-05 14:16:55.873590] Loaded model from /home/showalte/research/prob_seq_queries/models/apps/model_074.pt
+{'loss': 0.6514910757541656, 'accuracy': 84.96048736572266}
+==================================================
+[2022-05-05 14:16:56.053407] Loaded model from /home/showalte/research/prob_seq_queries/models/apps/model_075.pt
+{'loss': 0.6513961553573608, 'accuracy': 84.9681167602539}
+==================================================
+[2022-05-05 14:16:56.198818] Loaded model from /home/showalte/research/prob_seq_queries/models/apps/model_076.pt
+{'loss': 0.6506681144237518, 'accuracy': 85.00162124633789}
+==================================================
+[2022-05-05 14:16:56.324715] Loaded model from /home/showalte/research/prob_seq_queries/models/apps/model_077.pt
+{'loss': 0.6516450345516205, 'accuracy': 84.94516372680664}
+==================================================
+[2022-05-05 14:16:56.479164] Loaded model from /home/showalte/research/prob_seq_queries/models/apps/model_078.pt
+{'loss': 0.651848167181015, 'accuracy': 84.93875885009766}
+==================================================
+[2022-05-05 14:16:56.619426] Loaded model from /home/showalte/research/prob_seq_queries/models/apps/model_079.pt
+{'loss': 0.6512394845485687, 'accuracy': 84.95565795898438}
+==================================================
+[2022-05-05 14:16:56.770404] Loaded model from /home/showalte/research/prob_seq_queries/models/apps/model_080.pt
+{'loss': 0.6513559520244598, 'accuracy': 84.95111083984375}
+==================================================
+[2022-05-05 14:16:56.944795] Loaded model from /home/showalte/research/prob_seq_queries/models/apps/model_081.pt
+{'loss': 0.6509876847267151, 'accuracy': 84.94959259033203}
+==================================================
+[2022-05-05 14:16:57.073915] Loaded model from /home/showalte/research/prob_seq_queries/models/apps/model_082.pt
+{'loss': 0.6499394476413727, 'accuracy': 85.01638412475586}
+==================================================
+[2022-05-05 14:16:57.253562] Loaded model from /home/showalte/research/prob_seq_queries/models/apps/model_083.pt
+{'loss': 0.6503882110118866, 'accuracy': 84.96727752685547}
+==================================================
+[2022-05-05 14:16:57.459159] Loaded model from /home/showalte/research/prob_seq_queries/models/apps/model_084.pt
+{'loss': 0.6501684188842773, 'accuracy': 84.94740676879883}
+==================================================
+[2022-05-05 14:16:57.596761] Loaded model from /home/showalte/research/prob_seq_queries/models/apps/model_085.pt
+{'loss': 0.6508551239967346, 'accuracy': 84.91199111938477}
+==================================================
+[2022-05-05 14:16:57.725423] Loaded model from /home/showalte/research/prob_seq_queries/models/apps/model_086.pt
+{'loss': 0.6509276032447815, 'accuracy': 84.9725456237793}
+==================================================
+[2022-05-05 14:16:57.861967] Loaded model from /home/showalte/research/prob_seq_queries/models/apps/model_087.pt
+{'loss': 0.6510849595069885, 'accuracy': 84.91518783569336}
+==================================================
+[2022-05-05 14:16:58.011803] Loaded model from /home/showalte/research/prob_seq_queries/models/apps/model_088.pt
+{'loss': 0.6506676077842712, 'accuracy': 84.9257926940918}
+==================================================
+[2022-05-05 14:16:58.132260] Loaded model from /home/showalte/research/prob_seq_queries/models/apps/model_089.pt
+{'loss': 0.6500321328639984, 'accuracy': 84.95161437988281}
+==================================================
+[2022-05-05 14:16:58.302259] Loaded model from /home/showalte/research/prob_seq_queries/models/apps/model_090.pt
+{'loss': 0.6506479978561401, 'accuracy': 84.9515495300293}
+==================================================
+[2022-05-05 14:16:58.444177] Loaded model from /home/showalte/research/prob_seq_queries/models/apps/model_091.pt
+{'loss': 0.649885505437851, 'accuracy': 84.97535705566406}
+==================================================
+[2022-05-05 14:16:58.623981] Loaded model from /home/showalte/research/prob_seq_queries/models/apps/model_092.pt
+{'loss': 0.6507541239261627, 'accuracy': 85.00460052490234}
+==================================================
+[2022-05-05 14:16:58.741225] Loaded model from /home/showalte/research/prob_seq_queries/models/apps/model_093.pt
+{'loss': 0.6513302624225616, 'accuracy': 84.97895050048828}
+==================================================
+[2022-05-05 14:16:58.887705] Loaded model from /home/showalte/research/prob_seq_queries/models/apps/model_094.pt
+{'loss': 0.651040107011795, 'accuracy': 84.9267463684082}
+==================================================
+[2022-05-05 14:16:59.008947] Loaded model from /home/showalte/research/prob_seq_queries/models/apps/model_095.pt
+{'loss': 0.6490038335323334, 'accuracy': 84.98635864257812}
+==================================================
+[2022-05-05 14:16:59.148907] Loaded model from /home/showalte/research/prob_seq_queries/models/apps/model_096.pt
+{'loss': 0.6503065228462219, 'accuracy': 84.9378662109375}
+==================================================
+[2022-05-05 14:16:59.267259] Loaded model from /home/showalte/research/prob_seq_queries/models/apps/model_097.pt
+{'loss': 0.6493766009807587, 'accuracy': 84.98382949829102}
+==================================================
+[2022-05-05 14:16:59.432503] Loaded model from /home/showalte/research/prob_seq_queries/models/apps/model_098.pt
+{'loss': 0.6511839032173157, 'accuracy': 84.94010543823242}
+==================================================
+[2022-05-05 14:16:59.576539] Loaded model from /home/showalte/research/prob_seq_queries/models/apps/model_099.pt
+{'loss': 0.6495670080184937, 'accuracy': 84.97446060180664}
+==================================================
+[2022-05-05 14:16:59.679296] Loaded model from /home/showalte/research/prob_seq_queries/models/apps/model_100.pt
+{'loss': 0.6495670080184937, 'accuracy': 84.97446060180664}
+==================================================
