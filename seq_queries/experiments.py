@@ -38,6 +38,7 @@ def prep_experiment(
     config_path,
     name="shakespeare",
     need_train=False,
+    need_val=True,
     need_test=False,
     device=0,
     extra_args = {}
@@ -92,7 +93,10 @@ def prep_experiment(
     args.text_dict = text_dict
     # print(text_dict['char_to_id'],flush=True)
     # print("====="*10)
-    train_dl, val_dl, test_dl = process_roster[name](text_dict, args)
+    train_dl, val_dl, test_dl = process_roster[name](text_dict, args,
+                                                     need_train=need_train,
+                                                     need_val=need_val,
+                                                     need_test=need_test,)
 
     model = get_model(args)
     if args.checkpoint_path:
@@ -177,6 +181,12 @@ def sample_dynamic_target_token(
             # sample_output = variance_ablation(sample, **kwargs)
             # sys.exit(1)
             sample_output =args.estimate_type(sample,**kwargs)
+            # if i == 2:
+            #     print(sample)
+            #     print(args.excluded_terms)
+            #     print(sample_output['restricted_coverage'],sample_output['true_coverage'])
+            #     print(sample_output['num_beams'])
+            #     sys.exit(1)
             data_list.append(sample_output)
 
         print("",flush=True)

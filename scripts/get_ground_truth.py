@@ -37,7 +37,7 @@ from seq_queries.experiments import sample_dynamic_target_token, prep_experiment
 
 device=1
 folders = ["ground_truth"]
-datasets = ["shakespeare","amazon","apps"]
+datasets = ["amazon","apps","shakespeare"]
 config_path = "config/testing/sample.yaml"
 lengths = {
     # "amazon":[(10,15),(9,15)],
@@ -59,8 +59,9 @@ for dataset_name in datasets:
     args = prep_dict['args']
     val_dl = prep_dict['val_dl']
     model = prep_dict['model']
-    args.estimate_type=beam_search_lower_bound
-    args.num_beams=1.0
+    args.estimate_type = beam_search_lower_bound
+    args.min_variance = False
+    args.num_beams = 0.0
     text_dict = args.text_dict
     args.text_dict = None
     print_args(vars(args))

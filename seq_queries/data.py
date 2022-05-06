@@ -19,7 +19,11 @@ def load_amazon_data(data_path):
     return text_dict
 
 
-def process_amazon_data(text_dict, args): # batch_size, seq_len, dev=torch.device("cpu"), splits=(0.9, 0.05, 0.05), **dl_args):
+def process_amazon_data(text_dict, args,
+                        need_train=True,
+                        need_val=True,
+                        need_test=True,
+                        **kwargs): # batch_size, seq_len, dev=torch.device("cpu"), splits=(0.9, 0.05, 0.05), **dl_args):
     tr_split, v_split = args.train_data_pct, args.val_data_pct  # data split percentages for training and validation
     seq_len, dev = args.seq_len, args.device
 
@@ -29,51 +33,59 @@ def process_amazon_data(text_dict, args): # batch_size, seq_len, dev=torch.devic
     split_pos = list(range(num_seqs))
     random.shuffle(split_pos)
     # split into training, validation, and test split tensors
-    # train_ids = ids[split_pos[:int(num_seqs*tr_split)], :]
-    valid_ids = ids[split_pos[int(num_seqs*tr_split):int(num_seqs*(tr_split+v_split))], :]
-    test_ids = ids[split_pos[int(num_seqs*(tr_split+v_split)):], :]
+    if need_train:
+        train_ids = ids[split_pos[:int(num_seqs*tr_split)], :]
+    if need_val:
+        valid_ids = ids[split_pos[int(num_seqs*tr_split):int(num_seqs*(tr_split+v_split))], :]
+    if need_test:
+        test_ids = ids[split_pos[int(num_seqs*(tr_split+v_split)):], :]
 
+    train_dl, valid_dl, test_dl = None, None, None
     if args.min_phase_shift:
         phase_shifts = read_pkl(args.dataset_phase_shift_path)
         assert phase_shifts.shape[0] == ids.shape[0],\
             f"Phase shifts was shape {phase_shifts.shape[0]} but ids was shape {ids.shape[0]}"
-        # train_ids = train_ids[
-        #     phase_shifts[
-        #         split_pos[:int(num_seqs*tr_split)]
-        #     ] >= args.min_phase_shift, :
-        # ]
-        valid_ids = valid_ids[
-            phase_shifts[
-                split_pos[int(num_seqs*tr_split):int(num_seqs*(tr_split+v_split))]
-            ] >= args.min_phase_shift,:
-        ]
-        write_pkl(torch.LongTensor(split_pos[int(num_seqs*tr_split):int(num_seqs*(tr_split+v_split))]),"transition_inds.pkl")
+        if need_train:
+            train_ids = train_ids[
+                phase_shifts[
+                    split_pos[:int(num_seqs*tr_split)]
+                ] >= args.min_phase_shift, :
+            ]
+        if need_val:
+            valid_ids = valid_ids[
+                phase_shifts[
+                    split_pos[int(num_seqs*tr_split):int(num_seqs*(tr_split+v_split))]
+                ] >= args.min_phase_shift,:
+            ]
 
-        test_ids = test_ids[
-            phase_shifts[
-                split_pos[int(num_seqs*(tr_split+v_split)):]
-            ] >= args.min_phase_shift, :
-        ]
-        sys.exit(1)
+        if need_test:
+            test_ids = test_ids[
+                phase_shifts[
+                    split_pos[int(num_seqs*(tr_split+v_split)):]
+                ] >= args.min_phase_shift, :
+            ]
 
-    train_dl = torch.utils.data.DataLoader(
-        train_ids,
-        batch_size=args.batch_size,
-        shuffle=True,
-        num_workers=args.num_workers,
-    )
-    valid_dl = torch.utils.data.DataLoader(
-        valid_ids,
-        batch_size=args.batch_size,
-        shuffle=False,
-        num_workers=args.num_workers,
-    )
-    test_dl = torch.utils.data.DataLoader(
-        test_ids,
-        batch_size=args.batch_size,
-        shuffle=False,
-        num_workers=args.num_workers,
-    )
+    if need_train:
+        train_dl = torch.utils.data.DataLoader(
+            train_ids,
+            batch_size=args.batch_size,
+            shuffle=True,
+            num_workers=args.num_workers,
+        )
+    if need_val:
+        valid_dl = torch.utils.data.DataLoader(
+            valid_ids,
+            batch_size=args.batch_size,
+            shuffle=False,
+            num_workers=args.num_workers,
+        )
+    if need_test:
+        test_dl = torch.utils.data.DataLoader(
+            test_ids,
+            batch_size=args.batch_size,
+            shuffle=False,
+            num_workers=args.num_workers,
+        )
 
     return train_dl, valid_dl, test_dl
 
@@ -169,7 +181,7 @@ def load_app_data(file_name, seq_len=15):
     }
 
 
-def process_app_data(text_dict, args): # batch_size, seq_len, dev=torch.device("cpu"), splits=(0.9, 0.05, 0.05), **dl_args):
+def process_app_data(text_dict, args,**kwargs): # batch_size, seq_len, dev=torch.device("cpu"), splits=(0.9, 0.05, 0.05), **dl_args):
     tr_split, v_split = args.train_data_pct, args.val_data_pct  # data split percentages for training and validation
     seq_len, dev = args.seq_len, args.device
 
@@ -215,7 +227,7 @@ def process_app_data(text_dict, args): # batch_size, seq_len, dev=torch.device("
 
 
 
-def process_text_data(text_dict, args): # batch_size, seq_len, dev=torch.device("cpu"), splits=(0.9, 0.05, 0.05), **dl_args):
+def process_text_data(text_dict, args,**kwargs): # batch_size, seq_len, dev=torch.device("cpu"), splits=(0.9, 0.05, 0.05), **dl_args):
     tr_split, v_split = args.train_data_pct, args.val_data_pct  # data split percentages for training and validation
     seq_len, dev = args.seq_len, args.device
 
