@@ -58,6 +58,7 @@ for dataset_name in datasets:
     model = prep_dict['model']
     args.estimate_type = beam_search_lower_bound
     args.proposal_func = lm_proposal
+    args.store_intermediate_lbs=True
     args.min_variance = False
     text_dict = args.text_dict
     args.text_dict = None

@@ -31,7 +31,6 @@ from .tree import BeamSearchSampleTree
 #   Function-Class Declaration
 #################################################################################
 
-
 def uniform_proposal(hists, seq_len, model, vocab_size, excluded_terms,
                      batch_size, device='cpu', **kwargs):
     assert(len(hists.shape) == 2)
@@ -120,9 +119,6 @@ def mc_estimate(hist, num_mc_samples, seq_len, model, excluded_terms, proposal_f
 
     for item in cat_list:
         out_dict[item] = torch.cat(out_dict[item],dim=0)
-    # Do we only care about last term?
-    # out_dict['sample_estimates'] = out_dict['sample_estimates'][:,excluded_terms[0]].squeeze()
-
 
     if sub_estimates is not None and len(sub_estimates) > 0:
         # (samples x vocab) -> (sub-estimates x vocab)
@@ -139,7 +135,6 @@ def mc_estimate(hist, num_mc_samples, seq_len, model, excluded_terms, proposal_f
         out_dict['model_iters'] = torch.LongTensor(
             [sub_est * seq_len for sub_est in sub_estimates]
         )
-
 
     else:
         out_dict['model_iters'] = torch.LongTensor([model.model_iters])
@@ -311,12 +306,12 @@ def lin_interp(target_pct, n_current, n_end):
 
 @torch.no_grad()
 def beam_search_lower_bound(hist, num_beams, seq_len, model, excluded_terms, interp_func,
-                            batch_size, device, vocab_size, bs_tree=None,
+                            batch_size, device, vocab_size, bs_tree=None, store_intermediate_lbs=False,
                             min_variance=False,min_var_reduction=0.0, **kwargs):
     assert(isinstance(num_beams, (int, float)))
     assert(len(hist.shape) == 1)
 
-    model.model_iters = 0; started = False
+    model.model_iters = 0; started = False; intermediate_lbs = []
     beams, rnn_args = hist.unsqueeze(0), None  # beams only represents what needs to be processed by the model in the next step
     cur_log_probs = torch.zeros((1,), dtype=torch.float32)  # (num of current beams,)
     cur_restricted_log_probs = cur_log_probs.clone()  # sum of restricted probabilities
@@ -333,6 +328,11 @@ def beam_search_lower_bound(hist, num_beams, seq_len, model, excluded_terms, int
         stored_restricted_log_probs = next_restricted_log_probs.clone()
 
         next_log_probs = cur_log_probs.unsqueeze(-1) + next_log_probs
+
+        # If we need to store intermediate results
+        if store_intermediate_lbs:
+            intermediate_lbs.append(next_log_probs.exp().sum(dim=0).cpu())
+
         next_log_probs = next_log_probs.view(-1)
         next_restricted_log_probs = cur_restricted_log_probs.unsqueeze(-1) + next_restricted_log_probs
         next_restricted_log_probs = next_restricted_log_probs.view(-1)
@@ -398,6 +398,8 @@ def beam_search_lower_bound(hist, num_beams, seq_len, model, excluded_terms, int
         "restricted_coverage": cur_restricted_log_probs.exp().sum().cpu(),
         "num_beams": torch.LongTensor(num_beams_over_time),
         "model_iters": torch.LongTensor([model.model_iters]),
+        "intermediate_lbs": (torch.Tensor([]) if not store_intermediate_lbs
+                             else torch.stack(intermediate_lbs)),
     }
 
 

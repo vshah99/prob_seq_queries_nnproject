@@ -28,6 +28,7 @@ from .tree import BeamSearchSampleTree
 from .sample import *
 from .data import *
 from .train import load_checkpoint, get_model
+from .utils import read_pkl
 
 #################################################################################
 #   Function-Class Declaration
@@ -120,7 +121,8 @@ def sample_dynamic_target_token(
     sample_artifacts=["sample_estimates",'sample_estimate_var','sample_estimate_mean','model_iters'],
     hybrid_artifacts=["bs_lower_bound",'is_estimates','sample_estimates','model_iters',
                       'sample_estimate_var','sample_estimate_mean','num_beams',],
-    search_artifacts=['true_coverage','restricted_coverage','num_beams','bs_lower_bound'],
+    search_artifacts=['true_coverage','restricted_coverage','num_beams',
+                      'bs_lower_bound','intermediate_lbs'],
     **kwargs,):
     """Sample from any of these methods given an
     input dataloader, arguments, and potentially a model
@@ -155,10 +157,22 @@ def sample_dynamic_target_token(
         if isinstance(output[key],(torch.Tensor, torch.LongTensor)):
             return
         elif ((len(output[key][0].shape) == 1) or
-              (len(output[key][0].shape) == 2 and 'estimate' in key)):
+              (len(output[key][0].shape) == 2 and
+               (key in ['sample_estimates','intermediate_lbs']))):
             output[key] = torch.stack(output[key]).squeeze()
         elif len(output[key][0].shape) >= 1:
             output[key] = torch.cat(output[key])
+
+    model_budget = None; model_budget_name = ""
+    if args.model_budget_filepath:
+        if args.estimate_type.__name__ == "beam_search_is_hybrid":
+            # TODO: Add budget name
+            model_budget_file = read_pkl(args.model_budget_filepath)
+            model_budget = model_budget_file['model_iters']
+        elif args.estimate_type.__name == "beam_search_lower_bound":
+            model_budget_file = read_pkl(args.model_budget_filepath)
+            model_budget = model_budget_file['model_iters']
+
 
     all_excluded_terms = []
     artifacts = artifact_store_roster[args.estimate_type.__name__]
@@ -173,20 +187,14 @@ def sample_dynamic_target_token(
                 print(".",end="",flush=True)
             sample = data_batch[i]
             args.seq_len = args.total_seq_len - args.hist_len
+            if args.model_budget_filepath:
+                args.sub_estimates = (torch.div(model_budget[i],args.seq_len,
+                                                rounding_mode="trunc").long() +
+                                      ((model_budget[i]%args.seq_len > 0).long())).tolist()
+                args.num_mc_samples = args.sub_estimates[-1]
             args.excluded_terms = [dbatch[i,args.total_seq_len].cpu().item()]
             kwargs = vars(args)
-            # print(''.join([args.text_dict['id_to_char'][s] for s in sample.tolist()]))
-            # bs_tree = BeamSearchSampleTree(args.text_dict)
-            # args.bs_tree = bs_tree
-            # sample_output = variance_ablation(sample, **kwargs)
-            # sys.exit(1)
             sample_output =args.estimate_type(sample,**kwargs)
-            # if i == 2:
-            #     print(sample)
-            #     print(args.excluded_terms)
-            #     print(sample_output['restricted_coverage'],sample_output['true_coverage'])
-            #     print(sample_output['num_beams'])
-            #     sys.exit(1)
             data_list.append(sample_output)
 
         print("",flush=True)

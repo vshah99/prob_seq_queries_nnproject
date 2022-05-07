@@ -35,8 +35,9 @@ from seq_queries.experiments import sample_dynamic_target_token, prep_experiment
 #   Function-Class Declaration
 #################################################################################
 
-device=2
-num_mc_samples = 10000
+device=6
+sub_estimates = [10,100,1000]
+model_budget = True
 folders = ["importance_sampling"]
 datasets = ["amazon","apps","shakespeare"]
 config_path = "config/testing/sample.yaml"
@@ -64,9 +65,9 @@ for dataset_name in datasets:
     val_dl = prep_dict['val_dl']
     model = prep_dict['model']
     args.estimate_type = mc_estimate
-    args.num_mc_samples = num_mc_samples
     args.proposal_func = lm_proposal
-    args.sub_estimates = [10,100,1000,10000]
+    args.sub_estimates = sub_estimates
+    args.num_mc_samples = args.sub_estimates[-1]
     text_dict = args.text_dict
     args.text_dict = None
     print_args(vars(args))
@@ -77,13 +78,31 @@ for dataset_name in datasets:
         for hist_len,total_seq_len in len_info:
             args.hist_len = hist_len
             args.total_seq_len = total_seq_len
+            args.sub_estimates = [10,100,1000]
+            args.num_mc_samples = args.sub_estimates[-1]
+
+            if model_budget:
+                args.model_budget_filepath = (f"/home/showalte/research/prob_seq_queries/" +
+                                            f"data/beam_search_is_hybrid/{dataset_name}/val_dl/val-dl_" +
+                    f"{dataset_name}_beam-search-is-hybrid_{args.hist_len}h_{args.total_seq_len}s_{args.num_mc_samples}mc.pkl")
+                try:
+                    assert os.path.exists(args.model_budget_filepath),\
+                        f"Model budget filepath {args.model_budget_filepath} does not exist"
+                except Exception as e:
+                    print(args.model_budget_filepath)
+                    print(e)
+                    print("====="*10)
+                    continue
+
             print("Dataset: {} | Sample type: {} | Num samples: {} | Hist length {} | Total Seq Length {}"\
                   .format(dataset_name,folder,args.num_mc_samples,args.hist_len,args.total_seq_len))
             estimates = sample_dynamic_target_token(args, val_dl, model)
             os.makedirs(f"data/{folder}/{dataset_name}/val_dl/",exist_ok=True)
             estimates['metadata']['text_dict']['text'] = None
+            args.num_mc_samples = sub_estimates[-1]
             write_pkl(estimates,
-                    f"data/{folder}/{dataset_name}/val_dl/val-dl_{dataset_name}_{folder.replace('_','-')}_{args.hist_len}h_{args.total_seq_len}s_{args.num_mc_samples}mc.pkl")
+                    f"data/{folder}/{dataset_name}/val_dl/val-dl_{dataset_name}_{folder.replace('_','-')}_" +
+                    f"{args.hist_len}h_{args.total_seq_len}s_{args.num_mc_samples}mc{'_' + 'model-budget' if args.model_budget_filepath else  ''}.pkl")
             estimates=None
             print("====="*10)
 
