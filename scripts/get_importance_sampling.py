@@ -47,10 +47,6 @@ lengths = {
     "shakespeare": [(h,20) for h in reversed(range(5,19,1))] + [(10,35),(10,60)],
 }
 
-# test = torch.randn(12,3)
-# print(test[torch.randn(12) > 0.5, :].shape)
-# sys.exit(1)
-
 for dataset_name in datasets:
     len_info = lengths[dataset_name]
     print("====="*10)

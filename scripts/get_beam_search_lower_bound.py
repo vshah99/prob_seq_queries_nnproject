@@ -37,7 +37,8 @@ from seq_queries.experiments import sample_dynamic_target_token, prep_experiment
 
 device=4
 folders = ["beam_search"]
-datasets = ["amazon","apps","shakespeare"]
+datasets = ['shakespeare',"amazon","apps","shakespeare"]
+model_budget = True
 config_path = "config/testing/sample.yaml"
 lengths_coverage = {
     "amazon":[(13,15,0.98),(12,15,0.95), (11,15,0.9),(10,15,0.85),(9,15,0.8),(8,15,0.8)],
@@ -56,6 +57,7 @@ for dataset_name in datasets:
     args = prep_dict['args']
     val_dl = prep_dict['val_dl']
     model = prep_dict['model']
+    args.num_mc_samples = 1000 # For reading from hybrid correctly
     args.estimate_type = beam_search_lower_bound
     args.proposal_func = lm_proposal
     args.store_intermediate_lbs=True
@@ -71,13 +73,30 @@ for dataset_name in datasets:
             args.hist_len = hist_len
             args.total_seq_len = total_seq_len
             args.num_beams = float(coverage)
+
+            if model_budget:
+                args.model_budget_filepath = (f"/home/showalte/research/prob_seq_queries/" +
+                                            f"data/beam_search_is_hybrid/{dataset_name}/val_dl/val-dl_" +
+                    f"{dataset_name}_beam-search-is-hybrid_{args.hist_len}h_{args.total_seq_len}s_{args.num_mc_samples}mc.pkl")
+                try:
+                    assert os.path.exists(args.model_budget_filepath),\
+                        f"Model budget filepath {args.model_budget_filepath} does not exist"
+                except Exception as e:
+                    print(args.model_budget_filepath)
+                    print(e)
+                    print("====="*10)
+                    continue
+
             print("Dataset: {} | Sample type: {} | Num Beams: {} | Hist length {} | Total Seq Length {}"\
                   .format(dataset_name,folder,args.num_beams,args.hist_len,args.total_seq_len))
             estimates = sample_dynamic_target_token(args, val_dl, model)
             os.makedirs(f"data/{folder}/{dataset_name}/val_dl/",exist_ok=True)
             estimates['metadata']['text_dict']['text'] = None
+            args.num_beams = float(coverage)
             write_pkl(estimates,
-                    f"data/{folder}/{dataset_name}/val_dl/val-dl_{dataset_name}_{folder.replace('_','-')}_{args.hist_len}h_{args.total_seq_len}s_{args.num_beams}b.pkl")
+                    f"data/{folder}/{dataset_name}/val_dl/val-dl_{dataset_name}_" +
+                    f"{folder.replace('_','-')}_{args.hist_len}h_{args.total_seq_len}s" +
+                    f"_{args.num_beams + 'b' if not model_budget else 'model-budget'}.pkl")
             print("====="*10)
 
 

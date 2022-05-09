@@ -1,5 +1,6 @@
 import torch
 import torch.nn as nn
+import numpy as np
 import math
 import yaml
 import pickle as pkl
@@ -201,3 +202,30 @@ def top_k_top_p_filtering(logits, top_k=0, top_p=0.0,min_var=False, filter_value
         logits = logits.masked_fill(indices_to_remove, filter_value)
 
     return logits  #.unsqueeze(0).unsqueeze(0)
+
+#######################################################################
+# Utilities for determining number of beam search beams with a budget
+#######################################################################
+
+def compute_num_beams_from_budget(vocab_size, init_num_beams, seq_len):
+    """TODO: Docstring for compute_num_beams.
+
+    :vocab_size: TODO
+    :init_num_beams: Number of beams if not larger than vocabulary
+    :returns: TODO
+
+    """
+    vocab_size -= 1 # Reconcile <BOS> token
+    if init_num_beams < vocab_size:
+        return init_num_beams
+
+    extra_compute =0; rem_seq_len=seq_len
+    while init_num_beams > vocab_size:
+        extra_compute+= init_num_beams - vocab_size
+        vocab_size = vocab_size**2
+        rem_seq_len -= 1
+    return init_num_beams + int(math.ceil(
+        (extra_compute)/max(rem_seq_len,1)))
+
+
+

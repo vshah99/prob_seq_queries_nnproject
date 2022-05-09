@@ -391,6 +391,7 @@ def beam_search_lower_bound(hist, num_beams, seq_len, model, excluded_terms, int
                     final_log_probs.clone(), #next_log_probs,
                     states, seq_inds,
                     depth=n_cur+1)
+
     return {
         "tree": bs_tree,
         "bs_lower_bound": next_log_probs.exp().sum(dim=0).cpu(),

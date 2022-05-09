@@ -28,7 +28,7 @@ from .tree import BeamSearchSampleTree
 from .sample import *
 from .data import *
 from .train import load_checkpoint, get_model
-from .utils import read_pkl
+from .utils import read_pkl, write_pkl, compute_num_beams_from_budget
 
 #################################################################################
 #   Function-Class Declaration
@@ -165,13 +165,8 @@ def sample_dynamic_target_token(
 
     model_budget = None; model_budget_name = ""
     if args.model_budget_filepath:
-        if args.estimate_type.__name__ == "beam_search_is_hybrid":
-            # TODO: Add budget name
-            model_budget_file = read_pkl(args.model_budget_filepath)
-            model_budget = model_budget_file['model_iters']
-        elif args.estimate_type.__name == "beam_search_lower_bound":
-            model_budget_file = read_pkl(args.model_budget_filepath)
-            model_budget = model_budget_file['model_iters']
+        model_budget_file = read_pkl(args.model_budget_filepath)
+        model_budget = model_budget_file['model_iters']
 
 
     all_excluded_terms = []
@@ -187,11 +182,20 @@ def sample_dynamic_target_token(
                 print(".",end="",flush=True)
             sample = data_batch[i]
             args.seq_len = args.total_seq_len - args.hist_len
+
             if args.model_budget_filepath:
-                args.sub_estimates = (torch.div(model_budget[i],args.seq_len,
-                                                rounding_mode="trunc").long() +
-                                      ((model_budget[i]%args.seq_len > 0).long())).tolist()
-                args.num_mc_samples = args.sub_estimates[-1]
+                if args.estimate_type.__name__ == "mc_estimate":
+                    print(model_budget[i])
+                    args.sub_estimates = (torch.div(model_budget[i],args.seq_len,
+                                                    rounding_mode="trunc").long() +
+                                        ((model_budget[i]%args.seq_len > 0).long())).tolist()
+                    args.num_mc_samples = args.sub_estimates[-1]
+                    print(args.sub_estimates)
+                elif args.estimate_type.__name__ == "beam_search_lower_bound":
+                    init_num_beams = int(np.ceil(model_budget[i][-1].item()/args.seq_len))
+                    args.num_beams = compute_num_beams_from_budget(args.vocab_size,init_num_beams,args.seq_len)
+                    assert isinstance(args.num_beams,int),"Num beams for model budget has to be an int"
+
             args.excluded_terms = [dbatch[i,args.total_seq_len].cpu().item()]
             kwargs = vars(args)
             sample_output =args.estimate_type(sample,**kwargs)
@@ -203,6 +207,7 @@ def sample_dynamic_target_token(
         artifacts = artifact_store_roster[args.estimate_type.__name__]
         for art in artifacts:
             _add_output(art,data_list)
+        # break
 
     for art in artifacts:
         _consolidate_output(art)
