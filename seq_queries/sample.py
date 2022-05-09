@@ -410,9 +410,12 @@ def beam_search_lower_bound(hist, num_beams, seq_len, model, excluded_terms,
                     'restricted_coverage']
         # (samples x vocab) -> (sub-estimates x vocab)
     if sub_estimates:
-        out_dict['model_iters'] = torch.LongTensor([sub_est * seq_len for sub_est in sub_estimates])
-        out_dict['num_beams'] = torch.LongTensor(
-            [min(sub_est,(vocab_size - 1)**i+1) for i,sub_est in enumerate(sub_estimates)])
+        per_step_iters = np.array([
+            [min(sub_est,(vocab_size - len(excluded_terms))**(i+1))
+                            for i in range(seq_len)]
+                for sub_est in sub_estimates])
+        out_dict['model_iters'] = torch.LongTensor(per_step_iters.sum(axis=1))
+        out_dict['num_beams'] = torch.LongTensor(sub_estimates)
         for term in to_accumulate:
             out_dict[term] = torch.stack(
                 # (vocab)
