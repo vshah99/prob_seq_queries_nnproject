@@ -60,4 +60,242 @@
 ==================================================
 Dataset: shakespeare | Sample type: random_sampling | Num samples: 1000 | Hist length 18 | Total Seq Length 20
 
-......................................................................................................................................................................................................
+.....................................................................................................................................................................................................................................
+==================================================
+Dataset: shakespeare | Sample type: random_sampling | Num samples: 1000 | Hist length 17 | Total Seq Length 20
+
+.....................................................................................................................................................................................................................................
+==================================================
+Dataset: shakespeare | Sample type: random_sampling | Num samples: 1000 | Hist length 16 | Total Seq Length 20
+
+.....................................................................................................................................................................................................................................
+==================================================
+/home/showalte/research/prob_seq_queries/data/beam_search_is_hybrid/shakespeare/val_dl/val-dl_shakespeare_beam-search-is-hybrid_15h_20s_1000mc.pkl
+Model budget filepath /home/showalte/research/prob_seq_queries/data/beam_search_is_hybrid/shakespeare/val_dl/val-dl_shakespeare_beam-search-is-hybrid_15h_20s_1000mc.pkl does not exist
+==================================================
+/home/showalte/research/prob_seq_queries/data/beam_search_is_hybrid/shakespeare/val_dl/val-dl_shakespeare_beam-search-is-hybrid_14h_20s_1000mc.pkl
+Model budget filepath /home/showalte/research/prob_seq_queries/data/beam_search_is_hybrid/shakespeare/val_dl/val-dl_shakespeare_beam-search-is-hybrid_14h_20s_1000mc.pkl does not exist
+==================================================
+/home/showalte/research/prob_seq_queries/data/beam_search_is_hybrid/shakespeare/val_dl/val-dl_shakespeare_beam-search-is-hybrid_13h_20s_1000mc.pkl
+Model budget filepath /home/showalte/research/prob_seq_queries/data/beam_search_is_hybrid/shakespeare/val_dl/val-dl_shakespeare_beam-search-is-hybrid_13h_20s_1000mc.pkl does not exist
+==================================================
+/home/showalte/research/prob_seq_queries/data/beam_search_is_hybrid/shakespeare/val_dl/val-dl_shakespeare_beam-search-is-hybrid_12h_20s_1000mc.pkl
+Model budget filepath /home/showalte/research/prob_seq_queries/data/beam_search_is_hybrid/shakespeare/val_dl/val-dl_shakespeare_beam-search-is-hybrid_12h_20s_1000mc.pkl does not exist
+==================================================
+/home/showalte/research/prob_seq_queries/data/beam_search_is_hybrid/shakespeare/val_dl/val-dl_shakespeare_beam-search-is-hybrid_11h_20s_1000mc.pkl
+Model budget filepath /home/showalte/research/prob_seq_queries/data/beam_search_is_hybrid/shakespeare/val_dl/val-dl_shakespeare_beam-search-is-hybrid_11h_20s_1000mc.pkl does not exist
+==================================================
+/home/showalte/research/prob_seq_queries/data/beam_search_is_hybrid/shakespeare/val_dl/val-dl_shakespeare_beam-search-is-hybrid_10h_20s_1000mc.pkl
+Model budget filepath /home/showalte/research/prob_seq_queries/data/beam_search_is_hybrid/shakespeare/val_dl/val-dl_shakespeare_beam-search-is-hybrid_10h_20s_1000mc.pkl does not exist
+==================================================
+/home/showalte/research/prob_seq_queries/data/beam_search_is_hybrid/shakespeare/val_dl/val-dl_shakespeare_beam-search-is-hybrid_9h_20s_1000mc.pkl
+Model budget filepath /home/showalte/research/prob_seq_queries/data/beam_search_is_hybrid/shakespeare/val_dl/val-dl_shakespeare_beam-search-is-hybrid_9h_20s_1000mc.pkl does not exist
+==================================================
+/home/showalte/research/prob_seq_queries/data/beam_search_is_hybrid/shakespeare/val_dl/val-dl_shakespeare_beam-search-is-hybrid_8h_20s_1000mc.pkl
+Model budget filepath /home/showalte/research/prob_seq_queries/data/beam_search_is_hybrid/shakespeare/val_dl/val-dl_shakespeare_beam-search-is-hybrid_8h_20s_1000mc.pkl does not exist
+==================================================
+/home/showalte/research/prob_seq_queries/data/beam_search_is_hybrid/shakespeare/val_dl/val-dl_shakespeare_beam-search-is-hybrid_7h_20s_1000mc.pkl
+Model budget filepath /home/showalte/research/prob_seq_queries/data/beam_search_is_hybrid/shakespeare/val_dl/val-dl_shakespeare_beam-search-is-hybrid_7h_20s_1000mc.pkl does not exist
+==================================================
+/home/showalte/research/prob_seq_queries/data/beam_search_is_hybrid/shakespeare/val_dl/val-dl_shakespeare_beam-search-is-hybrid_6h_20s_1000mc.pkl
+Model budget filepath /home/showalte/research/prob_seq_queries/data/beam_search_is_hybrid/shakespeare/val_dl/val-dl_shakespeare_beam-search-is-hybrid_6h_20s_1000mc.pkl does not exist
+==================================================
+/home/showalte/research/prob_seq_queries/data/beam_search_is_hybrid/shakespeare/val_dl/val-dl_shakespeare_beam-search-is-hybrid_5h_20s_1000mc.pkl
+Model budget filepath /home/showalte/research/prob_seq_queries/data/beam_search_is_hybrid/shakespeare/val_dl/val-dl_shakespeare_beam-search-is-hybrid_5h_20s_1000mc.pkl does not exist
+==================================================
+/home/showalte/research/prob_seq_queries/data/beam_search_is_hybrid/shakespeare/val_dl/val-dl_shakespeare_beam-search-is-hybrid_10h_35s_1000mc.pkl
+Model budget filepath /home/showalte/research/prob_seq_queries/data/beam_search_is_hybrid/shakespeare/val_dl/val-dl_shakespeare_beam-search-is-hybrid_10h_35s_1000mc.pkl does not exist
+==================================================
+/home/showalte/research/prob_seq_queries/data/beam_search_is_hybrid/shakespeare/val_dl/val-dl_shakespeare_beam-search-is-hybrid_10h_60s_1000mc.pkl
+Model budget filepath /home/showalte/research/prob_seq_queries/data/beam_search_is_hybrid/shakespeare/val_dl/val-dl_shakespeare_beam-search-is-hybrid_10h_60s_1000mc.pkl does not exist
+==================================================
+==================================================
+* Running for dataset amazon
+==================================================
+[2022-05-09 10:15:01.972577] Checkpoint path [/home/showalte/research/prob_seq_queries/models/amazon/] does exist.
+[2022-05-09 10:15:01.984459] Loaded model from /home/showalte/research/prob_seq_queries/models/amazon/model_100.pt
+==================================================
+[2022-05-09 10:15:01.984681] batch_size ................. 4096
+[2022-05-09 10:15:01.984688] checkpoint_path ............ /home/showalte/research/prob_seq_queries/models/amazon/
+[2022-05-09 10:15:01.984700] cuda ....................... True
+[2022-05-09 10:15:01.984703] data_path .................. /srv/disk00/samshow/amazon/amazon_text_dict.pkl
+[2022-05-09 10:15:01.984716] dataset_phase_shift_path ... /srv/disk00/samshow/amazon/amazon_phase_trans.pkl
+[2022-05-09 10:15:01.984720] device ..................... 5
+[2022-05-09 10:15:01.984723] device_num ................. 0
+[2022-05-09 10:15:01.984727] disable_tqdm ............... True
+[2022-05-09 10:15:01.984731] do_test .................... False
+[2022-05-09 10:15:01.984741] do_valid ................... True
+[2022-05-09 10:15:01.984745] dont_print_args ............ True
+[2022-05-09 10:15:01.984749] dont_shuffle ............... None
+[2022-05-09 10:15:01.984757] dropout .................... 0.3
+[2022-05-09 10:15:01.984764] estimate_type .............. <function mc_estimate at 0x7f9a3621e5e0>
+[2022-05-09 10:15:01.984770] excluded_terms ............. [1]
+[2022-05-09 10:15:01.984775] finetune ................... False
+[2022-05-09 10:15:01.984779] grad_clip .................. 1.0
+[2022-05-09 10:15:01.984783] hidden_size ................ 512
+[2022-05-09 10:15:01.984786] hist_len ................... 18
+[2022-05-09 10:15:01.984791] interp_func ................ <function lin_interp at 0x7f9a3621e940>
+[2022-05-09 10:15:01.984794] log_interval ............... 100
+[2022-05-09 10:15:01.984799] lr ......................... 0.001
+[2022-05-09 10:15:01.984803] lr_decay_style ............. constant
+[2022-05-09 10:15:01.984807] masked_lm .................. False
+[2022-05-09 10:15:01.984810] min_phase_shift ............ 0
+[2022-05-09 10:15:01.984814] min_var_reduction .......... 0.9
+[2022-05-09 10:15:01.984818] min_variance ............... False
+[2022-05-09 10:15:01.984822] model_budget_filepath ...... None
+[2022-05-09 10:15:01.984827] num_beams .................. 0.0
+[2022-05-09 10:15:01.984830] num_layers ................. 2
+[2022-05-09 10:15:01.984834] num_mc_samples ............. 1000
+[2022-05-09 10:15:01.984837] num_workers ................ 0
+[2022-05-09 10:15:01.984841] optimizer .................. adam
+[2022-05-09 10:15:01.984845] proposal_func .............. <function uniform_proposal at 0x7f9a36294280>
+[2022-05-09 10:15:01.984849] rnn_type ................... LSTM
+[2022-05-09 10:15:01.984853] save_epochs ................ 1
+[2022-05-09 10:15:01.984856] seed ....................... 1234321
+[2022-05-09 10:15:01.984861] seq_len .................... 15
+[2022-05-09 10:15:01.984865] shuffle .................... True
+[2022-05-09 10:15:01.984868] store_intermediate_lbs ..... False
+[2022-05-09 10:15:01.984874] sub_estimates .............. [10, 100, 1000]
+[2022-05-09 10:15:01.984912] text_dict .................. None
+[2022-05-09 10:15:01.984916] top_k ...................... 0
+[2022-05-09 10:15:01.984920] top_p ...................... 0
+[2022-05-09 10:15:01.984923] total_seq_len .............. 20
+[2022-05-09 10:15:01.984927] train_data_pct ............. 0.9
+[2022-05-09 10:15:01.984931] train_epochs ............... 40
+[2022-05-09 10:15:01.984935] val_data_pct ............... 0.0001
+[2022-05-09 10:15:01.984939] val_metrics ................ ['accuracy']
+[2022-05-09 10:15:01.984943] valid_epochs ............... 1
+[2022-05-09 10:15:01.984946] vocab_size ................. 30
+[2022-05-09 10:15:01.984950] warmup_pct ................. 0.01
+[2022-05-09 10:15:01.984954] weight_decay ............... 0.0
+==================================================
+Dataset: amazon | Sample type: random_sampling | Num samples: 1000 | Hist length 13 | Total Seq Length 15
+
+..........................................................................................................................................................................................................................................................................................................................................................................................................................
+.....................................................................................................................................................................................................................................
+==================================================
+Dataset: amazon | Sample type: random_sampling | Num samples: 1000 | Hist length 12 | Total Seq Length 15
+
+..........................................................................................................................................................................................................................................................................................................................................................................................................................
+.....................................................................................................................................................................................................................................
+==================================================
+Dataset: amazon | Sample type: random_sampling | Num samples: 1000 | Hist length 11 | Total Seq Length 15
+
+..........................................................................................................................................................................................................................................................................................................................................................................................................................
+.....................................................................................................................................................................................................................................
+==================================================
+Dataset: amazon | Sample type: random_sampling | Num samples: 1000 | Hist length 10 | Total Seq Length 15
+
+..........................................................................................................................................................................................................................................................................................................................................................................................................................
+.....................................................................................................................................................................................................................................
+==================================================
+Dataset: amazon | Sample type: random_sampling | Num samples: 1000 | Hist length 9 | Total Seq Length 15
+
+..........................................................................................................................................................................................................................................................................................................................................................................................................................
+.....................................................................................................................................................................................................................................
+==================================================
+Dataset: amazon | Sample type: random_sampling | Num samples: 1000 | Hist length 8 | Total Seq Length 15
+
+..........................................................................................................................................................................................................................................................................................................................................................................................................................
+.....................................................................................................................................................................................................................................
+==================================================
+/home/showalte/research/prob_seq_queries/data/beam_search_is_hybrid/amazon/val_dl/val-dl_amazon_beam-search-is-hybrid_7h_15s_1000mc.pkl
+Model budget filepath /home/showalte/research/prob_seq_queries/data/beam_search_is_hybrid/amazon/val_dl/val-dl_amazon_beam-search-is-hybrid_7h_15s_1000mc.pkl does not exist
+==================================================
+/home/showalte/research/prob_seq_queries/data/beam_search_is_hybrid/amazon/val_dl/val-dl_amazon_beam-search-is-hybrid_6h_15s_1000mc.pkl
+Model budget filepath /home/showalte/research/prob_seq_queries/data/beam_search_is_hybrid/amazon/val_dl/val-dl_amazon_beam-search-is-hybrid_6h_15s_1000mc.pkl does not exist
+==================================================
+/home/showalte/research/prob_seq_queries/data/beam_search_is_hybrid/amazon/val_dl/val-dl_amazon_beam-search-is-hybrid_5h_15s_1000mc.pkl
+Model budget filepath /home/showalte/research/prob_seq_queries/data/beam_search_is_hybrid/amazon/val_dl/val-dl_amazon_beam-search-is-hybrid_5h_15s_1000mc.pkl does not exist
+==================================================
+==================================================
+* Running for dataset apps
+==================================================
+[2022-05-09 10:30:24.865992] Checkpoint path [/home/showalte/research/prob_seq_queries/models/apps/] does exist.
+[2022-05-09 10:30:24.891376] Loaded model from /home/showalte/research/prob_seq_queries/models/apps/model_100.pt
+==================================================
+[2022-05-09 10:30:24.929020] batch_size ................. 4096
+[2022-05-09 10:30:24.929057] checkpoint_path ............ /home/showalte/research/prob_seq_queries/models/apps/
+[2022-05-09 10:30:24.929068] cuda ....................... True
+[2022-05-09 10:30:24.929074] data_path .................. data/apps/lsapp.tsv
+[2022-05-09 10:30:24.929082] dataset_phase_shift_path ... /srv/disk00/samshow/amazon/amazon_phase_trans.pkl
+[2022-05-09 10:30:24.929088] device ..................... 5
+[2022-05-09 10:30:24.929094] device_num ................. 0
+[2022-05-09 10:30:24.929127] disable_tqdm ............... True
+[2022-05-09 10:30:24.929133] do_test .................... False
+[2022-05-09 10:30:24.929139] do_valid ................... True
+[2022-05-09 10:30:24.929147] dont_print_args ............ True
+[2022-05-09 10:30:24.929154] dont_shuffle ............... None
+[2022-05-09 10:30:24.929169] dropout .................... 0.3
+[2022-05-09 10:30:24.929179] estimate_type .............. <function mc_estimate at 0x7f9a3621e5e0>
+[2022-05-09 10:30:24.929190] excluded_terms ............. [1]
+[2022-05-09 10:30:24.929196] finetune ................... False
+[2022-05-09 10:30:24.929204] grad_clip .................. 1.0
+[2022-05-09 10:30:24.929210] hidden_size ................ 512
+[2022-05-09 10:30:24.929216] hist_len ................... 18
+[2022-05-09 10:30:24.929224] interp_func ................ <function lin_interp at 0x7f9a3621e940>
+[2022-05-09 10:30:24.929240] log_interval ............... 100
+[2022-05-09 10:30:24.929249] lr ......................... 0.001
+[2022-05-09 10:30:24.929256] lr_decay_style ............. constant
+[2022-05-09 10:30:24.929264] masked_lm .................. False
+[2022-05-09 10:30:24.929283] min_phase_shift ............ 0
+[2022-05-09 10:30:24.929291] min_var_reduction .......... 0.9
+[2022-05-09 10:30:24.929299] min_variance ............... False
+[2022-05-09 10:30:24.929307] model_budget_filepath ...... None
+[2022-05-09 10:30:24.929315] num_beams .................. 0.0
+[2022-05-09 10:30:24.929322] num_layers ................. 2
+[2022-05-09 10:30:24.929330] num_mc_samples ............. 1000
+[2022-05-09 10:30:24.929337] num_workers ................ 0
+[2022-05-09 10:30:24.929345] optimizer .................. adam
+[2022-05-09 10:30:24.929353] proposal_func .............. <function uniform_proposal at 0x7f9a36294280>
+[2022-05-09 10:30:24.929361] rnn_type ................... LSTM
+[2022-05-09 10:30:24.929368] save_epochs ................ 1
+[2022-05-09 10:30:24.929377] seed ....................... 1234321
+[2022-05-09 10:30:24.929384] seq_len .................... 15
+[2022-05-09 10:30:24.929392] shuffle .................... True
+[2022-05-09 10:30:24.929400] store_intermediate_lbs ..... False
+[2022-05-09 10:30:24.929411] sub_estimates .............. [10, 100, 1000]
+[2022-05-09 10:30:24.929418] text_dict .................. None
+[2022-05-09 10:30:24.929426] top_k ...................... 0
+[2022-05-09 10:30:24.929434] top_p ...................... 0
+[2022-05-09 10:30:24.929441] total_seq_len .............. 20
+[2022-05-09 10:30:24.929449] train_data_pct ............. 0.9
+[2022-05-09 10:30:24.929457] train_epochs ............... 40
+[2022-05-09 10:30:24.929465] val_data_pct ............... 0.001
+[2022-05-09 10:30:24.929475] val_metrics ................ ['accuracy']
+[2022-05-09 10:30:24.929483] valid_epochs ............... 1
+[2022-05-09 10:30:24.929490] vocab_size ................. 88
+[2022-05-09 10:30:24.929499] warmup_pct ................. 0.01
+[2022-05-09 10:30:24.929509] weight_decay ............... 0.0
+==================================================
+Dataset: apps | Sample type: random_sampling | Num samples: 1000 | Hist length 13 | Total Seq Length 15
+
+..............................................................................................................................................................................................................................................................................................................................................................................
+==================================================
+Dataset: apps | Sample type: random_sampling | Num samples: 1000 | Hist length 12 | Total Seq Length 15
+
+..............................................................................................................................................................................................................................................................................................................................................................................
+==================================================
+Dataset: apps | Sample type: random_sampling | Num samples: 1000 | Hist length 11 | Total Seq Length 15
+
+..............................................................................................................................................................................................................................................................................................................................................................................
+==================================================
+Dataset: apps | Sample type: random_sampling | Num samples: 1000 | Hist length 10 | Total Seq Length 15
+
+..............................................................................................................................................................................................................................................................................................................................................................................
+==================================================
+/home/showalte/research/prob_seq_queries/data/beam_search_is_hybrid/apps/val_dl/val-dl_apps_beam-search-is-hybrid_9h_15s_1000mc.pkl
+Model budget filepath /home/showalte/research/prob_seq_queries/data/beam_search_is_hybrid/apps/val_dl/val-dl_apps_beam-search-is-hybrid_9h_15s_1000mc.pkl does not exist
+==================================================
+/home/showalte/research/prob_seq_queries/data/beam_search_is_hybrid/apps/val_dl/val-dl_apps_beam-search-is-hybrid_8h_15s_1000mc.pkl
+Model budget filepath /home/showalte/research/prob_seq_queries/data/beam_search_is_hybrid/apps/val_dl/val-dl_apps_beam-search-is-hybrid_8h_15s_1000mc.pkl does not exist
+==================================================
+/home/showalte/research/prob_seq_queries/data/beam_search_is_hybrid/apps/val_dl/val-dl_apps_beam-search-is-hybrid_7h_15s_1000mc.pkl
+Model budget filepath /home/showalte/research/prob_seq_queries/data/beam_search_is_hybrid/apps/val_dl/val-dl_apps_beam-search-is-hybrid_7h_15s_1000mc.pkl does not exist
+==================================================
+/home/showalte/research/prob_seq_queries/data/beam_search_is_hybrid/apps/val_dl/val-dl_apps_beam-search-is-hybrid_6h_15s_1000mc.pkl
+Model budget filepath /home/showalte/research/prob_seq_queries/data/beam_search_is_hybrid/apps/val_dl/val-dl_apps_beam-search-is-hybrid_6h_15s_1000mc.pkl does not exist
+==================================================
+/home/showalte/research/prob_seq_queries/data/beam_search_is_hybrid/apps/val_dl/val-dl_apps_beam-search-is-hybrid_5h_15s_1000mc.pkl
+Model budget filepath /home/showalte/research/prob_seq_queries/data/beam_search_is_hybrid/apps/val_dl/val-dl_apps_beam-search-is-hybrid_5h_15s_1000mc.pkl does not exist
+==================================================

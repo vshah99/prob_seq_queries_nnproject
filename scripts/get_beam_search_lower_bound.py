@@ -35,7 +35,7 @@ from seq_queries.experiments import sample_dynamic_target_token, prep_experiment
 #   Function-Class Declaration
 #################################################################################
 
-device=4
+device=1
 folders = ["beam_search"]
 datasets = ['shakespeare',"amazon","apps"]
 model_budget = True
@@ -94,10 +94,10 @@ for dataset_name in datasets:
             estimates['metadata']['text_dict']['text'] = None
             args.num_beams = float(coverage)
 
-            for e,d in estimates.items():
-                if isinstance(d, (torch.Tensor, torch.LongTensor)):
-                    print(e, d.shape)
-            sys.exit(1)
+            # for e,d in estimates.items():
+            #     if isinstance(d, (torch.Tensor, torch.LongTensor)):
+            #         print(e, d.shape)
+            # sys.exit(1)
 
             write_pkl(estimates,
                     f"data/{folder}/{dataset_name}/val_dl/val-dl_{dataset_name}_" +

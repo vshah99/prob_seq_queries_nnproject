@@ -149,7 +149,7 @@ def sampling_args(parser):
     group.add_argument("--excluded_terms", type=_str2list, default=[], help="List of excluded terms")
     group.add_argument("--sub_estimates", type=_str2list, default=[], help="Sub-estimates (to track noise), all must be <= num_samples")
     group.add_argument("--model_budget_filepath", type=str, default=None, help="Filepath to extract model budgets for another run (usually hybrid file for imp. samp.)")
-    group.add_argument("--store_intermediate_lbs", type=_str2bool,default=False,help="Store intermediate lower bounds.")
+    group.add_argument("--store_intermediate_lbs", type=_str2bool,default=True,help="Store intermediate lower bounds.")
     group.add_argument("--top_k", type=int, default=1, help="Top k beams/samples to take")
     group.add_argument("--top_p", type=_int_or_float, default=1, help="Top p coverage to take")
     group.add_argument("--min_variance", type=_str2bool, default=False, help="Use minimum variance to set beam search beam widths")

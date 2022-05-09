@@ -35,9 +35,9 @@ from seq_queries.experiments import sample_dynamic_target_token, prep_experiment
 #   Function-Class Declaration
 #################################################################################
 
-device=1
+device=0
 folders = ["ground_truth"]
-datasets = ["amazon","apps","shakespeare"]
+datasets = ['shakespeare',"amazon","apps"]
 config_path = "config/testing/sample.yaml"
 lengths = {
     # "amazon":[(10,15),(9,15)],

@@ -130,7 +130,7 @@ def sample_dynamic_target_token(
     sample_artifacts=["sample_estimates",'sample_estimate_var','sample_estimate_mean','model_iters'],
     hybrid_artifacts=["bs_lower_bound",'is_estimates','sample_estimates','model_iters',
                       'sample_estimate_var','sample_estimate_mean','num_beams',],
-    search_artifacts=['true_coverage','restricted_coverage','num_beams',
+    search_artifacts=['true_coverage','restricted_coverage','num_beams', 'model_iters',
                       'bs_lower_bound','intermediate_lbs'],
     **kwargs,):
     """Sample from any of these methods given an
@@ -178,7 +178,7 @@ def sample_dynamic_target_token(
         model_budget = model_budget_file['model_iters']
 
 
-    all_excluded_terms = []
+    all_excluded_terms = [];
     artifacts = artifact_store_roster[args.estimate_type.__name__]
     for dbatch in tqdm(dataloader, disable=args.disable_tqdm):
         data_list = []
