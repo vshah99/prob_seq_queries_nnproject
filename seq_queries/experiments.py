@@ -158,7 +158,7 @@ def sample_dynamic_target_token(
             return
         elif ((len(output[key][0].shape) == 1) or
               (len(output[key][0].shape) == 2 and
-               (key in ['sample_estimates','intermediate_lbs']))):
+               (key in ['sample_estimates','intermediate_lbs','bs_lower_bound']))):
             output[key] = torch.stack(output[key]).squeeze()
         elif len(output[key][0].shape) >= 1:
             output[key] = torch.cat(output[key])
@@ -185,15 +185,19 @@ def sample_dynamic_target_token(
 
             if args.model_budget_filepath:
                 if args.estimate_type.__name__ == "mc_estimate":
-                    print(model_budget[i])
                     args.sub_estimates = (torch.div(model_budget[i],args.seq_len,
                                                     rounding_mode="trunc").long() +
                                         ((model_budget[i]%args.seq_len > 0).long())).tolist()
                     args.num_mc_samples = args.sub_estimates[-1]
-                    print(args.sub_estimates)
                 elif args.estimate_type.__name__ == "beam_search_lower_bound":
-                    init_num_beams = int(np.ceil(model_budget[i][-1].item()/args.seq_len))
-                    args.num_beams = compute_num_beams_from_budget(args.vocab_size,init_num_beams,args.seq_len)
+                    init_sub_estimates = (torch.div(model_budget[i],args.seq_len,
+                                                    rounding_mode="trunc").long() +
+                                        ((model_budget[i]%args.seq_len > 0).long())).tolist()
+                    args.sub_estimates = [
+                        compute_num_beams_from_budget(args.vocab_size,init_beam,args.seq_len)
+                        for init_beam in init_sub_estimates]
+                    args.num_beams = args.sub_estimates[-1]
+
                     assert isinstance(args.num_beams,int),"Num beams for model budget has to be an int"
 
             args.excluded_terms = [dbatch[i,args.total_seq_len].cpu().item()]

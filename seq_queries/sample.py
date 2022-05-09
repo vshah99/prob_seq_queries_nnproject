@@ -41,7 +41,9 @@ def uniform_proposal(hists, seq_len, model, vocab_size, excluded_terms,
         samples[samples>=item] += 1
     assert(samples.max() < vocab_size)
 
-    logits,hidden_states = model.get_next_probs(torch.cat((hists, samples), dim=-1), return_forward_only=True)  #, device=device)
+    logits,hidden_states = model.get_next_probs(torch.cat((hists, samples), dim=-1), return_forward_only=True,
+                                                device=device, return_logits=True, max_batch_size=batch_size)  #, device=device)
+    model.model_iters -= hists.shape[0]*hists.shape[1]
     model_log_prob = torch.log_softmax(logits, dim=-1)[..., -(seq_len+1):-1, :]
     model_log_prob = torch.gather(model_log_prob, dim=-1, index=samples.unsqueeze(-1)).squeeze(-1).sum(dim=-1)  # grab specific log probabilities
 
@@ -120,7 +122,7 @@ def mc_estimate(hist, num_mc_samples, seq_len, model, excluded_terms, proposal_f
     for item in cat_list:
         out_dict[item] = torch.cat(out_dict[item],dim=0)
 
-    if sub_estimates is not None and len(sub_estimates) > 0:
+    if sub_estimates:
         # (samples x vocab) -> (sub-estimates x vocab)
         out_dict['sample_estimates'] = torch.stack(
             # (vocab)
@@ -305,8 +307,9 @@ def lin_interp(target_pct, n_current, n_end):
     return a * (1 - t) + b * t
 
 @torch.no_grad()
-def beam_search_lower_bound(hist, num_beams, seq_len, model, excluded_terms, interp_func,
-                            batch_size, device, vocab_size, bs_tree=None, store_intermediate_lbs=False,
+def beam_search_lower_bound(hist, num_beams, seq_len, model, excluded_terms,
+                            interp_func, batch_size, device, vocab_size,
+                            bs_tree=None, store_intermediate_lbs=False, sub_estimates=None,
                             min_variance=False,min_var_reduction=0.0, **kwargs):
     assert(isinstance(num_beams, (int, float)))
     assert(len(hist.shape) == 1)
@@ -392,16 +395,33 @@ def beam_search_lower_bound(hist, num_beams, seq_len, model, excluded_terms, int
                     states, seq_inds,
                     depth=n_cur+1)
 
-    return {
+    out_dict = {
         "tree": bs_tree,
-        "bs_lower_bound": next_log_probs.exp().sum(dim=0).cpu(),
-        "true_coverage": cur_log_probs.exp().sum().cpu(),
-        "restricted_coverage": cur_restricted_log_probs.exp().sum().cpu(),
+        "bs_lower_bound": next_log_probs.exp(),
+        "true_coverage": cur_log_probs.exp(),
+        "restricted_coverage": cur_restricted_log_probs.exp(),
         "num_beams": torch.LongTensor(num_beams_over_time),
         "model_iters": torch.LongTensor([model.model_iters]),
         "intermediate_lbs": (torch.Tensor([]) if not store_intermediate_lbs
                              else torch.stack(intermediate_lbs)),
     }
+
+    to_accumulate = ['bs_lower_bound','true_coverage',
+                    'restricted_coverage']
+        # (samples x vocab) -> (sub-estimates x vocab)
+    if sub_estimates:
+        out_dict['model_iters'] = torch.LongTensor([sub_est * seq_len for sub_est in sub_estimates])
+        for term in to_accumulate:
+            out_dict[term] = torch.stack(
+                # (vocab)
+                [out_dict[term][:s].sum(dim=0).flatten()
+                for s in sorted(sub_estimates)
+            ]).squeeze().cpu()
+    else:
+        for term in to_accumulate:
+            out_dict[term] = out_dict[term].sum(dim=0)
+
+    return out_dict
 
 
 
