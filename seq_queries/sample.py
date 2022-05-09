@@ -289,7 +289,7 @@ def tree_is_estimate(
         ]).squeeze()
 
     return {
-        'bs_lower_bound':bs_lower_bound.flatten(),
+        'bs_lower_bound':bs_lower_bound,
         'is_estimates':dist_estimate,
         'sample_estimates': bs_lower_bound + dist_estimate,
         'sample_estimate_var': dist_est_var,

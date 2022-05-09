@@ -37,7 +37,7 @@ from seq_queries.experiments import sample_dynamic_target_token, prep_experiment
 
 device=4
 folders = ["beam_search"]
-datasets = ["amazon","apps","shakespeare"]
+datasets = ['shakespeare',"amazon","apps"]
 model_budget = True
 config_path = "config/testing/sample.yaml"
 lengths_coverage = {
@@ -93,6 +93,12 @@ for dataset_name in datasets:
             os.makedirs(f"data/{folder}/{dataset_name}/val_dl/",exist_ok=True)
             estimates['metadata']['text_dict']['text'] = None
             args.num_beams = float(coverage)
+
+            for e,d in estimates.items():
+                if isinstance(d, (torch.Tensor, torch.LongTensor)):
+                    print(e, d.shape)
+            sys.exit(1)
+
             write_pkl(estimates,
                     f"data/{folder}/{dataset_name}/val_dl/val-dl_{dataset_name}_" +
                     f"{folder.replace('_','-')}_{args.hist_len}h_{args.total_seq_len}s" +

@@ -36,9 +36,9 @@ from seq_queries.experiments import sample_dynamic_target_token, prep_experiment
 #################################################################################
 
 device=5
-num_mc_samples = 1000
+sub_estimates = [10,100,1000]
 folders = ["beam_search_is_hybrid"]
-datasets = ["amazon","apps","shakespeare"]
+datasets = ['shakespeare',"amazon","apps"]
 config_path = "config/testing/sample.yaml"
 lengths = {
     "amazon":[(h,15) for h in reversed(range(8,14,1))],
@@ -57,13 +57,13 @@ for dataset_name in datasets:
     args = prep_dict['args']
     val_dl = prep_dict['val_dl']
     model = prep_dict['model']
-    args.num_mc_samples = num_mc_samples
     args.estimate_type = beam_search_is_hybrid
     args.proposal_func = lm_proposal
     args.min_variance = True
     args.min_var_reduction = 0.1
     args.num_beams = 0.0
-    args.sub_estimates = [10,100,1000]
+    args.sub_estimates = sub_estimates
+    args.num_mc_samples = args.sub_estimates[-1]
     text_dict = args.text_dict
     args.text_dict = None
     print_args(vars(args))
@@ -79,6 +79,12 @@ for dataset_name in datasets:
             estimates = sample_dynamic_target_token(args, val_dl, model)
             os.makedirs(f"data/{folder}/{dataset_name}/val_dl/",exist_ok=True)
             estimates['metadata']['text_dict']['text'] = None
+
+            # for e,d in estimates.items():
+            #     if isinstance(d, (torch.Tensor, torch.LongTensor)):
+            #         print(e, d.shape)
+            # sys.exit(1)
+
             write_pkl(estimates,
                     f"data/{folder}/{dataset_name}/val_dl/val-dl_{dataset_name}_{folder.replace('_','-')}_{args.hist_len}h_{args.total_seq_len}s_{args.num_mc_samples}mc.pkl")
             estimates=None
@@ -93,4 +99,8 @@ for dataset_name in datasets:
 #################################################################################
 
 
+# for e,d in estimates.items():
+#     if isinstance(d, (torch.Tensor, torch.LongTensor)):
+#         print(e, d.shape)
+# sys.exit(1)
 

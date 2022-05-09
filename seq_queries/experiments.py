@@ -113,6 +113,15 @@ def prep_experiment(
         "model":model,
     }
 
+
+def inf_horizon_query(
+    sample,
+    args,
+ ):
+    pass
+
+
+
 @torch.no_grad()
 def sample_dynamic_target_token(
     args,
@@ -158,7 +167,7 @@ def sample_dynamic_target_token(
             return
         elif ((len(output[key][0].shape) == 1) or
               (len(output[key][0].shape) == 2 and
-               (key in ['sample_estimates','intermediate_lbs','bs_lower_bound']))):
+               (args.sub_estimates))):
             output[key] = torch.stack(output[key]).squeeze()
         elif len(output[key][0].shape) >= 1:
             output[key] = torch.cat(output[key])

@@ -35,11 +35,11 @@ from seq_queries.experiments import sample_dynamic_target_token, prep_experiment
 #   Function-Class Declaration
 #################################################################################
 
-device=6
+device=5
 sub_estimates = [10,100,1000]
 model_budget = True
 folders = ["random_sampling"]
-datasets = ['shakespeare',"amazon","apps","shakespeare"]
+datasets = ['shakespeare',"amazon","apps"]
 config_path = "config/testing/sample.yaml"
 lengths = {
     "amazon":[(h,15) for h in reversed(range(5,14,1))],
@@ -52,7 +52,7 @@ for dataset_name in datasets:
     print("====="*10)
     print(f"* Running for dataset {dataset_name}")
     print("====="*10)
-    extra_args = {"min_phase_shift":5}
+    extra_args = {}
     prep_dict = prep_experiment(config_path,
                                 dataset_name,
                                 device=device,
@@ -95,7 +95,14 @@ for dataset_name in datasets:
             estimates = sample_dynamic_target_token(args, val_dl, model)
             os.makedirs(f"data/{folder}/{dataset_name}/val_dl/",exist_ok=True)
             estimates['metadata']['text_dict']['text'] = None
+            args.sub_estimates = sub_estimates
             args.num_mc_samples = sub_estimates[-1]
+
+            # for e,d in estimates.items():
+            #     if isinstance(d, (torch.Tensor, torch.LongTensor)):
+            #         print(e, d.shape)
+            # sys.exit(1)
+
             write_pkl(estimates,
                     f"data/{folder}/{dataset_name}/val_dl/val-dl_{dataset_name}_{folder.replace('_','-')}_" +
                     f"{args.hist_len}h_{args.total_seq_len}s_{args.num_mc_samples}mc{'_' + 'model-budget' if args.model_budget_filepath else  ''}.pkl")
