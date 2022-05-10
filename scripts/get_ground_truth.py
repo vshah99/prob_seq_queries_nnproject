@@ -24,7 +24,6 @@ from collections import defaultdict
 
 from seq_queries.sample import sample
 from seq_queries.model import get_model
-from seq_queries.data import load_amazon_data, process_amazon_data, load_app_data, process_app_data
 from seq_queries.arguments import get_args, print_args
 from seq_queries.train import load_checkpoint
 from seq_queries.utils import write_pkl
@@ -37,12 +36,10 @@ from seq_queries.experiments import sample_dynamic_target_token, prep_experiment
 
 device=0
 folders = ["ground_truth"]
-datasets = ['shakespeare',"amazon","apps"]
+datasets = ['moocs']
 config_path = "config/testing/sample.yaml"
 lengths = {
-    # "amazon":[(10,15),(9,15)],
-    # "apps": [(11,15)],
-    # "shakespeare": [(16,20)],
+    "moocs":[(13,15),(12,15)],
     "amazon":[(13,15),(12,15)],#,(11,15)],
     "apps": [(13,15),(12,15)],
     "shakespeare": [(18,20),(17,20)],

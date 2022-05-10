@@ -37,10 +37,11 @@ from seq_queries.experiments import sample_dynamic_target_token, prep_experiment
 
 device=1
 folders = ["beam_search"]
-datasets = ['shakespeare',"amazon","apps"]
+datasets = ['moocs']
 model_budget = True
 config_path = "config/testing/sample.yaml"
 lengths_coverage = {
+    "moocs":[(13,15,0.98),(12,15,0.95), (11,15,0.9),(10,15,0.85),(9,15,0.8),(8,15,0.8)],
     "amazon":[(13,15,0.98),(12,15,0.95), (11,15,0.9),(10,15,0.85),(9,15,0.8),(8,15,0.8)],
     "apps":[(13,15,0.98),(12,15,0.92), (11,15,0.87),(10,15,0.75)],
     "shakespeare":[(18,20,0.98),(17,20,0.95), (16,20,0.9),(15,20,0.85),(14,20,0.8)],

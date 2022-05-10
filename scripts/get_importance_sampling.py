@@ -38,9 +38,10 @@ device=6
 sub_estimates = [10,100,1000]
 model_budget = True
 folders = ["importance_sampling"]
-datasets = ['apps']#,'shakespeare',"amazon","apps"]
+datasets = ['moocs']#,'shakespeare',"amazon","apps"]
 config_path = "config/testing/sample.yaml"
 lengths = {
+    "moocs":[(h,15) for h in reversed(range(5,14,1))],
     "amazon":[(h,15) for h in reversed(range(5,14,1))],
     "apps":[(h,15) for h in reversed(range(5,14,1))],
     "shakespeare": [(h,20) for h in reversed(range(5,19,1))] + [(10,35),(10,60)],

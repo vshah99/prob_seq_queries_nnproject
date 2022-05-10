@@ -37,9 +37,10 @@ from seq_queries.experiments import sample_dynamic_target_token, prep_experiment
 device=5
 sub_estimates = [10,100,1000]
 folders = ["beam_search_is_hybrid"]
-datasets = ['shakespeare',"amazon","apps"]
+datasets = ['moocs']#,'shakespeare',"amazon","apps"]
 config_path = "config/testing/sample.yaml"
 lengths = {
+    "moocs":[(h,15) for h in reversed(range(5,13,1))],
     "amazon":[(h,15) for h in reversed(range(8,14,1))],
     "apps":[(h,15) for h in reversed(range(10,14,1))],
     "shakespeare": [(h,20) for h in reversed(range(14,19,1))],

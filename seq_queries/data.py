@@ -195,6 +195,7 @@ def load_app_data(file_name, args):
     id_to_char = {i:v for v,i in char_to_id.items()}
     args.needs_encoding = True
 
+
     return {
         "text": text,
         "vocab": vocab,

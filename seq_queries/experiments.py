@@ -184,7 +184,7 @@ def sample_dynamic_target_token(
     if args.model_budget_filepath:
         model_budget_file = read_pkl(args.model_budget_filepath)
         model_budget = model_budget_file['model_iters']
-    else:
+    elif 'num_mc_samples' in hybrid_artifacts:
         hybrid_artifacts.remove('num_mc_samples')
         sample_artifacts.remove('num_mc_samples')
 

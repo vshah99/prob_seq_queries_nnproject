@@ -1,0 +1,91 @@
+==================================================
+* Running for dataset moocs
+==================================================
+[2022-05-09 20:29:58.891545] Checkpoint path [/home/showalte/research/prob_seq_queries/models/moocs/] does exist.
+[2022-05-09 20:29:58.895726] Loaded model from /home/showalte/research/prob_seq_queries/models/moocs/model_999.pt
+==================================================
+[2022-05-09 20:29:58.900115] batch_size ................. 4096
+[2022-05-09 20:29:58.900136] checkpoint_path ............ /home/showalte/research/prob_seq_queries/models/moocs/
+[2022-05-09 20:29:58.900148] cuda ....................... True
+[2022-05-09 20:29:58.900157] data_path .................. data/moocs/mooc.csv
+[2022-05-09 20:29:58.900165] dataset_phase_shift_path ... /srv/disk00/samshow/amazon/amazon_phase_trans.pkl
+[2022-05-09 20:29:58.900172] device ..................... 5
+[2022-05-09 20:29:58.900180] device_num ................. 0
+[2022-05-09 20:29:58.900188] disable_tqdm ............... True
+[2022-05-09 20:29:58.900195] do_test .................... False
+[2022-05-09 20:29:58.900203] do_valid ................... True
+[2022-05-09 20:29:58.900210] dont_print_args ............ True
+[2022-05-09 20:29:58.900219] dont_shuffle ............... None
+[2022-05-09 20:29:58.900244] dropout .................... 0.3
+[2022-05-09 20:29:58.900257] estimate_type .............. <function mc_estimate at 0x7fc2145035e0>
+[2022-05-09 20:29:58.900267] excluded_terms ............. [1]
+[2022-05-09 20:29:58.900275] finetune ................... False
+[2022-05-09 20:29:58.900286] grad_clip .................. 1.0
+[2022-05-09 20:29:58.900294] hidden_size ................ 128
+[2022-05-09 20:29:58.900301] hist_len ................... 18
+[2022-05-09 20:29:58.900311] interp_func ................ <function lin_interp at 0x7fc214503940>
+[2022-05-09 20:29:58.900319] log_interval ............... 100
+[2022-05-09 20:29:58.900329] lr ......................... 0.001
+[2022-05-09 20:29:58.900337] lr_decay_style ............. constant
+[2022-05-09 20:29:58.900345] masked_lm .................. False
+[2022-05-09 20:29:58.900353] min_phase_shift ............ 0
+[2022-05-09 20:29:58.900362] min_var_reduction .......... 0.9
+[2022-05-09 20:29:58.900369] min_variance ............... False
+[2022-05-09 20:29:58.900377] model_budget_filepath ...... None
+[2022-05-09 20:29:58.900385] needs_encoding ............. False
+[2022-05-09 20:29:58.900393] num_beams .................. 0.0
+[2022-05-09 20:29:58.900401] num_layers ................. 2
+[2022-05-09 20:29:58.900408] num_mc_samples ............. 1000
+[2022-05-09 20:29:58.900416] num_workers ................ 0
+[2022-05-09 20:29:58.900424] optimizer .................. adam
+[2022-05-09 20:29:58.900432] proposal_func .............. <function uniform_proposal at 0x7fc214579280>
+[2022-05-09 20:29:58.900440] rnn_type ................... LSTM
+[2022-05-09 20:29:58.900448] save_epochs ................ 1
+[2022-05-09 20:29:58.900455] seed ....................... 1234321
+[2022-05-09 20:29:58.900463] seq_len .................... 15
+[2022-05-09 20:29:58.900471] shuffle .................... True
+[2022-05-09 20:29:58.900479] store_intermediate_lbs ..... True
+[2022-05-09 20:29:58.900489] sub_estimates .............. [10, 100, 1000]
+[2022-05-09 20:29:58.900497] text_dict .................. None
+[2022-05-09 20:29:58.900505] top_k ...................... 0
+[2022-05-09 20:29:58.900512] top_p ...................... 0
+[2022-05-09 20:29:58.900520] total_seq_len .............. 20
+[2022-05-09 20:29:58.900528] train_data_pct ............. 0.9
+[2022-05-09 20:29:58.900536] train_epochs ............... 40
+[2022-05-09 20:29:58.900544] val_data_pct ............... 0.01
+[2022-05-09 20:29:58.900554] val_metrics ................ ['accuracy']
+[2022-05-09 20:29:58.900561] valid_epochs ............... 1
+[2022-05-09 20:29:58.900569] vocab_size ................. 98
+[2022-05-09 20:29:58.900577] warmup_pct ................. 0.01
+[2022-05-09 20:29:58.900585] weight_decay ............... 0.0
+==================================================
+Dataset: moocs | Sample type: random_sampling | Num samples: 1000 | Hist length 13 | Total Seq Length 15
+
+...............................................................................................................................................................................................................................................................................................................................
+==================================================
+Dataset: moocs | Sample type: random_sampling | Num samples: 1000 | Hist length 12 | Total Seq Length 15
+
+...............................................................................................................................................................................................................................................................................................................................
+==================================================
+Dataset: moocs | Sample type: random_sampling | Num samples: 1000 | Hist length 11 | Total Seq Length 15
+
+...............................................................................................................................................................................................................................................................................................................................
+==================================================
+/home/showalte/research/prob_seq_queries/data/beam_search_is_hybrid/moocs/val_dl/val-dl_moocs_beam-search-is-hybrid_10h_15s_1000mc.pkl
+Model budget filepath /home/showalte/research/prob_seq_queries/data/beam_search_is_hybrid/moocs/val_dl/val-dl_moocs_beam-search-is-hybrid_10h_15s_1000mc.pkl does not exist
+==================================================
+/home/showalte/research/prob_seq_queries/data/beam_search_is_hybrid/moocs/val_dl/val-dl_moocs_beam-search-is-hybrid_9h_15s_1000mc.pkl
+Model budget filepath /home/showalte/research/prob_seq_queries/data/beam_search_is_hybrid/moocs/val_dl/val-dl_moocs_beam-search-is-hybrid_9h_15s_1000mc.pkl does not exist
+==================================================
+/home/showalte/research/prob_seq_queries/data/beam_search_is_hybrid/moocs/val_dl/val-dl_moocs_beam-search-is-hybrid_8h_15s_1000mc.pkl
+Model budget filepath /home/showalte/research/prob_seq_queries/data/beam_search_is_hybrid/moocs/val_dl/val-dl_moocs_beam-search-is-hybrid_8h_15s_1000mc.pkl does not exist
+==================================================
+/home/showalte/research/prob_seq_queries/data/beam_search_is_hybrid/moocs/val_dl/val-dl_moocs_beam-search-is-hybrid_7h_15s_1000mc.pkl
+Model budget filepath /home/showalte/research/prob_seq_queries/data/beam_search_is_hybrid/moocs/val_dl/val-dl_moocs_beam-search-is-hybrid_7h_15s_1000mc.pkl does not exist
+==================================================
+/home/showalte/research/prob_seq_queries/data/beam_search_is_hybrid/moocs/val_dl/val-dl_moocs_beam-search-is-hybrid_6h_15s_1000mc.pkl
+Model budget filepath /home/showalte/research/prob_seq_queries/data/beam_search_is_hybrid/moocs/val_dl/val-dl_moocs_beam-search-is-hybrid_6h_15s_1000mc.pkl does not exist
+==================================================
+/home/showalte/research/prob_seq_queries/data/beam_search_is_hybrid/moocs/val_dl/val-dl_moocs_beam-search-is-hybrid_5h_15s_1000mc.pkl
+Model budget filepath /home/showalte/research/prob_seq_queries/data/beam_search_is_hybrid/moocs/val_dl/val-dl_moocs_beam-search-is-hybrid_5h_15s_1000mc.pkl does not exist
+==================================================
