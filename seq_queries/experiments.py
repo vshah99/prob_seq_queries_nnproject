@@ -63,6 +63,14 @@ def prep_experiment(
             "vocab_size": 88,
             "val_data_pct": 0.001,
         },
+        "moocs": {
+            "checkpoint_path": "/home/showalte/research/prob_seq_queries/models/moocs/",
+            "data_path": "data/moocs/mooc.csv",
+            "hidden_size": 128,
+            "seq_len": 15,
+            "vocab_size": 98,
+            "val_data_pct": 0.01,
+        },
         "shakespeare": {
             "checkpoint_path": "/home/showalte/research/prob_seq_queries/models/shakespeare/",
             "data_path": "data/shakespeare/shakespeare_input.txt",
@@ -76,13 +84,15 @@ def prep_experiment(
     load_roster = {
         "amazon": load_amazon_data,
         "apps": load_app_data,
+        "moocs": load_mooc_data,
         "shakespeare": load_text_data,
     }
     assert name in load_roster,\
         "Dataset {} not found in roster"
     process_roster = {
         "amazon": process_amazon_data,
-        "apps": process_app_data,
+        "apps": process_app_mooc_data,
+        "moocs": process_app_mooc_data,
         "shakespeare": process_text_data,
     }
     for argument,details in config_roster[name].items():
@@ -90,7 +100,7 @@ def prep_experiment(
     for argument,details in extra_args.items():
         args.__dict__[argument] = details
     args.device=device
-    text_dict= load_roster[name](args.data_path)
+    text_dict= load_roster[name](args.data_path,args)
     args.text_dict = text_dict
     # print(text_dict['char_to_id'],flush=True)
     # print("====="*10)
@@ -120,16 +130,14 @@ def inf_horizon_query(
  ):
     pass
 
-
-
 @torch.no_grad()
 def sample_dynamic_target_token(
     args,
     dataloader,
     model = None,
-    sample_artifacts=["sample_estimates",'sample_estimate_var','sample_estimate_mean','model_iters'],
+    sample_artifacts=["sample_estimates",'sample_estimate_var','sample_estimate_mean','model_iters','num_mc_samples'],
     hybrid_artifacts=["bs_lower_bound",'is_estimates','sample_estimates','model_iters',
-                      'sample_estimate_var','sample_estimate_mean','num_beams',],
+                      'sample_estimate_var','sample_estimate_mean','num_beams','num_mc_samples'],
     search_artifacts=['true_coverage','restricted_coverage','num_beams', 'model_iters',
                       'bs_lower_bound','intermediate_lbs'],
     **kwargs,):
@@ -176,6 +184,9 @@ def sample_dynamic_target_token(
     if args.model_budget_filepath:
         model_budget_file = read_pkl(args.model_budget_filepath)
         model_budget = model_budget_file['model_iters']
+    else:
+        hybrid_artifacts.remove('num_mc_samples')
+        sample_artifacts.remove('num_mc_samples')
 
 
     all_excluded_terms = [];
@@ -205,6 +216,7 @@ def sample_dynamic_target_token(
                     args.sub_estimates = [
                         compute_num_beams_from_budget(args.vocab_size,init_beam,args.seq_len)
                         for init_beam in init_sub_estimates]
+
                     args.num_beams = args.sub_estimates[-1]
 
                     assert isinstance(args.num_beams,int),"Num beams for model budget has to be an int"

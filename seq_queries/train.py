@@ -37,7 +37,7 @@ def train_step(args, model, optimizer, lr_scheduler, batch):
 
     return loss_results
 
-def train_epoch(args, model, optimizer, lr_scheduler, dataloader, epoch_number):
+def train_epoch(args, model, optimizer, lr_scheduler, dataloader, epoch_number,disable_tqdm=True):
     model.train()
 
     avg_metrics = {
@@ -45,17 +45,17 @@ def train_epoch(args, model, optimizer, lr_scheduler, dataloader, epoch_number):
     }
     data_len = len(dataloader)
 
-    training_pbar = tqdm(dataloader)
+    training_pbar = tqdm(dataloader,disable=disable_tqdm)
     for i, batch in enumerate(training_pbar):
         output = train_step(args, model, optimizer, lr_scheduler, batch)
-        print(output.keys())
+        if i%10 == 0 and args.disable_tqdm:
+            print(".",end="",flush=True)
 
         for key in avg_metrics.keys():
             avg_metrics[key] = (avg_metrics[key]*i + output[key].item()) / (i+1)  # calculate average this way to always have an up to date, scale adjusted estimate
         if (i+1) % args.log_interval == 0:
             training_pbar.set_description("[T] E={}, {}".format(epoch_number, ", ".join(["{}={:.4f}".format(k,v) for k,v in avg_metrics.items()])))
     training_pbar.set_description("[T] E={}, {}".format(epoch_number, ", ".join(["{}={:.4f}".format(k,v) for k,v in avg_metrics.items()])))
-
     return avg_metrics
 
 @torch.no_grad()

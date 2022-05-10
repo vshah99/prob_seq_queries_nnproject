@@ -24,7 +24,6 @@ from collections import defaultdict
 
 from seq_queries.sample import sample
 from seq_queries.model import get_model
-from seq_queries.data import load_amazon_data, process_amazon_data, load_app_data, process_app_data
 from seq_queries.arguments import get_args, print_args
 from seq_queries.train import load_checkpoint
 from seq_queries.utils import write_pkl
@@ -39,7 +38,7 @@ device=6
 sub_estimates = [10,100,1000]
 model_budget = True
 folders = ["importance_sampling"]
-datasets = ['shakespeare',"amazon","apps"]
+datasets = ['apps']#,'shakespeare',"amazon","apps"]
 config_path = "config/testing/sample.yaml"
 lengths = {
     "amazon":[(h,15) for h in reversed(range(5,14,1))],

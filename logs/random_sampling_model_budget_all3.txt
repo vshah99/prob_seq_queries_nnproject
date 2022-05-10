@@ -1,62 +1,62 @@
 ==================================================
 * Running for dataset shakespeare
 ==================================================
-[2022-05-09 10:11:15.170560] Checkpoint path [/home/showalte/research/prob_seq_queries/models/shakespeare/] does exist.
-[2022-05-09 10:11:15.180706] Loaded model from /home/showalte/research/prob_seq_queries/models/shakespeare/shakespeare_model.pt
+[2022-05-09 14:34:34.771245] Checkpoint path [/home/showalte/research/prob_seq_queries/models/shakespeare/] does exist.
+[2022-05-09 14:34:34.774649] Loaded model from /home/showalte/research/prob_seq_queries/models/shakespeare/shakespeare_model.pt
 ==================================================
-[2022-05-09 10:11:15.184874] batch_size ................. 4096
-[2022-05-09 10:11:15.184907] checkpoint_path ............ /home/showalte/research/prob_seq_queries/models/shakespeare/
-[2022-05-09 10:11:15.184938] cuda ....................... True
-[2022-05-09 10:11:15.184946] data_path .................. data/shakespeare/shakespeare_input.txt
-[2022-05-09 10:11:15.184954] dataset_phase_shift_path ... /srv/disk00/samshow/amazon/amazon_phase_trans.pkl
-[2022-05-09 10:11:15.184962] device ..................... 5
-[2022-05-09 10:11:15.184970] device_num ................. 0
-[2022-05-09 10:11:15.184978] disable_tqdm ............... True
-[2022-05-09 10:11:15.184985] do_test .................... False
-[2022-05-09 10:11:15.184993] do_valid ................... True
-[2022-05-09 10:11:15.185000] dont_print_args ............ True
-[2022-05-09 10:11:15.185017] dont_shuffle ............... None
-[2022-05-09 10:11:15.185034] dropout .................... 0.3
-[2022-05-09 10:11:15.185045] estimate_type .............. <function mc_estimate at 0x7f9a3621e5e0>
-[2022-05-09 10:11:15.185057] excluded_terms ............. [1]
-[2022-05-09 10:11:15.185067] finetune ................... False
-[2022-05-09 10:11:15.185076] grad_clip .................. 1.0
-[2022-05-09 10:11:15.185083] hidden_size ................ 128
-[2022-05-09 10:11:15.185091] hist_len ................... 18
-[2022-05-09 10:11:15.185099] interp_func ................ <function lin_interp at 0x7f9a3621e940>
-[2022-05-09 10:11:15.185107] log_interval ............... 100
-[2022-05-09 10:11:15.185116] lr ......................... 0.001
-[2022-05-09 10:11:15.185123] lr_decay_style ............. constant
-[2022-05-09 10:11:15.185130] masked_lm .................. False
-[2022-05-09 10:11:15.185139] min_phase_shift ............ 0
-[2022-05-09 10:11:15.185147] min_var_reduction .......... 0.9
-[2022-05-09 10:11:15.185154] min_variance ............... False
-[2022-05-09 10:11:15.185161] model_budget_filepath ...... None
-[2022-05-09 10:11:15.185170] num_beams .................. 0.0
-[2022-05-09 10:11:15.185177] num_layers ................. 2
-[2022-05-09 10:11:15.185185] num_mc_samples ............. 1000
-[2022-05-09 10:11:15.185192] num_workers ................ 0
-[2022-05-09 10:11:15.185200] optimizer .................. adam
-[2022-05-09 10:11:15.185208] proposal_func .............. <function uniform_proposal at 0x7f9a36294280>
-[2022-05-09 10:11:15.185215] rnn_type ................... LSTM
-[2022-05-09 10:11:15.185222] save_epochs ................ 1
-[2022-05-09 10:11:15.185230] seed ....................... 1234321
-[2022-05-09 10:11:15.185237] seq_len .................... 100
-[2022-05-09 10:11:15.185244] shuffle .................... True
-[2022-05-09 10:11:15.185252] store_intermediate_lbs ..... False
-[2022-05-09 10:11:15.185262] sub_estimates .............. [10, 100, 1000]
-[2022-05-09 10:11:15.185270] text_dict .................. None
-[2022-05-09 10:11:15.185277] top_k ...................... 0
-[2022-05-09 10:11:15.185284] top_p ...................... 0
-[2022-05-09 10:11:15.185291] total_seq_len .............. 20
-[2022-05-09 10:11:15.185299] train_data_pct ............. 0.9
-[2022-05-09 10:11:15.185306] train_epochs ............... 40
-[2022-05-09 10:11:15.185314] val_data_pct ............... 0.05
-[2022-05-09 10:11:15.185332] val_metrics ................ ['accuracy']
-[2022-05-09 10:11:15.185340] valid_epochs ............... 1
-[2022-05-09 10:11:15.185347] vocab_size ................. 68
-[2022-05-09 10:11:15.185356] warmup_pct ................. 0.01
-[2022-05-09 10:11:15.185363] weight_decay ............... 0.0
+[2022-05-09 14:34:34.776805] batch_size ................. 4096
+[2022-05-09 14:34:34.776817] checkpoint_path ............ /home/showalte/research/prob_seq_queries/models/shakespeare/
+[2022-05-09 14:34:34.776842] cuda ....................... True
+[2022-05-09 14:34:34.776846] data_path .................. data/shakespeare/shakespeare_input.txt
+[2022-05-09 14:34:34.776849] dataset_phase_shift_path ... /srv/disk00/samshow/amazon/amazon_phase_trans.pkl
+[2022-05-09 14:34:34.776853] device ..................... 5
+[2022-05-09 14:34:34.776857] device_num ................. 0
+[2022-05-09 14:34:34.776861] disable_tqdm ............... True
+[2022-05-09 14:34:34.776864] do_test .................... False
+[2022-05-09 14:34:34.776868] do_valid ................... True
+[2022-05-09 14:34:34.776872] dont_print_args ............ True
+[2022-05-09 14:34:34.776876] dont_shuffle ............... None
+[2022-05-09 14:34:34.776884] dropout .................... 0.3
+[2022-05-09 14:34:34.776889] estimate_type .............. <function mc_estimate at 0x7ff6fff465e0>
+[2022-05-09 14:34:34.776894] excluded_terms ............. [1]
+[2022-05-09 14:34:34.776899] finetune ................... False
+[2022-05-09 14:34:34.776903] grad_clip .................. 1.0
+[2022-05-09 14:34:34.776907] hidden_size ................ 128
+[2022-05-09 14:34:34.776910] hist_len ................... 18
+[2022-05-09 14:34:34.776915] interp_func ................ <function lin_interp at 0x7ff6fff46940>
+[2022-05-09 14:34:34.776918] log_interval ............... 100
+[2022-05-09 14:34:34.776923] lr ......................... 0.001
+[2022-05-09 14:34:34.776926] lr_decay_style ............. constant
+[2022-05-09 14:34:34.776930] masked_lm .................. False
+[2022-05-09 14:34:34.776935] min_phase_shift ............ 0
+[2022-05-09 14:34:34.776939] min_var_reduction .......... 0.9
+[2022-05-09 14:34:34.776943] min_variance ............... False
+[2022-05-09 14:34:34.776947] model_budget_filepath ...... None
+[2022-05-09 14:34:34.776950] num_beams .................. 0.0
+[2022-05-09 14:34:34.776954] num_layers ................. 2
+[2022-05-09 14:34:34.776957] num_mc_samples ............. 1000
+[2022-05-09 14:34:34.776961] num_workers ................ 0
+[2022-05-09 14:34:34.776964] optimizer .................. adam
+[2022-05-09 14:34:34.776968] proposal_func .............. <function uniform_proposal at 0x7ff6fffbc280>
+[2022-05-09 14:34:34.776972] rnn_type ................... LSTM
+[2022-05-09 14:34:34.776975] save_epochs ................ 1
+[2022-05-09 14:34:34.776978] seed ....................... 1234321
+[2022-05-09 14:34:34.776982] seq_len .................... 100
+[2022-05-09 14:34:34.776985] shuffle .................... True
+[2022-05-09 14:34:34.776989] store_intermediate_lbs ..... True
+[2022-05-09 14:34:34.776993] sub_estimates .............. [10, 100, 1000]
+[2022-05-09 14:34:34.776997] text_dict .................. None
+[2022-05-09 14:34:34.777001] top_k ...................... 0
+[2022-05-09 14:34:34.777004] top_p ...................... 0
+[2022-05-09 14:34:34.777008] total_seq_len .............. 20
+[2022-05-09 14:34:34.777011] train_data_pct ............. 0.9
+[2022-05-09 14:34:34.777015] train_epochs ............... 40
+[2022-05-09 14:34:34.777018] val_data_pct ............... 0.05
+[2022-05-09 14:34:34.777028] val_metrics ................ ['accuracy']
+[2022-05-09 14:34:34.777032] valid_epochs ............... 1
+[2022-05-09 14:34:34.777036] vocab_size ................. 68
+[2022-05-09 14:34:34.777039] warmup_pct ................. 0.01
+[2022-05-09 14:34:34.777043] weight_decay ............... 0.0
 ==================================================
 Dataset: shakespeare | Sample type: random_sampling | Num samples: 1000 | Hist length 18 | Total Seq Length 20
 
@@ -112,62 +112,62 @@ Model budget filepath /home/showalte/research/prob_seq_queries/data/beam_search_
 ==================================================
 * Running for dataset amazon
 ==================================================
-[2022-05-09 10:15:01.972577] Checkpoint path [/home/showalte/research/prob_seq_queries/models/amazon/] does exist.
-[2022-05-09 10:15:01.984459] Loaded model from /home/showalte/research/prob_seq_queries/models/amazon/model_100.pt
+[2022-05-09 14:37:12.377134] Checkpoint path [/home/showalte/research/prob_seq_queries/models/amazon/] does exist.
+[2022-05-09 14:37:12.391052] Loaded model from /home/showalte/research/prob_seq_queries/models/amazon/model_100.pt
 ==================================================
-[2022-05-09 10:15:01.984681] batch_size ................. 4096
-[2022-05-09 10:15:01.984688] checkpoint_path ............ /home/showalte/research/prob_seq_queries/models/amazon/
-[2022-05-09 10:15:01.984700] cuda ....................... True
-[2022-05-09 10:15:01.984703] data_path .................. /srv/disk00/samshow/amazon/amazon_text_dict.pkl
-[2022-05-09 10:15:01.984716] dataset_phase_shift_path ... /srv/disk00/samshow/amazon/amazon_phase_trans.pkl
-[2022-05-09 10:15:01.984720] device ..................... 5
-[2022-05-09 10:15:01.984723] device_num ................. 0
-[2022-05-09 10:15:01.984727] disable_tqdm ............... True
-[2022-05-09 10:15:01.984731] do_test .................... False
-[2022-05-09 10:15:01.984741] do_valid ................... True
-[2022-05-09 10:15:01.984745] dont_print_args ............ True
-[2022-05-09 10:15:01.984749] dont_shuffle ............... None
-[2022-05-09 10:15:01.984757] dropout .................... 0.3
-[2022-05-09 10:15:01.984764] estimate_type .............. <function mc_estimate at 0x7f9a3621e5e0>
-[2022-05-09 10:15:01.984770] excluded_terms ............. [1]
-[2022-05-09 10:15:01.984775] finetune ................... False
-[2022-05-09 10:15:01.984779] grad_clip .................. 1.0
-[2022-05-09 10:15:01.984783] hidden_size ................ 512
-[2022-05-09 10:15:01.984786] hist_len ................... 18
-[2022-05-09 10:15:01.984791] interp_func ................ <function lin_interp at 0x7f9a3621e940>
-[2022-05-09 10:15:01.984794] log_interval ............... 100
-[2022-05-09 10:15:01.984799] lr ......................... 0.001
-[2022-05-09 10:15:01.984803] lr_decay_style ............. constant
-[2022-05-09 10:15:01.984807] masked_lm .................. False
-[2022-05-09 10:15:01.984810] min_phase_shift ............ 0
-[2022-05-09 10:15:01.984814] min_var_reduction .......... 0.9
-[2022-05-09 10:15:01.984818] min_variance ............... False
-[2022-05-09 10:15:01.984822] model_budget_filepath ...... None
-[2022-05-09 10:15:01.984827] num_beams .................. 0.0
-[2022-05-09 10:15:01.984830] num_layers ................. 2
-[2022-05-09 10:15:01.984834] num_mc_samples ............. 1000
-[2022-05-09 10:15:01.984837] num_workers ................ 0
-[2022-05-09 10:15:01.984841] optimizer .................. adam
-[2022-05-09 10:15:01.984845] proposal_func .............. <function uniform_proposal at 0x7f9a36294280>
-[2022-05-09 10:15:01.984849] rnn_type ................... LSTM
-[2022-05-09 10:15:01.984853] save_epochs ................ 1
-[2022-05-09 10:15:01.984856] seed ....................... 1234321
-[2022-05-09 10:15:01.984861] seq_len .................... 15
-[2022-05-09 10:15:01.984865] shuffle .................... True
-[2022-05-09 10:15:01.984868] store_intermediate_lbs ..... False
-[2022-05-09 10:15:01.984874] sub_estimates .............. [10, 100, 1000]
-[2022-05-09 10:15:01.984912] text_dict .................. None
-[2022-05-09 10:15:01.984916] top_k ...................... 0
-[2022-05-09 10:15:01.984920] top_p ...................... 0
-[2022-05-09 10:15:01.984923] total_seq_len .............. 20
-[2022-05-09 10:15:01.984927] train_data_pct ............. 0.9
-[2022-05-09 10:15:01.984931] train_epochs ............... 40
-[2022-05-09 10:15:01.984935] val_data_pct ............... 0.0001
-[2022-05-09 10:15:01.984939] val_metrics ................ ['accuracy']
-[2022-05-09 10:15:01.984943] valid_epochs ............... 1
-[2022-05-09 10:15:01.984946] vocab_size ................. 30
-[2022-05-09 10:15:01.984950] warmup_pct ................. 0.01
-[2022-05-09 10:15:01.984954] weight_decay ............... 0.0
+[2022-05-09 14:37:12.391333] batch_size ................. 4096
+[2022-05-09 14:37:12.391342] checkpoint_path ............ /home/showalte/research/prob_seq_queries/models/amazon/
+[2022-05-09 14:37:12.391350] cuda ....................... True
+[2022-05-09 14:37:12.391355] data_path .................. /srv/disk00/samshow/amazon/amazon_text_dict.pkl
+[2022-05-09 14:37:12.391360] dataset_phase_shift_path ... /srv/disk00/samshow/amazon/amazon_phase_trans.pkl
+[2022-05-09 14:37:12.391365] device ..................... 5
+[2022-05-09 14:37:12.391369] device_num ................. 0
+[2022-05-09 14:37:12.391374] disable_tqdm ............... True
+[2022-05-09 14:37:12.391378] do_test .................... False
+[2022-05-09 14:37:12.391383] do_valid ................... True
+[2022-05-09 14:37:12.391388] dont_print_args ............ True
+[2022-05-09 14:37:12.391392] dont_shuffle ............... None
+[2022-05-09 14:37:12.391401] dropout .................... 0.3
+[2022-05-09 14:37:12.391408] estimate_type .............. <function mc_estimate at 0x7ff6fff465e0>
+[2022-05-09 14:37:12.391415] excluded_terms ............. [1]
+[2022-05-09 14:37:12.391420] finetune ................... False
+[2022-05-09 14:37:12.391425] grad_clip .................. 1.0
+[2022-05-09 14:37:12.391429] hidden_size ................ 512
+[2022-05-09 14:37:12.391434] hist_len ................... 18
+[2022-05-09 14:37:12.391439] interp_func ................ <function lin_interp at 0x7ff6fff46940>
+[2022-05-09 14:37:12.391443] log_interval ............... 100
+[2022-05-09 14:37:12.391449] lr ......................... 0.001
+[2022-05-09 14:37:12.391453] lr_decay_style ............. constant
+[2022-05-09 14:37:12.391458] masked_lm .................. False
+[2022-05-09 14:37:12.391462] min_phase_shift ............ 0
+[2022-05-09 14:37:12.391467] min_var_reduction .......... 0.9
+[2022-05-09 14:37:12.391472] min_variance ............... False
+[2022-05-09 14:37:12.391476] model_budget_filepath ...... None
+[2022-05-09 14:37:12.391481] num_beams .................. 0.0
+[2022-05-09 14:37:12.391486] num_layers ................. 2
+[2022-05-09 14:37:12.391490] num_mc_samples ............. 1000
+[2022-05-09 14:37:12.391494] num_workers ................ 0
+[2022-05-09 14:37:12.391498] optimizer .................. adam
+[2022-05-09 14:37:12.391503] proposal_func .............. <function uniform_proposal at 0x7ff6fffbc280>
+[2022-05-09 14:37:12.391507] rnn_type ................... LSTM
+[2022-05-09 14:37:12.391511] save_epochs ................ 1
+[2022-05-09 14:37:12.391516] seed ....................... 1234321
+[2022-05-09 14:37:12.391521] seq_len .................... 15
+[2022-05-09 14:37:12.391525] shuffle .................... True
+[2022-05-09 14:37:12.391529] store_intermediate_lbs ..... True
+[2022-05-09 14:37:12.391536] sub_estimates .............. [10, 100, 1000]
+[2022-05-09 14:37:12.391591] text_dict .................. None
+[2022-05-09 14:37:12.391596] top_k ...................... 0
+[2022-05-09 14:37:12.391600] top_p ...................... 0
+[2022-05-09 14:37:12.391604] total_seq_len .............. 20
+[2022-05-09 14:37:12.391609] train_data_pct ............. 0.9
+[2022-05-09 14:37:12.391613] train_epochs ............... 40
+[2022-05-09 14:37:12.391618] val_data_pct ............... 0.0001
+[2022-05-09 14:37:12.391624] val_metrics ................ ['accuracy']
+[2022-05-09 14:37:12.391628] valid_epochs ............... 1
+[2022-05-09 14:37:12.391632] vocab_size ................. 30
+[2022-05-09 14:37:12.391637] warmup_pct ................. 0.01
+[2022-05-09 14:37:12.391641] weight_decay ............... 0.0
 ==================================================
 Dataset: amazon | Sample type: random_sampling | Num samples: 1000 | Hist length 13 | Total Seq Length 15
 
@@ -211,91 +211,15 @@ Model budget filepath /home/showalte/research/prob_seq_queries/data/beam_search_
 ==================================================
 * Running for dataset apps
 ==================================================
-[2022-05-09 10:30:24.865992] Checkpoint path [/home/showalte/research/prob_seq_queries/models/apps/] does exist.
-[2022-05-09 10:30:24.891376] Loaded model from /home/showalte/research/prob_seq_queries/models/apps/model_100.pt
-==================================================
-[2022-05-09 10:30:24.929020] batch_size ................. 4096
-[2022-05-09 10:30:24.929057] checkpoint_path ............ /home/showalte/research/prob_seq_queries/models/apps/
-[2022-05-09 10:30:24.929068] cuda ....................... True
-[2022-05-09 10:30:24.929074] data_path .................. data/apps/lsapp.tsv
-[2022-05-09 10:30:24.929082] dataset_phase_shift_path ... /srv/disk00/samshow/amazon/amazon_phase_trans.pkl
-[2022-05-09 10:30:24.929088] device ..................... 5
-[2022-05-09 10:30:24.929094] device_num ................. 0
-[2022-05-09 10:30:24.929127] disable_tqdm ............... True
-[2022-05-09 10:30:24.929133] do_test .................... False
-[2022-05-09 10:30:24.929139] do_valid ................... True
-[2022-05-09 10:30:24.929147] dont_print_args ............ True
-[2022-05-09 10:30:24.929154] dont_shuffle ............... None
-[2022-05-09 10:30:24.929169] dropout .................... 0.3
-[2022-05-09 10:30:24.929179] estimate_type .............. <function mc_estimate at 0x7f9a3621e5e0>
-[2022-05-09 10:30:24.929190] excluded_terms ............. [1]
-[2022-05-09 10:30:24.929196] finetune ................... False
-[2022-05-09 10:30:24.929204] grad_clip .................. 1.0
-[2022-05-09 10:30:24.929210] hidden_size ................ 512
-[2022-05-09 10:30:24.929216] hist_len ................... 18
-[2022-05-09 10:30:24.929224] interp_func ................ <function lin_interp at 0x7f9a3621e940>
-[2022-05-09 10:30:24.929240] log_interval ............... 100
-[2022-05-09 10:30:24.929249] lr ......................... 0.001
-[2022-05-09 10:30:24.929256] lr_decay_style ............. constant
-[2022-05-09 10:30:24.929264] masked_lm .................. False
-[2022-05-09 10:30:24.929283] min_phase_shift ............ 0
-[2022-05-09 10:30:24.929291] min_var_reduction .......... 0.9
-[2022-05-09 10:30:24.929299] min_variance ............... False
-[2022-05-09 10:30:24.929307] model_budget_filepath ...... None
-[2022-05-09 10:30:24.929315] num_beams .................. 0.0
-[2022-05-09 10:30:24.929322] num_layers ................. 2
-[2022-05-09 10:30:24.929330] num_mc_samples ............. 1000
-[2022-05-09 10:30:24.929337] num_workers ................ 0
-[2022-05-09 10:30:24.929345] optimizer .................. adam
-[2022-05-09 10:30:24.929353] proposal_func .............. <function uniform_proposal at 0x7f9a36294280>
-[2022-05-09 10:30:24.929361] rnn_type ................... LSTM
-[2022-05-09 10:30:24.929368] save_epochs ................ 1
-[2022-05-09 10:30:24.929377] seed ....................... 1234321
-[2022-05-09 10:30:24.929384] seq_len .................... 15
-[2022-05-09 10:30:24.929392] shuffle .................... True
-[2022-05-09 10:30:24.929400] store_intermediate_lbs ..... False
-[2022-05-09 10:30:24.929411] sub_estimates .............. [10, 100, 1000]
-[2022-05-09 10:30:24.929418] text_dict .................. None
-[2022-05-09 10:30:24.929426] top_k ...................... 0
-[2022-05-09 10:30:24.929434] top_p ...................... 0
-[2022-05-09 10:30:24.929441] total_seq_len .............. 20
-[2022-05-09 10:30:24.929449] train_data_pct ............. 0.9
-[2022-05-09 10:30:24.929457] train_epochs ............... 40
-[2022-05-09 10:30:24.929465] val_data_pct ............... 0.001
-[2022-05-09 10:30:24.929475] val_metrics ................ ['accuracy']
-[2022-05-09 10:30:24.929483] valid_epochs ............... 1
-[2022-05-09 10:30:24.929490] vocab_size ................. 88
-[2022-05-09 10:30:24.929499] warmup_pct ................. 0.01
-[2022-05-09 10:30:24.929509] weight_decay ............... 0.0
-==================================================
-Dataset: apps | Sample type: random_sampling | Num samples: 1000 | Hist length 13 | Total Seq Length 15
-
-..............................................................................................................................................................................................................................................................................................................................................................................
-==================================================
-Dataset: apps | Sample type: random_sampling | Num samples: 1000 | Hist length 12 | Total Seq Length 15
-
-..............................................................................................................................................................................................................................................................................................................................................................................
-==================================================
-Dataset: apps | Sample type: random_sampling | Num samples: 1000 | Hist length 11 | Total Seq Length 15
-
-..............................................................................................................................................................................................................................................................................................................................................................................
-==================================================
-Dataset: apps | Sample type: random_sampling | Num samples: 1000 | Hist length 10 | Total Seq Length 15
-
-..............................................................................................................................................................................................................................................................................................................................................................................
-==================================================
-/home/showalte/research/prob_seq_queries/data/beam_search_is_hybrid/apps/val_dl/val-dl_apps_beam-search-is-hybrid_9h_15s_1000mc.pkl
-Model budget filepath /home/showalte/research/prob_seq_queries/data/beam_search_is_hybrid/apps/val_dl/val-dl_apps_beam-search-is-hybrid_9h_15s_1000mc.pkl does not exist
-==================================================
-/home/showalte/research/prob_seq_queries/data/beam_search_is_hybrid/apps/val_dl/val-dl_apps_beam-search-is-hybrid_8h_15s_1000mc.pkl
-Model budget filepath /home/showalte/research/prob_seq_queries/data/beam_search_is_hybrid/apps/val_dl/val-dl_apps_beam-search-is-hybrid_8h_15s_1000mc.pkl does not exist
-==================================================
-/home/showalte/research/prob_seq_queries/data/beam_search_is_hybrid/apps/val_dl/val-dl_apps_beam-search-is-hybrid_7h_15s_1000mc.pkl
-Model budget filepath /home/showalte/research/prob_seq_queries/data/beam_search_is_hybrid/apps/val_dl/val-dl_apps_beam-search-is-hybrid_7h_15s_1000mc.pkl does not exist
-==================================================
-/home/showalte/research/prob_seq_queries/data/beam_search_is_hybrid/apps/val_dl/val-dl_apps_beam-search-is-hybrid_6h_15s_1000mc.pkl
-Model budget filepath /home/showalte/research/prob_seq_queries/data/beam_search_is_hybrid/apps/val_dl/val-dl_apps_beam-search-is-hybrid_6h_15s_1000mc.pkl does not exist
-==================================================
-/home/showalte/research/prob_seq_queries/data/beam_search_is_hybrid/apps/val_dl/val-dl_apps_beam-search-is-hybrid_5h_15s_1000mc.pkl
-Model budget filepath /home/showalte/research/prob_seq_queries/data/beam_search_is_hybrid/apps/val_dl/val-dl_apps_beam-search-is-hybrid_5h_15s_1000mc.pkl does not exist
-==================================================
+Traceback (most recent call last):
+  File "scripts/get_random_sampling.py", line 55, in <module>
+    prep_dict = prep_experiment(config_path,
+  File "/home/showalte/research/prob_seq_queries/seq_queries/experiments.py", line 103, in prep_experiment
+    text_dict= load_roster[name](args.data_path,args)
+  File "/home/showalte/research/prob_seq_queries/seq_queries/data.py", line 190, in load_app_data
+    text, vocab = prepare_mobile_app_data_by_user(file_name, args.hist_len)
+  File "/home/showalte/research/prob_seq_queries/seq_queries/data.py", line 138, in prepare_mobile_app_data_by_user
+    df_list = stratify_data_by_user(df)
+  File "/home/showalte/research/prob_seq_queries/seq_queries/data.py", line 107, in stratify_data_by_user
+    curr_user, token = df.iloc[0]
+AttributeError: 'numpy.ndarray' object has no attribute 'iloc'

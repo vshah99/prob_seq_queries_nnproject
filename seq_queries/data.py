@@ -13,7 +13,7 @@ from .utils import read_pkl, write_pkl, write_json, read_json
 # Utilities for loading app data
 #######################################################################
 
-def load_amazon_data(data_path):
+def load_amazon_data(data_path,args):
     text_dict = read_pkl(data_path)
     text_dict['vocab_size'] = len(text_dict['vocab'])
     return text_dict
@@ -93,9 +93,6 @@ def process_amazon_data(text_dict, args,
 # Main
 #######################################################################
 
-
-
-
 def read_mobile_app_data(data_path):
     df = pd.read_csv(data_path, sep='\t')
     df.loc[:,'timestamp'] = pd.to_datetime(df['timestamp'])
@@ -106,6 +103,8 @@ def read_mobile_app_data(data_path):
     return df.loc[:,['user_id','app_name']].values, vocab
 
 def stratify_data_by_user(df):
+    if not isinstance(df,np.ndarray):
+        df = df.values
     seqs = []; curr_seq = []
     curr_user, token = df[0]
     curr_seq.append(token)
@@ -123,7 +122,7 @@ def stratify_data_by_user(df):
 
 def get_user_sequences(df_list,
                       seq_len,
-):
+ ):
     flat_seqs = []
     for user_data in df_list:
         if len(user_data) < seq_len:
@@ -135,7 +134,7 @@ def get_user_sequences(df_list,
 def prepare_mobile_app_data_by_user(
     data_path,
     seq_len,
-):
+ ):
 
     df, vocab = read_mobile_app_data(data_path)
     df_list = stratify_data_by_user(df)
@@ -147,8 +146,31 @@ def prepare_mobile_app_data_by_user(
 # General load information
 #######################################################################
 
+def load_mooc_data(file_name, args):
+    df = pd.read_csv(file_name)
 
-def load_text_data(file_name):
+    vocab = set(df.item_id.drop_duplicates().values)
+    char_to_id = {v:i for i,v in enumerate(sorted(list(vocab)))}
+    vocab.add("<BOS>")  # beginning of sequence
+    char_to_id["<BOS>"] = len(vocab) - 1
+    id_to_char = {i:v for v,i in char_to_id.items()}
+    df = df.sort_values(by=['user_id','timestamp'])
+    df = df.reset_index(drop=True)
+    df = df[['user_id','item_id']]
+    df_list = stratify_data_by_user(df)
+    df_sequences = get_user_sequences(df_list,args.seq_len)
+    args.needs_encoding = False
+
+    return {
+        "text": df_sequences,
+        "vocab": vocab,
+        "vocab_size": len(vocab),
+        "char_to_id": char_to_id,
+        "id_to_char": id_to_char,
+    }
+
+
+def load_text_data(file_name,args):
     with open(file_name, "r") as f:
         text = f.read().strip()
 
@@ -165,12 +187,13 @@ def load_text_data(file_name):
         "id_to_char": id_to_char,
     }
 
-def load_app_data(file_name, seq_len=15):
+def load_app_data(file_name, args):
 
-    text, vocab = prepare_mobile_app_data_by_user(file_name, seq_len)
+    text, vocab = prepare_mobile_app_data_by_user(file_name, args.seq_len)
     vocab.add("<BOS>")  # beginning of sequence
     char_to_id = {v:i for i,v in enumerate(sorted(list(vocab)))}
     id_to_char = {i:v for v,i in char_to_id.items()}
+    args.needs_encoding = True
 
     return {
         "text": text,
@@ -181,11 +204,13 @@ def load_app_data(file_name, seq_len=15):
     }
 
 
-def process_app_data(text_dict, args,**kwargs): # batch_size, seq_len, dev=torch.device("cpu"), splits=(0.9, 0.05, 0.05), **dl_args):
+def process_app_mooc_data(text_dict, args,**kwargs): # batch_size, seq_len, dev=torch.device("cpu"), splits=(0.9, 0.05, 0.05), **dl_args):
     tr_split, v_split = args.train_data_pct, args.val_data_pct  # data split percentages for training and validation
     seq_len, dev = args.seq_len, args.device
 
-    ids = [[text_dict["char_to_id"][c] for c in user_data] for user_data in text_dict['text']]
+    ids = text_dict['text']
+    if args.needs_encoding:
+        ids = [[text_dict["char_to_id"][c] for c in user_data] for user_data in text_dict['text']]
     ids = torch.LongTensor(ids)
     # ids = torch.LongTensor(ids[:-(len(ids) % seq_len)])  # ensure length is even multiple of `seq_len`
     ids = ids.view(-1, seq_len)

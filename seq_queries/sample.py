@@ -117,6 +117,7 @@ def mc_estimate(hist, num_mc_samples, seq_len, model, excluded_terms, proposal_f
         term_log_prob = sample_out["next_log_dist"] + sample_out["model_log_prob"] - sample_out["proposal_log_prob"]
 
         out_dict['sample_estimates'].append(term_log_prob.exp().cpu())
+        out_dict['num_mc_samples'] = torch.LongTensor(sub_estimates)
         # out_dict['q_log_prob'].append(sample_out['proposal_log_prob'])
 
     for item in cat_list:

@@ -28,7 +28,6 @@ from collections import defaultdict
 
 from seq_queries.sample import sample
 from seq_queries.model import get_model
-from seq_queries.data import load_text_data, process_text_data, load_app_data, process_app_data, load_amazon_data, process_amazon_data
 from seq_queries.arguments import get_args
 from seq_queries.train import load_checkpoint, eval_epoch
 from seq_queries.utils import write_pkl
@@ -42,7 +41,7 @@ if __name__ == "__main__":
 
     args = get_args(manual_config="scripts/model_performance.yaml")
 
-    dataset_name = "apps"
+    dataset_name = "moocs"
     device = 7
     prep_dict = prep_experiment("scripts/model_performance.yaml",
                                 dataset_name,
