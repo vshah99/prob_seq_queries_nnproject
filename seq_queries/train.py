@@ -10,7 +10,7 @@ from collections import defaultdict
 from tqdm import tqdm
 
 from seq_queries.optim import get_optimizer, get_lr_scheduler
-from seq_queries.utils import print_log
+from seq_queries.utils import print_log, set_random_seed
 from seq_queries.model import get_model
 # from seq_queries.data import load_text, process_data
 from seq_queries.arguments import get_args
@@ -84,16 +84,6 @@ def eval_epoch(args, model, dataloader, epoch_number):
     validation_pbar.set_description("[V] E={}, {}".format(epoch_number, ", ".join(["{}={:.4f}".format(k,v) for k,v in avg_metrics.items()])))
 
     return avg_metrics
-
-def set_random_seed(args):
-    """Set random seed for reproducibility."""
-
-    seed = args.seed
-
-    if seed is not None and seed > 0:
-        random.seed(seed)
-        np.random.seed(seed)
-        torch.manual_seed(seed)
 
 def setup_model_and_optim(args, epoch_len):
     model = get_model(args)

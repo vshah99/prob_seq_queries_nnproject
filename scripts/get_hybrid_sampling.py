@@ -37,12 +37,12 @@ from seq_queries.experiments import sample_dynamic_target_token, prep_experiment
 device=5
 sub_estimates = [10,100,1000]
 folders = ["beam_search_is_hybrid"]
-datasets = ['shakespeare',"amazon","apps",'moocs']
+datasets = ['apps']
 config_path = "config/testing/sample.yaml"
 lengths = {
     "moocs":[(h,15) for h in reversed(range(10,14,1))],
-    "amazon":[(h,15) for h in reversed(range(8,14,1))],
-    "apps":[(h,15) for h in reversed(range(10,14,1))],
+    "amazon":[(h,15) for h in reversed(range(12,14,1))],
+    "apps":[(h,15) for h in reversed(range(12,14,1))],
     "shakespeare": [(h,20) for h in reversed(range(14,19,1))],
 }
 
@@ -88,6 +88,7 @@ for dataset_name in datasets:
             #         print(e, d.shape)
             # sys.exit(1)
 
+            args.num_mc_samples = sub_estimates[-1]
             write_pkl(estimates,
                     f"data/{folder}/{dataset_name}/val_dl/val-dl_{dataset_name}_{folder.replace('_','-')}_{args.hist_len}h_{args.total_seq_len}s_{args.num_mc_samples}mc.pkl")
             estimates=None

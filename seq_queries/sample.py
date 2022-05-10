@@ -195,19 +195,17 @@ def tree_is_estimate_nr(
 
     for _ in range(num_mc_samples):
         log_p, log_q, hs, depth_reached, last_token, _ = tree.sample_sequence(seq_len)
+        if depth_reached < seq_len:
+            pass
         log_p_totals.append(log_p)
-        log_q_totals.append(log_q)
-        hidden_states.append(hs)
+        log_q_total.append(log_q)
+
+        # log_p_totals.append(log_p)
+        # log_q_totals.append(log_q)
+        # hidden_states.append(hs)
         num_remaining_steps.append(seq_len - depth_reached)
         last_tokens.append(last_token)
 
-    log_p_totals = torch.stack(log_p_totals, dim=0)
-    log_q_totals = torch.stack(log_q_totals, dim=0)
-    if isinstance(hs, tuple):
-        hidden_states = (
-            torch.stack([h[0] for h in hidden_states], dim=1),
-            torch.stack([h[1] for h in hidden_states], dim=1),
-        )
     else:
         hidden_states = torch.stack(hidden_states, dim=1)
     num_remaining_steps = torch.tensor(num_remaining_steps, dtype=torch.int32, device=log_p_totals.device)

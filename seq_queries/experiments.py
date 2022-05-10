@@ -28,7 +28,7 @@ from .tree import BeamSearchSampleTree
 from .sample import *
 from .data import *
 from .train import load_checkpoint, get_model
-from .utils import read_pkl, write_pkl, compute_num_beams_from_budget
+from .utils import read_pkl, write_pkl, compute_num_beams_from_budget, set_random_seed
 
 #################################################################################
 #   Function-Class Declaration
@@ -45,6 +45,8 @@ def prep_experiment(
     extra_args = {}
  ):
     args = get_args(manual_config=config_path)
+    args.seed = 0
+    set_random_seed(args)
     name = name.lower()
     config_roster = {
         "amazon": {
@@ -209,7 +211,6 @@ def sample_dynamic_target_token(
                                                     rounding_mode="trunc").long() +
                                         ((model_budget[i]%args.seq_len > 0).long())).tolist()
                     args.num_mc_samples = args.sub_estimates[-1]
-                    print(args.sub_estimates)
                 elif args.estimate_type.__name__ == "beam_search_lower_bound":
                     init_sub_estimates = (torch.div(model_budget[i],args.seq_len,
                                                     rounding_mode="trunc").long() +
@@ -217,14 +218,17 @@ def sample_dynamic_target_token(
                     args.sub_estimates = [
                         compute_num_beams_from_budget(args.vocab_size,init_beam,args.seq_len)
                         for init_beam in init_sub_estimates]
-
                     args.num_beams = args.sub_estimates[-1]
-
                     assert isinstance(args.num_beams,int),"Num beams for model budget has to be an int"
 
             args.excluded_terms = [dbatch[i,args.total_seq_len].cpu().item()]
             kwargs = vars(args)
             sample_output =args.estimate_type(sample,**kwargs)
+            # print(sample_output['model_iters'])
+            # print(sample_output['num_mc_samples'])
+            # print(sample_output['sample_estimates'][:,args.excluded_terms[0]])
+            # print(sample_output['bs_lower_bound'][args.excluded_terms[0]])
+            # sys.exit(1)
             data_list.append(sample_output)
 
         print("",flush=True)

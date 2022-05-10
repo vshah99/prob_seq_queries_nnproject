@@ -36,7 +36,7 @@ from seq_queries.experiments import sample_dynamic_target_token, prep_experiment
 
 device=0
 folders = ["ground_truth"]
-datasets = ['moocs']
+datasets = ['amazon']
 config_path = "config/testing/sample.yaml"
 lengths = {
     "moocs":[(13,15),(12,15)],
@@ -53,12 +53,10 @@ for dataset_name in datasets:
     prep_dict = prep_experiment(config_path,
                                 dataset_name,
                                 device=device)
+    prep_dict['args'].text_dict['text'] = None
     args = prep_dict['args']
     val_dl = prep_dict['val_dl']
     model = prep_dict['model']
-    args.estimate_type = beam_search_lower_bound
-    args.min_variance = False
-    args.num_beams = 0.0
     text_dict = args.text_dict
     args.text_dict = None
     print_args(vars(args))
@@ -67,6 +65,10 @@ for dataset_name in datasets:
 
     for folder in folders:
         for hist_len,total_seq_len in len_info:
+            args = copy.deepcopy(prep_dict['args'])
+            args.estimate_type = beam_search_lower_bound
+            args.min_variance = False
+            args.num_beams = 0.0
             args.hist_len = hist_len
             args.total_seq_len = total_seq_len
             print("Dataset: {} | Sample type: {} | Hist length {} | Total Seq Length {}".format(dataset_name,folder,args.hist_len,args.total_seq_len))

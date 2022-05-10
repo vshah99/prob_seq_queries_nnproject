@@ -1,6 +1,7 @@
 import torch
 import torch.nn as nn
 import numpy as np
+import random
 import math
 import yaml
 import pickle as pkl
@@ -226,6 +227,16 @@ def compute_num_beams_from_budget(vocab_size, init_num_beams, seq_len):
         rem_seq_len -= 1
     return init_num_beams + int(math.ceil(
         (extra_compute)/max(rem_seq_len,1)))
+
+def set_random_seed(args):
+    """Set random seed for reproducibility."""
+
+    seed = args.seed
+
+    if seed is not None and seed > 0:
+        random.seed(seed)
+        np.random.seed(seed)
+        torch.manual_seed(seed)
 
 
 
