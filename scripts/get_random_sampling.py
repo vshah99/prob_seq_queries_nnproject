@@ -38,7 +38,7 @@ device=5
 sub_estimates = [10,100,1000]
 model_budget = True
 folders = ["random_sampling"]
-datasets = ['moocs']#,'shakespeare',"amazon","apps"]
+datasets = ['shakespeare',"amazon","apps",'moocs']
 config_path = "config/testing/sample.yaml"
 lengths = {
     "moocs":[(h,15) for h in reversed(range(5,14,1))],
@@ -57,13 +57,10 @@ for dataset_name in datasets:
                                 dataset_name,
                                 device=device,
                                 extra_args=extra_args)
-    args = prep_dict['args']
+    prep_dict['args'].text_dict['text'] = None
     val_dl = prep_dict['val_dl']
     model = prep_dict['model']
-    args.estimate_type = mc_estimate
-    args.proposal_func = uniform_proposal
-    args.sub_estimates = sub_estimates
-    args.num_mc_samples = args.sub_estimates[-1]
+    args = prep_dict['args']
     text_dict = args.text_dict
     args.text_dict = None
     print_args(vars(args))
@@ -72,10 +69,13 @@ for dataset_name in datasets:
 
     for folder in folders:
         for hist_len,total_seq_len in len_info:
+            args = copy.deepcopy(prep_dict['args'])
+            args.estimate_type = mc_estimate
+            args.proposal_func = uniform_proposal
+            args.sub_estimates = sub_estimates
+            args.num_mc_samples = args.sub_estimates[-1]
             args.hist_len = hist_len
             args.total_seq_len = total_seq_len
-            args.sub_estimates = [10,100,1000]
-            args.num_mc_samples = args.sub_estimates[-1]
 
             if model_budget:
                 args.model_budget_filepath = (f"/home/showalte/research/prob_seq_queries/" +

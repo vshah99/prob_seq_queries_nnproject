@@ -37,7 +37,7 @@ from seq_queries.experiments import sample_dynamic_target_token, prep_experiment
 
 device=1
 folders = ["beam_search"]
-datasets = ['moocs']
+datasets = ['shakespeare','amazon','apps','moocs']
 model_budget = True
 config_path = "config/testing/sample.yaml"
 lengths_coverage = {
@@ -55,14 +55,10 @@ for dataset_name in datasets:
     prep_dict = prep_experiment(config_path,
                                 dataset_name,
                                 device=device)
+    prep_dict['args'].text_dict['text'] = None
     args = prep_dict['args']
     val_dl = prep_dict['val_dl']
     model = prep_dict['model']
-    args.num_mc_samples = 1000 # For reading from hybrid correctly
-    args.estimate_type = beam_search_lower_bound
-    args.proposal_func = lm_proposal
-    args.store_intermediate_lbs=True
-    args.min_variance = False
     text_dict = args.text_dict
     args.text_dict = None
     print_args(vars(args))
@@ -71,6 +67,12 @@ for dataset_name in datasets:
 
     for folder in folders:
         for hist_len,total_seq_len,coverage in len_info:
+            args = copy.deepcopy(prep_dict['args'])
+            args.num_mc_samples = 1000 # For reading from hybrid correctly
+            args.estimate_type = beam_search_lower_bound
+            args.proposal_func = lm_proposal
+            args.store_intermediate_lbs=True
+            args.min_variance = False
             args.hist_len = hist_len
             args.total_seq_len = total_seq_len
             args.num_beams = float(coverage)

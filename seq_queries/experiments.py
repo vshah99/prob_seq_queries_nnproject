@@ -209,6 +209,7 @@ def sample_dynamic_target_token(
                                                     rounding_mode="trunc").long() +
                                         ((model_budget[i]%args.seq_len > 0).long())).tolist()
                     args.num_mc_samples = args.sub_estimates[-1]
+                    print(args.sub_estimates)
                 elif args.estimate_type.__name__ == "beam_search_lower_bound":
                     init_sub_estimates = (torch.div(model_budget[i],args.seq_len,
                                                     rounding_mode="trunc").long() +

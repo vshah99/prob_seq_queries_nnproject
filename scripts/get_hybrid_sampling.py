@@ -37,10 +37,10 @@ from seq_queries.experiments import sample_dynamic_target_token, prep_experiment
 device=5
 sub_estimates = [10,100,1000]
 folders = ["beam_search_is_hybrid"]
-datasets = ['moocs']#,'shakespeare',"amazon","apps"]
+datasets = ['shakespeare',"amazon","apps",'moocs']
 config_path = "config/testing/sample.yaml"
 lengths = {
-    "moocs":[(h,15) for h in reversed(range(5,13,1))],
+    "moocs":[(h,15) for h in reversed(range(10,14,1))],
     "amazon":[(h,15) for h in reversed(range(8,14,1))],
     "apps":[(h,15) for h in reversed(range(10,14,1))],
     "shakespeare": [(h,20) for h in reversed(range(14,19,1))],
@@ -54,16 +54,10 @@ for dataset_name in datasets:
     prep_dict = prep_experiment(config_path,
                                 dataset_name,
                                 device=device)
+    prep_dict['args'].text_dict['text'] = None
     args = prep_dict['args']
     val_dl = prep_dict['val_dl']
     model = prep_dict['model']
-    args.estimate_type = beam_search_is_hybrid
-    args.proposal_func = lm_proposal
-    args.min_variance = True
-    args.min_var_reduction = 0.1
-    args.num_beams = 0.0
-    args.sub_estimates = sub_estimates
-    args.num_mc_samples = args.sub_estimates[-1]
     text_dict = args.text_dict
     args.text_dict = None
     print_args(vars(args))
@@ -72,8 +66,17 @@ for dataset_name in datasets:
 
     for folder in folders:
         for hist_len,total_seq_len in len_info:
+            args = copy.deepcopy(prep_dict['args'])
+            args.estimate_type = beam_search_is_hybrid
+            args.proposal_func = lm_proposal
+            args.min_variance = True
+            args.min_var_reduction = 0.1
+            args.num_beams = 0.0
+            args.sub_estimates = sub_estimates
+            args.num_mc_samples = args.sub_estimates[-1]
             args.hist_len = hist_len
             args.total_seq_len = total_seq_len
+
             print("Dataset: {} | Sample type: {} | Num samples: {} | Hist length {} | Total Seq Length {}"\
                   .format(dataset_name,folder,args.num_mc_samples,args.hist_len,args.total_seq_len))
             estimates = sample_dynamic_target_token(args, val_dl, model)
