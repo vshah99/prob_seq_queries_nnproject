@@ -108,9 +108,9 @@ def prep_gpt2(batch_size = 128,
     # fix model padding token id
     model.config.pad_token_id = model.config.eos_token_id
         # res = model.forward(input_ids = data['input_ids'], attention_mask=data['attention_mask'])
-    # dataset = load_dataset("wikitext",'wikitext-2-v1', split="validation")
-    dataset = load_dataset("bookcorpus", split="validation[:1%]")
-    sys.exit(1)
+    dataset = load_dataset("wikitext",'wikitext-2-v1', split="validation")
+    # dataset = load_dataset("bookcorpus", split="validation[:1%]")
+    # sys.exit(1)
     gpt2_classificaiton_collator = Gpt2ClassificationCollator(use_tokenizer=tokenizer)
     # print(dataset.column_names)
     # dataset = dataset.map(lambda e: tokenizer(e['text']))

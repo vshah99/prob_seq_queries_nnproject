@@ -36,7 +36,7 @@ from seq_queries.experiments import sample_dynamic_target_token, prep_experiment
 
 device=0
 folders = ["ground_truth"]
-datasets = ['amazon']
+datasets = ['shakespeare','apps','amazon','moocs']
 config_path = "config/testing/sample.yaml"
 lengths = {
     "moocs":[(13,15),(12,15)],

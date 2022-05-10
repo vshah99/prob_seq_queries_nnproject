@@ -6,7 +6,6 @@ import pandas as pd
 import numpy as np
 import pandas as pd
 
-random.seed(0)
 from .utils import read_pkl, write_pkl, write_json, read_json
 
 #######################################################################

@@ -233,7 +233,8 @@ def set_random_seed(args):
 
     seed = args.seed
 
-    if seed is not None and seed > 0:
+    assert seed != 0,"Random seed cannot be 0"
+    if seed is not None:
         random.seed(seed)
         np.random.seed(seed)
         torch.manual_seed(seed)

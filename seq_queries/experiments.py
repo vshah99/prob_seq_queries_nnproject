@@ -45,7 +45,6 @@ def prep_experiment(
     extra_args = {}
  ):
     args = get_args(manual_config=config_path)
-    args.seed = 0
     set_random_seed(args)
     name = name.lower()
     config_roster = {
@@ -177,7 +176,8 @@ def sample_dynamic_target_token(
             return
         elif ((len(output[key][0].shape) == 1) or
               (len(output[key][0].shape) == 2 and
-               (args.sub_estimates))):
+               ((args.sub_estimates) or
+               (key =='intermediate_lbs')))):
             output[key] = torch.stack(output[key]).squeeze()
         elif len(output[key][0].shape) >= 1:
             output[key] = torch.cat(output[key])
