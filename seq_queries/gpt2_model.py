@@ -22,7 +22,7 @@ import torch.nn.functional as F
 from transformers import GPT2Tokenizer, GPT2LMHeadModel
 from datasets import load_dataset
 
-from utils import read_pkl, write_pkl, write_json, _tup_cpu, _tup_gpu_gpt2
+from .utils import read_pkl, write_pkl, write_json, _tup_cpu, _tup_gpu_gpt2
 
 #################################################################################
 #   Function-Class Declaration
@@ -62,19 +62,20 @@ class Gpt2ClassificationCollator(object):
 #######################################################################
 
 
-def load_GPT2_query_lm():
+def load_GPT2_query_lm(device):
     model = GPT2LMHeadModel.from_pretrained('gpt2')
     model.model_iters = 0
     model.temperature = None
 
     def get_next_probs(self,
-        x, hidden_states=None,
+        x, rnn_args=None,
         temperature=1.0,
         max_batch_size=16, device='cpu',
         return_forward_only=False,
         return_logits=True, **kwargs
  ):
 
+        hidden_states = rnn_args
         self.model_iters += x.shape[0] * x.shape[1]
         if self.temperature is not None:
             temperature = self.temperature
@@ -105,31 +106,32 @@ def load_GPT2_query_lm():
                 prob_outputs.append(probs.cpu())
             else:
                 prob_outputs.append(logits.cpu())
-                step_outputs.append(step_output['past_key_values'])
+            step_outputs.append(step_output['past_key_values'])
 
         layer_hiddens = []
         for layer_data in zip(*step_outputs):
             layer_data= list(zip(*layer_data))
             layer_hiddens.append(
-                (torch.cat(layer_data[0],dim=0),
-                 torch.cat(layer_data[1],dim=0))
+                (torch.cat(layer_data[0],dim=0).cpu(),
+                 torch.cat(layer_data[1],dim=0).cpu())
             )
 
         return torch.cat(prob_outputs,dim = 0), tuple(layer_hiddens)
 
     model.get_next_probs = types.MethodType(get_next_probs, model)
-    return model
+    return model.to(device)
 
 
 
 
 
-def prep_gpt2(batch_size = 16,
+def explore_gpt2(batch_size = 16,
               device=0,
               **kwargs):
     tokenizer = GPT2Tokenizer.from_pretrained('gpt2')
     tokenizer.padding_side = "right"
     tokenizer.pad_token = tokenizer.eos_token
+    tokenizer.decode([20526])
     model = load_GPT2_query_lm()
     dataset = load_dataset("wikitext",'wikitext-2-v1', split="validation")
     gpt2_classificaiton_collator = Gpt2ClassificationCollator(use_tokenizer=tokenizer)
@@ -137,6 +139,7 @@ def prep_gpt2(batch_size = 16,
                                           shuffle=True, collate_fn=gpt2_classificaiton_collator)
     # dataloader = torch.utils.data.DataLoader(dataset, batch_size=batch_size)
     data_list = []; data_str = []
+    df = pd.read_csv('/home/showalte/research/prob_seq_queries/data/wikitext/wikitext_val-dl.csv')
     with torch.no_grad():
         model.to('cuda:4')
         # model.to(device)
@@ -144,13 +147,17 @@ def prep_gpt2(batch_size = 16,
             # print(torch.Tensor(data['input_ids']))
             data, attn_mask = data.values()
             # data_str += [tokenizer.decode(d) for d in data]
-            print(data.shape)
-            logits, hiddens = model.get_next_probs(data[:,:11], max_batch_size = 1,
-                                                   hidden_states=None,
+            data = torch.LongTensor(df.values[0,:13])
+            print(data)
+            logits, hiddens = model.get_next_probs(data.unsqueeze(0), max_batch_size = 1,
+                                                   rnn_args=None,
                                                    device = 'cuda:4')
+            print(logits.shape)
+            print(torch.softmax(logits,dim=-1).max(dim=-1))
+            sys.exit(1)
             print("Hiddens")
-            logits, hiddens = model.get_next_probs(data[:,11:], max_batch_size = 1,
-                                                   hidden_states=hiddens,
+            logits, hiddens = model.get_next_probs(data[0,11:], max_batch_size = 1,
+                                                   rnn_args=hiddens,
                                                    device = 'cuda:4')
             print(logits.shape)
             sys.exit(1)
@@ -169,8 +176,7 @@ def prep_gpt2(batch_size = 16,
             "dataset":dataset,
         }
 
-res = prep_gpt2()
-print("HI")
+# res = explore_gpt2()
 
 
 #################################################################################

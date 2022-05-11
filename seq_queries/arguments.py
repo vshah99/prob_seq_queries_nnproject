@@ -110,6 +110,7 @@ def general_args(parser):
 def model_config_args(parser):
     group = parser.add_argument_group("Model configuration arguments.")
     group.add_argument("--rnn_type", type=str, default="LSTM", help="RNN type to use in model. Supported values are 'RNN', 'LSTM', and 'GRU'.")
+    group.add_argument("--use_gpt2", type=_str2bool, default=False, help="If we are using pretrained GPT-2")
     group.add_argument("--masked_lm",type=_str2bool,default=True, help="If enabled, makes RNN bidirectional and turns it into a Masked Language Model rather than a Causal Language Model.")
     group.add_argument("--vocab_size", type=int, default=-1, help="Number of unique vocabulary terms to embed and predict. A value of -1 means this will be inferred by the dataset.")
     group.add_argument("--hidden_size", type=int, default=32, help="Size of hidden state of RNN.")

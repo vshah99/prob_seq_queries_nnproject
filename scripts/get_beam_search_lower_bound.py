@@ -37,11 +37,12 @@ from seq_queries.experiments import sample_dynamic_target_token, prep_experiment
 
 device=1
 folders = ["beam_search"]
-datasets = ['amazon']#,'shakespeare','amazon','apps','moocs']
-model_budget = True
+datasets = ['wikitext']#,'shakespeare','amazon','apps','moocs']
+model_budget = False
 config_path = "config/testing/sample.yaml"
 lengths_coverage = {
     # Regular GT
+    "wikitext":[(13,15,0.8)],
     "moocs":[(13,15,0.98), (12,15,0.98)],
     "amazon":[(12,15,0.98),(13,15,0.98), (12,15,0.98), (11,15,0.98)],
     "apps":[(13,15,0.98), (12,15,0.98)],

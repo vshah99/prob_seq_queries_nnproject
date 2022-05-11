@@ -37,11 +37,12 @@ from seq_queries.experiments import sample_dynamic_target_token, prep_experiment
 
 device=6
 sub_estimates = [10,100,1000]
-model_budget = True
+model_budget = False
 folders = ["importance_sampling"]
-datasets = ['amazon']#,'apps','amazon','moocs','shakespeare']
+datasets = ['wikitext']#,'apps','amazon','moocs','shakespeare']
 config_path = "config/testing/sample.yaml"
 lengths = {
+    "wikitext":[(h,15) for h in reversed(range(12,14,1))],
     "moocs":[(h,15) for h in reversed(range(5,14,1))],
     "amazon":[(h,15) for h in reversed(range(5,13,1))],
     "apps":[(h,15) for h in reversed(range(5,14,1))],

@@ -537,12 +537,19 @@ def beam_search_lower_bound(hist, num_beams, seq_len, model, excluded_terms,
         cur_log_probs = next_log_probs[indices]
         cur_restricted_log_probs = next_restricted_log_probs[indices]
         rnn_args = states
-        if isinstance(rnn_args, tuple):
-            rnn_args = rnn_args[0][..., seq_inds, :], rnn_args[1][..., seq_inds, :]
+        if kwargs['use_gpt2']:
+            # (layers, 2, (samp, attn, seq_len, h))
+            rnn_args = tuple(
+                [(h1[seq_inds], h2[seq_inds]) for
+                 (h1, h2) in rnn_args])
         else:
-            rnn_args = rnn_args[..., seq_inds, :]
+            if isinstance(rnn_args, tuple):
+                rnn_args = rnn_args[0][..., seq_inds, :], rnn_args[1][..., seq_inds, :]
+            else:
+                rnn_args = rnn_args[..., seq_inds, :]
 
         num_beams_over_time.append(cur_log_probs.shape[0])
+        print(num_beams_over_time)
 
     logits, states = model.get_next_probs(beams, rnn_args=rnn_args, device=device, return_logits=True,
                                         max_batch_size=batch_size)

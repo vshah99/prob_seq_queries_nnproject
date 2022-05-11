@@ -53,6 +53,9 @@ def prep_experiment(
             "data_path": "data/wikitext/wikitext_val-dl.csv",
             "seq_len": 20,
             "vocab_size": 50257,
+            "batch_size":16,
+            "use_gpt2":True,
+            "checkpoint_path":None,
         },
         "amazon": {
             "checkpoint_path": "/home/showalte/research/prob_seq_queries/models/amazon/",
@@ -93,11 +96,13 @@ def prep_experiment(
         "apps": load_app_data,
         "moocs": load_mooc_data,
         "shakespeare": load_text_data,
+        "wikitext": load_wikitext_data,
     }
     assert name in load_roster,\
         "Dataset {} not found in roster"
     process_roster = {
         "amazon": process_amazon_data,
+        "wikitext":process_wikitext_data,
         "apps": process_app_mooc_data,
         "moocs": process_app_mooc_data,
         "shakespeare": process_text_data,
@@ -210,6 +215,7 @@ def sample_dynamic_target_token(
             sample = data_batch[i]
             args.seq_len = args.total_seq_len - args.hist_len
             args.excluded_terms = [dbatch[i,args.total_seq_len].cpu().item()]
+            print(i)
 
             if args.model_budget_filepath:
                 if args.estimate_type.__name__ == "mc_estimate":

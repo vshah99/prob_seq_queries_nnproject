@@ -20,6 +20,7 @@ import random
 
 from abc import ABC, abstractmethod
 from .utils import _tup_cpu, accuracy_score
+from .gpt2_model import load_GPT2_query_lm
 
 #################################################################################
 #   Function-Class Declaration
@@ -237,6 +238,7 @@ SUPPORTED_RNN = {
 
 
 def get_model(args):
+    if args.use_gpt2: return load_GPT2_query_lm(args.device)
     rnn = SUPPORTED_RNN[args.rnn_type](
         input_size=args.vocab_size,
         hidden_size=args.hidden_size,

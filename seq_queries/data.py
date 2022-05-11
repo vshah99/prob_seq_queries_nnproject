@@ -145,6 +145,38 @@ def prepare_mobile_app_data_by_user(
 # General load information
 #######################################################################
 
+def load_wikitext_data(file_name, args):
+    df = pd.read_csv(file_name)
+
+    return {
+        "text": df.values,
+        "vocab": None,
+        "vocab_size": 50267,
+        "char_to_id": None,
+        "id_to_char": None,
+    }
+
+
+def process_wikitext_data(text_dict, args,**kwargs): # batch_size, seq_len, dev=torch.device("cpu"), splits=(0.9, 0.05, 0.05), **dl_args):
+    tr_split, v_split = args.train_data_pct, args.val_data_pct  # data split percentages for training and validation
+    seq_len, dev = args.seq_len, args.device
+
+    ids = text_dict['text']
+    ids = torch.LongTensor(ids)
+
+    valid_dl = torch.utils.data.DataLoader(
+        ids,
+        batch_size=args.batch_size,
+        shuffle=False,
+        num_workers=args.num_workers,
+    )
+
+    return None, valid_dl, None
+
+#######################################################################
+# Main
+#######################################################################
+
 def load_mooc_data(file_name, args):
     df = pd.read_csv(file_name)
 
