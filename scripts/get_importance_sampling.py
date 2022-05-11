@@ -14,6 +14,7 @@
 import os
 import sys
 import copy
+from datetime import datetime
 
 sys.path.insert(1, '/home/showalte/research/prob_seq_queries/')
 
@@ -26,7 +27,7 @@ from seq_queries.sample import sample
 from seq_queries.model import get_model
 from seq_queries.arguments import get_args, print_args
 from seq_queries.train import load_checkpoint
-from seq_queries.utils import write_pkl
+from seq_queries.utils import write_pkl, write_json
 from seq_queries.sample import lm_proposal, uniform_proposal, beam_search_lower_bound, mc_estimate
 from seq_queries.experiments import sample_dynamic_target_token, prep_experiment
 
@@ -38,12 +39,11 @@ device=6
 sub_estimates = [10,100,1000]
 model_budget = True
 folders = ["importance_sampling"]
-datasets = ['amazon']
-# datasets = ['apps','amazon','moocs','shakespeare',"amazon","apps"]
+datasets = ['amazon']#,'apps','amazon','moocs','shakespeare']
 config_path = "config/testing/sample.yaml"
 lengths = {
     "moocs":[(h,15) for h in reversed(range(5,14,1))],
-    "amazon":[(h,15) for h in reversed(range(5,14,1))],
+    "amazon":[(h,15) for h in reversed(range(5,13,1))],
     "apps":[(h,15) for h in reversed(range(5,14,1))],
     "shakespeare": [(h,20) for h in reversed(range(5,19,1))] + [(10,35),(10,60)],
 }
@@ -91,8 +91,8 @@ for dataset_name in datasets:
                     print("====="*10)
                     continue
 
-            print("Dataset: {} | Sample type: {} | Num samples: {} | Hist length {} | Total Seq Length {}"\
-                  .format(dataset_name,folder,args.num_mc_samples,args.hist_len,args.total_seq_len))
+            print("[{}] | Dataset: {} | Sample type: {} | Num samples: {} | Hist length {} | Total Seq Length {}"\
+                  .format(datetime.now(),dataset_name,folder,args.num_mc_samples,args.hist_len,args.total_seq_len))
             estimates = sample_dynamic_target_token(args, val_dl, model)
             os.makedirs(f"data/{folder}/{dataset_name}/val_dl/",exist_ok=True)
             estimates['metadata']['text_dict']['text'] = None

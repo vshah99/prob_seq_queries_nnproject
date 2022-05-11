@@ -48,6 +48,12 @@ def prep_experiment(
     set_random_seed(args)
     name = name.lower()
     config_roster = {
+        "wikitext": {
+            "checkpoint_path": None,
+            "data_path": "data/wikitext/wikitext_val-dl.csv",
+            "seq_len": 20,
+            "vocab_size": 50257,
+        },
         "amazon": {
             "checkpoint_path": "/home/showalte/research/prob_seq_queries/models/amazon/",
             "data_path": "/srv/disk00/samshow/amazon/amazon_text_dict.pkl",
@@ -182,14 +188,13 @@ def sample_dynamic_target_token(
         elif len(output[key][0].shape) >= 1:
             output[key] = torch.cat(output[key])
 
-    model_budget = None; model_budget_name = ""
+    model_budget = None; model_budget_name = ""; model_budget_i =0
     if args.model_budget_filepath:
         model_budget_file = read_pkl(args.model_budget_filepath)
         model_budget = model_budget_file['model_iters']
     elif 'num_mc_samples' in hybrid_artifacts:
         hybrid_artifacts.remove('num_mc_samples')
         sample_artifacts.remove('num_mc_samples')
-
 
     all_excluded_terms = [];
     artifacts = artifact_store_roster[args.estimate_type.__name__]
@@ -204,31 +209,28 @@ def sample_dynamic_target_token(
                 print(".",end="",flush=True)
             sample = data_batch[i]
             args.seq_len = args.total_seq_len - args.hist_len
+            args.excluded_terms = [dbatch[i,args.total_seq_len].cpu().item()]
 
             if args.model_budget_filepath:
                 if args.estimate_type.__name__ == "mc_estimate":
-                    args.sub_estimates = (torch.div(model_budget[i],args.seq_len,
+                    args.sub_estimates = (torch.div(model_budget[model_budget_i],args.seq_len,
                                                     rounding_mode="trunc").long() +
-                                        ((model_budget[i]%args.seq_len > 0).long())).tolist()
+                                        ((model_budget[model_budget_i]%args.seq_len > 0).long())).tolist()
                     args.num_mc_samples = args.sub_estimates[-1]
                 elif args.estimate_type.__name__ == "beam_search_lower_bound":
-                    init_sub_estimates = (torch.div(model_budget[i],args.seq_len,
+                    init_sub_estimates = (torch.div(model_budget[model_budget_i],args.seq_len,
                                                     rounding_mode="trunc").long() +
-                                        ((model_budget[i]%args.seq_len > 0).long())).tolist()
+                                        ((model_budget[model_budget_i]%args.seq_len > 0).long())).tolist()
                     args.sub_estimates = [
-                        compute_num_beams_from_budget(args.vocab_size,init_beam,args.seq_len)
+                        compute_num_beams_from_budget(args.vocab_size,init_beam,args.seq_len,args.excluded_terms)
                         for init_beam in init_sub_estimates]
                     args.num_beams = args.sub_estimates[-1]
                     assert isinstance(args.num_beams,int),"Num beams for model budget has to be an int"
 
-            args.excluded_terms = [dbatch[i,args.total_seq_len].cpu().item()]
+                model_budget_i += 1
+
             kwargs = vars(args)
             sample_output =args.estimate_type(sample,**kwargs)
-            # print(sample_output['model_iters'])
-            # print(sample_output['num_mc_samples'])
-            # print(sample_output['sample_estimates'][:,args.excluded_terms[0]])
-            # print(sample_output['bs_lower_bound'][args.excluded_terms[0]])
-            # sys.exit(1)
             data_list.append(sample_output)
 
         print("",flush=True)

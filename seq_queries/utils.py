@@ -22,11 +22,23 @@ def _hidden_state_select(state,i):
         state = state[...,i,:]
     return state
 
-def _tup_cpu(tup, force=True):
+def _tup_cpu(tup, force=False):
     if force or isinstance(tup, tuple):
         return tuple([t.cpu() for t in tup])
-    else:
-        return tup.cpu()
+    elif tup: return tup.cpu()
+    else: return tup
+
+def _tup_gpu_gpt2(tup, device,force=False):
+    if not tup: return tup
+    elif force or isinstance(tup, tuple):
+        return tuple([(t1.to(device),t2.to(device)) for (t1,t2) in tup])
+    else: return tup.to(device)
+
+def _tup_gpu(tup, device,force=False):
+    if not tup: return tup
+    elif force or isinstance(tup, tuple):
+        return tuple([t.to(device) for t in tup])
+    else: return tup.to(device)
 
 def read_yaml(filename):
     if filename is None: return None
@@ -208,7 +220,7 @@ def top_k_top_p_filtering(logits, top_k=0, top_p=0.0,min_var=False, filter_value
 # Utilities for determining number of beam search beams with a budget
 #######################################################################
 
-def compute_num_beams_from_budget(vocab_size, init_num_beams, seq_len):
+def compute_num_beams_from_budget(vocab_size, init_num_beams, seq_len, excluded_terms):
     """TODO: Docstring for compute_num_beams.
 
     :vocab_size: TODO
@@ -216,7 +228,8 @@ def compute_num_beams_from_budget(vocab_size, init_num_beams, seq_len):
     :returns: TODO
 
     """
-    vocab_size -= 1 # Reconcile <BOS> token
+    num_excl = len(excluded_terms)
+    vocab_size -= num_excl # Restricted vocab
     if init_num_beams < vocab_size:
         return init_num_beams
 
@@ -238,6 +251,11 @@ def set_random_seed(args):
         random.seed(seed)
         np.random.seed(seed)
         torch.manual_seed(seed)
+
+
+#######################################################################
+# Main
+#######################################################################
 
 
 

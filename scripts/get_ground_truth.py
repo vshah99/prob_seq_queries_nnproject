@@ -14,6 +14,7 @@
 import os
 import sys
 import copy
+from datetime import datetime
 
 sys.path.insert(1, '/home/showalte/research/prob_seq_queries/')
 
@@ -71,7 +72,8 @@ for dataset_name in datasets:
             args.num_beams = 0.0
             args.hist_len = hist_len
             args.total_seq_len = total_seq_len
-            print("Dataset: {} | Sample type: {} | Hist length {} | Total Seq Length {}".format(dataset_name,folder,args.hist_len,args.total_seq_len))
+            print("[{}] | Dataset: {} | Sample type: {} | Hist length {} | Total Seq Length {}"\
+                  .format(datetime.now(),dataset_name,folder,args.hist_len,args.total_seq_len))
             estimates = sample_dynamic_target_token(args, val_dl, model)
             os.makedirs(f"data/{folder}/{dataset_name}/val_dl/",exist_ok=True)
             estimates['metadata']['text_dict']['text'] = None

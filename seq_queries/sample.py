@@ -569,19 +569,20 @@ def beam_search_lower_bound(hist, num_beams, seq_len, model, excluded_terms,
 
     to_accumulate = ['bs_lower_bound','true_coverage',
                     'restricted_coverage']
-        # (samples x vocab) -> (sub-estimates x vocab)
+    # (samples x vocab) -> (sub-estimates x vocab)
     if sub_estimates:
-        per_step_iters = np.array([
-            [min(sub_est,(vocab_size - len(excluded_terms))**(i+1))
-                            for i in range(seq_len)]
-                for sub_est in sub_estimates])
-        out_dict['model_iters'] = torch.LongTensor(per_step_iters.sum(axis=1))
+        # How much we have left over at each estimate
+        out_dict['model_iters'] = torch.LongTensor(
+            [sum(
+                 [min(sub_est,(vocab_size - len(excluded_terms))**(i+1))
+                  for i in range(seq_len)])
+             for sub_est in sub_estimates])
         out_dict['num_beams'] = torch.LongTensor(sub_estimates)
         for term in to_accumulate:
             out_dict[term] = torch.stack(
                 # (vocab)
                 [out_dict[term][:s].sum(dim=0).flatten()
-                for s in sorted(sub_estimates)
+                for s in sub_estimates
             ]).squeeze().cpu()
     else:
         for term in to_accumulate:
