@@ -200,9 +200,10 @@ def sample_dynamic_target_token(
         model_budget = model_budget_file['model_iters']
     elif 'num_mc_samples' in hybrid_artifacts:
         hybrid_artifacts.remove('num_mc_samples')
-    if (args.estimate_type.__name__ != "mc_pseudo_gt"
-        and 'num_mc_samples' in sample_artifacts):
-        sample_artifacts.remove('num_mc_samples')
+        # sample_artifacts.remove('num_mc_samples')
+    # if (args.estimate_type.__name__ != "mc_pseudo_gt"
+    #     and 'num_mc_samples' in sample_artifacts):
+    #     sample_artifacts.remove('num_mc_samples')
 
     all_excluded_terms = [];
     artifacts = artifact_store_roster[args.estimate_type.__name__]
