@@ -53,7 +53,7 @@ def prep_experiment(
             "data_path": "data/wikitext/wikitext_val-dl.csv",
             "seq_len": 20,
             "vocab_size": 50257,
-            "batch_size":16,
+            "batch_size":2048,
             "use_gpt2":True,
             "checkpoint_path":None,
         },
@@ -169,6 +169,7 @@ def sample_dynamic_target_token(
         "beam_search_is_hybrid": hybrid_artifacts,
         "beam_search_lower_bound":search_artifacts,
         "mc_estimate":sample_artifacts,
+        "mc_pseudo_gt":sample_artifacts,
     }
 
     def _tensor_output(key, data,output=output):
@@ -215,7 +216,6 @@ def sample_dynamic_target_token(
             sample = data_batch[i]
             args.seq_len = args.total_seq_len - args.hist_len
             args.excluded_terms = [dbatch[i,args.total_seq_len].cpu().item()]
-            print(i)
 
             if args.model_budget_filepath:
                 if args.estimate_type.__name__ == "mc_estimate":
@@ -233,11 +233,11 @@ def sample_dynamic_target_token(
                     args.num_beams = args.sub_estimates[-1]
                     assert isinstance(args.num_beams,int),"Num beams for model budget has to be an int"
 
-                model_budget_i += 1
 
             kwargs = vars(args)
             sample_output =args.estimate_type(sample,**kwargs)
             data_list.append(sample_output)
+            model_budget_i += 1
 
         print("",flush=True)
         assert args.estimate_type.__name__ in artifact_store_roster,\
@@ -245,7 +245,6 @@ def sample_dynamic_target_token(
         artifacts = artifact_store_roster[args.estimate_type.__name__]
         for art in artifacts:
             _add_output(art,data_list)
-        # break
 
     for art in artifacts:
         _consolidate_output(art)

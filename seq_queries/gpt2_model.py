@@ -22,7 +22,7 @@ import torch.nn.functional as F
 from transformers import GPT2Tokenizer, GPT2LMHeadModel
 from datasets import load_dataset
 
-from .utils import read_pkl, write_pkl, write_json, _tup_cpu, _tup_gpu_gpt2
+from .utils import read_pkl, write_pkl, write_json, _tup_cpu, _tup_gpu_gpt2, _tup_cpu_gpt2
 
 #################################################################################
 #   Function-Class Declaration
@@ -67,6 +67,7 @@ def load_GPT2_query_lm(device):
     model.model_iters = 0
     model.temperature = None
 
+    @torch.no_grad()
     def get_next_probs(self,
         x, rnn_args=None,
         temperature=1.0,
@@ -74,7 +75,6 @@ def load_GPT2_query_lm(device):
         return_forward_only=False,
         return_logits=True, **kwargs
  ):
-
         hidden_states = rnn_args
         self.model_iters += x.shape[0] * x.shape[1]
         if self.temperature is not None:
@@ -106,7 +106,7 @@ def load_GPT2_query_lm(device):
                 prob_outputs.append(probs.cpu())
             else:
                 prob_outputs.append(logits.cpu())
-            step_outputs.append(step_output['past_key_values'])
+            step_outputs.append(_tup_cpu_gpt2(step_output['past_key_values']))
 
         layer_hiddens = []
         for layer_data in zip(*step_outputs):

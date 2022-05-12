@@ -28,7 +28,7 @@ from seq_queries.model import get_model
 from seq_queries.arguments import get_args, print_args
 from seq_queries.train import load_checkpoint
 from seq_queries.utils import write_pkl, write_json
-from seq_queries.sample import lm_proposal, uniform_proposal, beam_search_lower_bound, mc_estimate
+from seq_queries.sample import lm_proposal, uniform_proposal, beam_search_lower_bound, mc_estimate, mc_pseudo_gt
 from seq_queries.experiments import sample_dynamic_target_token, prep_experiment
 
 #################################################################################
@@ -37,10 +37,19 @@ from seq_queries.experiments import sample_dynamic_target_token, prep_experiment
 
 device=6
 sub_estimates = [10,100,1000]
-model_budget = False
+model_budget = True
+pseudo_gt = False
 folders = ["importance_sampling"]
-datasets = ['wikitext']#,'apps','amazon','moocs','shakespeare']
+datasets = ['amazon']#,'apps','amazon','moocs','shakespeare']
 config_path = "config/testing/sample.yaml"
+
+pseudo_gt_lengths = {
+    "wikitext":[(h,15) for h in reversed(range(12,14,1))],
+    "moocs":[(h,15) for h in reversed(range(5,14,1))],
+    "amazon":[(h,15) for h in reversed(range(5,14,1))],
+    "apps":[(h,15) for h in reversed(range(5,14,1))],
+    "shakespeare": [(h,20) for h in reversed(range(5,19,1))] + [(10,35),(10,60)],
+}
 lengths = {
     "wikitext":[(h,15) for h in reversed(range(12,14,1))],
     "moocs":[(h,15) for h in reversed(range(5,14,1))],
@@ -50,7 +59,8 @@ lengths = {
 }
 
 for dataset_name in datasets:
-    len_info = lengths[dataset_name]
+    len_info = (lengths[dataset_name] if not pseudo_gt
+            else pseudo_gt_lengths[dataset_name])
     print("====="*10)
     print(f"* Running for dataset {dataset_name}")
     print("====="*10)
@@ -72,7 +82,7 @@ for dataset_name in datasets:
     for folder in folders:
         for hist_len,total_seq_len in len_info:
             args = copy.deepcopy(prep_dict['args'])
-            args.estimate_type = mc_estimate
+            args.estimate_type = mc_pseudo_gt if pseudo_gt else mc_estimate
             args.proposal_func = lm_proposal
             args.sub_estimates = sub_estimates
             args.num_mc_samples = args.sub_estimates[-1]
@@ -92,8 +102,8 @@ for dataset_name in datasets:
                     print("====="*10)
                     continue
 
-            print("[{}] | Dataset: {} | Sample type: {} | Num samples: {} | Hist length {} | Total Seq Length {}"\
-                  .format(datetime.now(),dataset_name,folder,args.num_mc_samples,args.hist_len,args.total_seq_len))
+            print("[{}] | Dataset: {} | Sample type: {} | Num samples: {} | Hist length {} | Total Seq Length {} | Pseudo GT: {}"\
+                  .format(datetime.now(),dataset_name,folder,args.num_mc_samples,args.hist_len,args.total_seq_len, pseudo_gt))
             estimates = sample_dynamic_target_token(args, val_dl, model)
             os.makedirs(f"data/{folder}/{dataset_name}/val_dl/",exist_ok=True)
             estimates['metadata']['text_dict']['text'] = None
@@ -107,7 +117,8 @@ for dataset_name in datasets:
 
             write_pkl(estimates,
                     f"data/{folder}/{dataset_name}/val_dl/val-dl_{dataset_name}_{folder.replace('_','-')}_" +
-                    f"{args.hist_len}h_{args.total_seq_len}s_{args.num_mc_samples}mc{'_' + 'model-budget' if args.model_budget_filepath else  ''}.pkl")
+                    f"{args.hist_len}h_{args.total_seq_len}s_{args.num_mc_samples}mc" +
+                    f"{'_' + 'model-budget' if args.model_budget_filepath else ('_pgt' if pseudo_gt else  '')}.pkl")
             estimates=None
             print("====="*10)
 

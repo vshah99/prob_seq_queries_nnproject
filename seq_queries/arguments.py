@@ -13,7 +13,7 @@ from datetime import datetime
 from .utils import print_log, read_yaml
 from .sample import (
     mc_estimate, beam_search_lower_bound,beam_search_is_hybrid, uniform_proposal, lm_proposal,
-    geom_interp, lin_interp)
+    mc_pseudo_gt, geom_interp, lin_interp)
 
 
 #######################################################################
@@ -26,6 +26,7 @@ def _str2estimate(estimate):
     roster = {"sample":mc_estimate,
               "search":beam_search_lower_bound,
               "search_sample":beam_search_is_hybrid,
+              "sample_pseudo_gt":mc_pseudo_gt,
               }
     return roster[estimate]
 
@@ -93,7 +94,6 @@ def _merge_configs(primary, secondary):
 
 def general_args(parser):
     group = parser.add_argument_group("General set arguments for miscelaneous utilities.")
-    #group.add_argument("--json_config_path", default=None, help="Path to json file containing arguments to be parsed.")
     group.add_argument("--seed", type=int, default=1234321, help="Seed for all random processes.")
     group.add_argument("--dont_print_args", type=_str2bool,default=False, help="Specify to disable printing of arguments.")
     group.add_argument("--cuda", type=_str2bool,default=True, help="Convert model and data to GPU.")
@@ -149,6 +149,9 @@ def sampling_args(parser):
     group.add_argument("--interp_func",  type=_str2interp_func,default="linear", help="Get inpterpolation function for search coverage")
     group.add_argument("--excluded_terms", type=_str2list, default=[], help="List of excluded terms")
     group.add_argument("--sub_estimates", type=_str2list, default=[], help="Sub-estimates (to track noise), all must be <= num_samples")
+    group.add_argument("--min_num_mc_samples", type=int, default=10000, help="Minimum number of samples for pseudo ground truth")
+    group.add_argument("--max_num_mc_samples", type=int, default=100000, help="Maximum number of samples for pseudo ground truth")
+    group.add_argument("--variance_epsilon", type=float, default=1e-7, help="Variance threshold to stop sampling for pseudo ground truth")
     group.add_argument("--model_budget_filepath", type=str, default=None, help="Filepath to extract model budgets for another run (usually hybrid file for imp. samp.)")
     group.add_argument("--store_intermediate_lbs", type=_str2bool,default=True,help="Store intermediate lower bounds.")
     group.add_argument("--top_k", type=int, default=1, help="Top k beams/samples to take")

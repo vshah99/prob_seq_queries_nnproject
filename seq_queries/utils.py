@@ -28,6 +28,13 @@ def _tup_cpu(tup, force=False):
     elif tup: return tup.cpu()
     else: return tup
 
+
+def _tup_cpu_gpt2(tup, force=False):
+    if not tup: return tup
+    elif force or isinstance(tup, tuple):
+        return tuple([(t1.cpu(),t2.cpu()) for (t1,t2) in tup])
+    else: return tup.cpu()
+
 def _tup_gpu_gpt2(tup, device,force=False):
     if not tup: return tup
     elif force or isinstance(tup, tuple):
@@ -220,7 +227,7 @@ def top_k_top_p_filtering(logits, top_k=0, top_p=0.0,min_var=False, filter_value
 # Utilities for determining number of beam search beams with a budget
 #######################################################################
 
-def compute_num_beams_from_budget(vocab_size, init_num_beams, seq_len, excluded_terms):
+def compute_num_beams_from_budget(vocab_size, beam, seq_len, excluded_terms):
     """TODO: Docstring for compute_num_beams.
 
     :vocab_size: TODO
@@ -230,16 +237,24 @@ def compute_num_beams_from_budget(vocab_size, init_num_beams, seq_len, excluded_
     """
     num_excl = len(excluded_terms)
     vocab_size -= num_excl # Restricted vocab
-    if init_num_beams < vocab_size:
-        return init_num_beams
+    if beam <= vocab_size:
+        return beam
 
-    extra_compute =0; rem_seq_len=seq_len
-    while init_num_beams > vocab_size:
-        extra_compute+= init_num_beams - vocab_size
-        vocab_size = vocab_size**2
-        rem_seq_len -= 1
-    return init_num_beams + int(math.ceil(
-        (extra_compute)/max(rem_seq_len,1)))
+    extra = 0
+    final_beams = []
+    for i in range(seq_len):
+        curr_vocab = vocab_size**(i+1)
+        if beam < curr_vocab and extra == 0:
+            return beam[-1]
+
+        extra_piece = extra//(seq_len - i)
+        leftover = max((beam + extra_piece) - curr_vocab,0)
+        new_beam = min(extra_piece + beam, curr_vocab)
+        extra -= (extra_piece - leftover)
+
+        final_beams.append(new_beam)
+    return final_beams[-1]
+
 
 def set_random_seed(args):
     """Set random seed for reproducibility."""

@@ -35,16 +35,16 @@ from seq_queries.experiments import sample_dynamic_target_token, prep_experiment
 #   Function-Class Declaration
 #################################################################################
 
-device=1
+device=7
 folders = ["beam_search"]
-datasets = ['wikitext']#,'shakespeare','amazon','apps','moocs']
-model_budget = False
+datasets = ['shakespeare','apps','moocs', 'amazon']
+model_budget = True
 config_path = "config/testing/sample.yaml"
 lengths_coverage = {
     # Regular GT
     "wikitext":[(13,15,0.8)],
     "moocs":[(13,15,0.98), (12,15,0.98)],
-    "amazon":[(12,15,0.98),(13,15,0.98), (12,15,0.98), (11,15,0.98)],
+    "amazon":[(12,15,0.98),(13,15,0.98), (11,15,0.98)],
     "apps":[(13,15,0.98), (12,15,0.98)],
     "shakespeare":[(18,20,0.98), (17,20,0.98)],
 

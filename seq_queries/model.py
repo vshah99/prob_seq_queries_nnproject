@@ -238,7 +238,7 @@ SUPPORTED_RNN = {
 
 
 def get_model(args):
-    if args.use_gpt2: return load_GPT2_query_lm(args.device)
+    if args.use_gpt2: return load_GPT2_query_lm(args.device).eval()
     rnn = SUPPORTED_RNN[args.rnn_type](
         input_size=args.vocab_size,
         hidden_size=args.hidden_size,

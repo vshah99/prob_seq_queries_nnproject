@@ -90,6 +90,80 @@ def lm_proposal(hists, seq_len, model, vocab_size, excluded_terms,
         "next_log_dist": torch.log_softmax(logits, dim=-1),
     }
 
+
+@torch.no_grad()
+def mc_pseudo_gt(hist, num_mc_samples, seq_len, model, excluded_terms, proposal_func,
+                 min_num_mc_samples, max_num_mc_samples, variance_epsilon, vocab_size,
+                 var_check_interval=1000, batch_size=128,temperature=1, top_k=0, top_p=0.0,
+                 device='cpu', cat_list = ['sample_estimates'],
+                sub_estimates=None,**kwargs):
+    variance_epsilon=1e-6
+    model.model_iters = 0
+    assert(len(hist.shape) == 1)  # (hist_seq_len), Only conditions on a single history
+    # assert(len(excluded_terms) == 1) # For most experiments
+    temp_out_dict = defaultdict(list)
+    out_dict = defaultdict(list)
+    samp_est_var = 1.0 # Some general seeding
+    total_samples = 0
+    remaining_samples = min_num_mc_samples
+    while ((samp_est_var > variance_epsilon) and
+           (total_samples < max_num_mc_samples)):
+        out_dict = defaultdict(list)
+        total_samples += remaining_samples
+        while remaining_samples > 0:
+            sample_out = proposal_func(
+                hists=hist.unsqueeze(0).expand(min(remaining_samples, batch_size), -1),
+                seq_len=seq_len,
+                model=model,
+                vocab_size=vocab_size,
+                excluded_terms=excluded_terms,
+                top_k=top_k,
+                top_p=top_p,
+                device=device,
+                batch_size=batch_size,
+                temperature=temperature,
+            )
+            remaining_samples -= batch_size
+            term_log_prob = sample_out["next_log_dist"] + sample_out["model_log_prob"] - sample_out["proposal_log_prob"]
+
+            temp_out_dict['sample_estimates'].append(term_log_prob.exp().cpu())
+            # out_dict['q_log_prob'].append(sample_out['proposal_log_prob'])
+
+        for item in cat_list:
+            out_dict[item] = torch.cat(temp_out_dict[item],dim=0)
+
+        samp_est_var = (out_dict['sample_estimates'][:,excluded_terms[0]].var()/
+                        out_dict['sample_estimates'].shape[0])
+        remaining_samples = var_check_interval
+
+    if sub_estimates:
+        out_dict['num_mc_samples'] = torch.LongTensor(sub_estimates)
+        # (samples x vocab) -> (sub-estimates x vocab)
+        out_dict['sample_estimates'] = torch.stack(
+            # (vocab)
+            [out_dict['sample_estimates'][:s].mean(dim=0).flatten()
+             for s in sorted(sub_estimates)
+        ]).squeeze()
+        out_dict['sample_estimate_var'] = torch.stack(
+            # (vocab)
+            [out_dict['sample_estimates'][:s].var(dim=0).flatten()
+             for s in sorted(sub_estimates)
+        ]).squeeze()
+        out_dict['model_iters'] = torch.LongTensor(
+            [sub_est * seq_len for sub_est in sub_estimates]
+        )
+
+    else:
+        out_dict['model_iters'] = torch.LongTensor([model.model_iters])
+        out_dict['sample_estimate_var'] =torch.var(out_dict['sample_estimates'],dim=0)
+        out_dict['sample_estimate_mean'] =out_dict['sample_estimates'].mean(dim=0)
+    print(samp_est_var, variance_epsilon,total_samples)
+    return out_dict
+
+#######################################################################
+# Hybrid no replacement
+#######################################################################
+
 @torch.no_grad()
 def mc_estimate(hist, num_mc_samples, seq_len, model, excluded_terms, proposal_func,
                 vocab_size, batch_size=128,temperature=1, top_k=0, top_p=0.0, device='cpu',
@@ -136,7 +210,7 @@ def mc_estimate(hist, num_mc_samples, seq_len, model, excluded_terms, proposal_f
              for s in sorted(sub_estimates)
         ]).squeeze()
         out_dict['model_iters'] = torch.LongTensor(
-            [sub_est * seq_len for sub_est in sub_estimates]
+            [sub_est * seq_len for sub_est in sorted(sub_estimates)]
         )
 
     else:
@@ -549,7 +623,7 @@ def beam_search_lower_bound(hist, num_beams, seq_len, model, excluded_terms,
                 rnn_args = rnn_args[..., seq_inds, :]
 
         num_beams_over_time.append(cur_log_probs.shape[0])
-        print(num_beams_over_time)
+        # print(num_beams_over_time)
 
     logits, states = model.get_next_probs(beams, rnn_args=rnn_args, device=device, return_logits=True,
                                         max_batch_size=batch_size)
@@ -574,26 +648,33 @@ def beam_search_lower_bound(hist, num_beams, seq_len, model, excluded_terms,
                              else torch.stack(intermediate_lbs)),
     }
 
-    to_accumulate = ['bs_lower_bound','true_coverage',
-                    'restricted_coverage']
     # (samples x vocab) -> (sub-estimates x vocab)
+    to_accumulate = ['true_coverage', 'restricted_coverage']
     if sub_estimates:
+        _, lb_inds = torch.sort(out_dict['bs_lower_bound'][:,excluded_terms[0]],dim=0,
+                                                descending=True)
         # How much we have left over at each estimate
-        out_dict['model_iters'] = torch.LongTensor(
-            [sum(
-                 [min(sub_est,(vocab_size - len(excluded_terms))**(i+1))
-                  for i in range(seq_len)])
+        model_breakout = torch.LongTensor(
+            [[min(sub_est,(vocab_size - len(excluded_terms))**(i+1))
+                  for i in range(seq_len)]
              for sub_est in sub_estimates])
+        out_dict['model_iters'] = model_breakout.sum(dim=-1)
         out_dict['num_beams'] = torch.LongTensor(sub_estimates)
+        out_dict['bs_lower_bound'] = torch.stack(
+                # (vocab)
+                [out_dict['bs_lower_bound'][lb_inds][:s].sum(dim=0).flatten()
+                for s in sub_estimates]).squeeze().cpu()
         for term in to_accumulate:
+            out_dict[term] = out_dict[term][lb_inds]
             out_dict[term] = torch.stack(
                 # (vocab)
-                [out_dict[term][:s].sum(dim=0).flatten()
+                [out_dict[term][:s].sum().flatten()
                 for s in sub_estimates
             ]).squeeze().cpu()
     else:
+        out_dict['bs_lower_bound'] = out_dict['bs_lower_bound'].sum(dim=0)
         for term in to_accumulate:
-            out_dict[term] = out_dict[term].sum(dim=0)
+            out_dict[term] = out_dict[term].sum()
 
     return out_dict
 
