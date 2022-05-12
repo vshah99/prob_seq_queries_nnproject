@@ -149,11 +149,11 @@ def prepare_mobile_app_data_by_user(
 # General load information
 #######################################################################
 
-def load_wikitext_data(file_name, args, num_samples=100):
+def load_wikitext_data(file_name, args):
     df = pd.read_csv(file_name)
 
     return {
-        "text": df[:num_samples].values,
+        "text": df.values,
         "vocab": None,
         "vocab_size": 50267,
         "char_to_id": None,

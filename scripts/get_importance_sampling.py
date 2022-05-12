@@ -34,38 +34,38 @@ from seq_queries.experiments import sample_dynamic_target_token, prep_experiment
 #   Function-Class Declaration
 #################################################################################
 
-device=3
+device=7
 sub_estimates = [10,100,1000]
 model_budget = False
-pseudo_gt = False
-max_num_queries = 100
+pseudo_gt = True
+max_num_queries = None
 folders = ["importance_sampling"] if not pseudo_gt else ['pseudo_gt']
-# datasets = ['shakespeare','apps','amazon','moocs']
-datasets = ['wikitext']
+datasets = ['shakespeare','apps','amazon','moocs']
+# datasets = ['wikitext']
 config_path = "config/testing/sample.yaml"
 
 pseudo_gt_lengths = {
-    "wikitext":[(h,15) for h in reversed(range(5,12,1))],
-    "moocs":[(h,15) for h in [11,8,4]],
-    "amazon":[(h,15) for h in [11,8,4]],
-    "apps":[(h,15) for h in [11,8,4]],
-    "shakespeare": [(h,20) for h in [16,12,8]],
+    "moocs":[(h,15) for h in [11,8,5]],
+    "amazon":[(h,15) for h in [11,8,5]],
+    "apps":[(h,15) for h in [11,8,5]],
+    "shakespeare": [(h,20) for h in [16,12,10]],
 }
 lengths = {
 
     # # Long lengths
+    # "wikitext":[(h,15) for h in reversed(range(12,14,1))],
+    "moocs":[(h,15) for h in [11,8,5]],
+    "amazon":[(h,15) for h in [11,8,5]],
+    "apps":[(h,15) for h in [11,8,5]],
+    "shakespeare": [(h,20) for h in [16,12,10]],
+
+    # # Short lengths
     # "wikitext":[(h,15) for h in reversed(range(12,14,1))],
     # "moocs":[(h,15) for h in reversed(range(12,14,1))],
     # "amazon":[(h,15) for h in reversed(range(12,14,1))],
     # "apps":[(h,15) for h in reversed(range(12,14,1))],
     # "shakespeare": [(h,20) for h in reversed(range(17,19,1))]
 
-    # Short lengths
-    "wikitext":[(h,15) for h in reversed(range(12,14,1))],
-    "moocs":[(h,15) for h in reversed(range(12,14,1))],
-    "amazon":[(h,15) for h in reversed(range(12,14,1))],
-    "apps":[(h,15) for h in reversed(range(12,14,1))],
-    "shakespeare": [(h,20) for h in reversed(range(17,19,1))]
 }
 
 for dataset_name in datasets:
@@ -74,7 +74,7 @@ for dataset_name in datasets:
     print("====="*10)
     print(f"* Running for dataset {dataset_name}")
     print("====="*10)
-    extra_args = {"max_num_queries":100}
+    extra_args = {"max_num_queries":max_num_queries}
     prep_dict = prep_experiment(config_path,
                                 dataset_name,
                                 device=device,
@@ -103,7 +103,8 @@ for dataset_name in datasets:
             if model_budget:
                 args.model_budget_filepath = (f"/home/showalte/research/prob_seq_queries/" +
                                             f"data/beam_search_is_hybrid/{dataset_name}/val_dl/val-dl_" +
-                    f"{dataset_name}_beam-search-is-hybrid_{args.hist_len}h_{args.total_seq_len}s_{args.num_mc_samples}mc.pkl")
+                    f"{dataset_name}_beam-search-is-hybrid_{args.hist_len}h_{args.total_seq_len}s_{args.num_mc_samples}mc" +
+                    f"{f'_{max_num_queries}q' if max_num_queries else ''}.pkl")
                 try:
                     assert os.path.exists(args.model_budget_filepath),\
                         f"Model budget filepath {args.model_budget_filepath} does not exist"
@@ -127,9 +128,10 @@ for dataset_name in datasets:
             # sys.exit(1)
 
             write_pkl(estimates,
-                    f"data/{folder}/{dataset_name}/val_dl/val-dl_{dataset_name}_{folder.replace('_','-')}_" +
-                    f"{args.hist_len}h_{args.total_seq_len}s_{args.num_mc_samples}mc" +
-            f"{'_' + 'model-budget' if args.model_budget_filepath else ('_pgt' if pseudo_gt else (f'_{args.max_num_queries}q' if args.max_num_queries else ''))}.pkl")
+            f"data/{folder}/{dataset_name}/val_dl/val-dl_{dataset_name}_{folder.replace('_','-')}_" +
+            f"{args.hist_len}h_{args.total_seq_len}s_{args.num_mc_samples}mc" +
+            f"{'_' + 'model-budget' if args.model_budget_filepath else '_pgt' if pseudo_gt else ''}" +
+            f"{f'_{max_num_queries}q' if max_num_queries else ''}.pkl")
             estimates=None
             print("====="*10)
 

@@ -275,6 +275,12 @@ def tree_is_estimate(
     # Finish sampling incomplete sequences from model
     model_iters = [model.model_iters + num_remaining_steps.sum()]
 
+    # print(num_remaining_steps.shape)
+    # print(num_remaining_steps.max())
+    # print(num_remaining_steps.sum())
+    # print(model_iters)
+    # print(model.model_iters)
+    # sys.exit(1)
     if sub_estimates:
         model_iters = []
         samples_per_effort = [

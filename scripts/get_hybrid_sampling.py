@@ -43,10 +43,10 @@ config_path = "config/testing/sample.yaml"
 lengths = {
 
     # Long hybrid
-    "moocs":[(h,15) for h in [11,8,4]],
-    "amazon":[(h,15) for h in [11,8,4]],
-    "apps":[(h,15) for h in [11,8,4]],
-    "shakespeare": [(h,20) for h in [16,12,8]],
+    "moocs":[(h,15) for h in [11,8,5]],
+    "amazon":[(h,15) for h in [11,8,5]],
+    "apps":[(h,15) for h in [11,8,5]],
+    "shakespeare": [(h,20) for h in [10,16,12,10]],
 
     # # Short hybrid
     "wikitext":[(h,15) for h in reversed(range(12,14,1))],
@@ -61,7 +61,7 @@ for dataset_name in datasets:
     print("====="*10)
     print(f"* Running for dataset {dataset_name}")
     print("====="*10)
-    extra_args = {"max_num_queries":100}
+    extra_args = {"max_num_queries":max_num_queries}
     prep_dict = prep_experiment(config_path,
                                 dataset_name,
                                 device=device,
