@@ -23,7 +23,6 @@ import torch
 from collections import defaultdict
 
 
-from seq_queries.sample import sample
 from seq_queries.model import get_model
 from seq_queries.arguments import get_args, print_args
 from seq_queries.train import load_checkpoint
@@ -38,6 +37,7 @@ from seq_queries.experiments import sample_dynamic_target_token, prep_experiment
 device=5
 sub_estimates = [10,100,1000]
 model_budget = True
+max_num_queries=None
 folders = ["random_sampling"]
 datasets = ['shakespeare',"amazon","apps",'moocs']
 config_path = "config/testing/sample.yaml"
@@ -53,7 +53,7 @@ for dataset_name in datasets:
     print("====="*10)
     print(f"* Running for dataset {dataset_name}")
     print("====="*10)
-    extra_args = {}
+    extra_args = {"max_num_queries":100}
     prep_dict = prep_experiment(config_path,
                                 dataset_name,
                                 device=device,
@@ -106,7 +106,8 @@ for dataset_name in datasets:
 
             write_pkl(estimates,
                     f"data/{folder}/{dataset_name}/val_dl/val-dl_{dataset_name}_{folder.replace('_','-')}_" +
-                    f"{args.hist_len}h_{args.total_seq_len}s_{args.num_mc_samples}mc{'_' + 'model-budget' if args.model_budget_filepath else  ''}.pkl")
+                    f"{args.hist_len}h_{args.total_seq_len}s_{args.num_mc_samples}mc" +
+                    f"{'_' + 'model-budget' if args.model_budget_filepath else (f'_{args.max_num_queries}q' if args.max_num_queries else '')}.pkl")
             estimates=None
             print("====="*10)
 

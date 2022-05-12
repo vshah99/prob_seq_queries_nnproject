@@ -15,11 +15,27 @@ import torch.nn.functional as F
 # Data
 #######################################################################
 
-def _hidden_state_select(state,i):
-    if isinstance(state,tuple):
-        state = tuple([s[...,i,:] for s in state])
+def _hidden_state_select(state,i,
+                         is_root = False,
+                         uses_attention=False):
+    if uses_attention:
+        state = tuple(
+            # (layers, (2, (samples, num_heads, seq_len, dim)))
+            [
+                (h1[i], h2[i])
+                for (h1,h2) in state
+            ]
+        )
+        if not is_root:
+            state = tuple(
+                [(h1[...,-1,:].unsqueeze(-2),
+                  h2[...,-1,:].unsqueeze(-2))
+                 for (h1,h2) in state])
     else:
-        state = state[...,i,:]
+        if isinstance(state,tuple):
+            state = tuple([s[...,i,:] for s in state])
+        else:
+            state = state[...,i,:]
     return state
 
 def _tup_cpu(tup, force=False):

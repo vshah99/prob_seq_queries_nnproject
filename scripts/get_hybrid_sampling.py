@@ -22,8 +22,6 @@ import numpy as np
 import torch
 from collections import defaultdict
 
-
-from seq_queries.sample import sample
 from seq_queries.model import get_model
 from seq_queries.arguments import get_args, print_args
 from seq_queries.train import load_checkpoint
@@ -35,16 +33,27 @@ from seq_queries.experiments import sample_dynamic_target_token, prep_experiment
 #   Function-Class Declaration
 #################################################################################
 
-device=5
+device=2
 sub_estimates = [10,100,1000]
 folders = ["beam_search_is_hybrid"]
 datasets = ['shakespeare','amazon','moocs','apps']
+max_num_queries = 100
+# datasets = ['wikitext']
 config_path = "config/testing/sample.yaml"
 lengths = {
-    "moocs":[(h,15) for h in reversed(range(12,14,1))],
-    "amazon":[(h,15) for h in reversed(range(12,14,1))],
-    "apps":[(h,15) for h in reversed(range(12,14,1))],
-    "shakespeare": [(h,20) for h in reversed(range(17,19,1))],
+
+    # Long hybrid
+    "moocs":[(h,15) for h in [11,8,4]],
+    "amazon":[(h,15) for h in [11,8,4]],
+    "apps":[(h,15) for h in [11,8,4]],
+    "shakespeare": [(h,20) for h in [16,12,8]],
+
+    # # Short hybrid
+    "wikitext":[(h,15) for h in reversed(range(12,14,1))],
+    # "moocs":[(h,15) for h in reversed(range(12,14,1))],
+    # "amazon":[(h,15) for h in reversed(range(12,14,1))],
+    # "apps":[(h,15) for h in reversed(range(12,14,1))],
+    # "shakespeare": [(h,20) for h in reversed(range(17,19,1))],
 }
 
 for dataset_name in datasets:
@@ -52,9 +61,11 @@ for dataset_name in datasets:
     print("====="*10)
     print(f"* Running for dataset {dataset_name}")
     print("====="*10)
+    extra_args = {"max_num_queries":100}
     prep_dict = prep_experiment(config_path,
                                 dataset_name,
-                                device=device)
+                                device=device,
+                                extra_args=extra_args)
     prep_dict['args'].text_dict['text'] = None
     args = prep_dict['args']
     val_dl = prep_dict['val_dl']
@@ -91,7 +102,10 @@ for dataset_name in datasets:
 
             args.num_mc_samples = sub_estimates[-1]
             write_pkl(estimates,
-                    f"data/{folder}/{dataset_name}/val_dl/val-dl_{dataset_name}_{folder.replace('_','-')}_{args.hist_len}h_{args.total_seq_len}s_{args.num_mc_samples}mc.pkl")
+                    f"data/{folder}/{dataset_name}/val_dl/val-dl_{dataset_name}_" +
+                    f"{folder.replace('_','-')}_{args.hist_len}h_{args.total_seq_len}s_" +
+                    f"{args.num_mc_samples}mc" +
+                    f"{f'_{args.max_num_queries}q' if args.max_num_queries else ''}.pkl")
             estimates=None
             print("====="*10)
 

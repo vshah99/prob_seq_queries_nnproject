@@ -23,7 +23,6 @@ import torch
 from collections import defaultdict
 
 
-from seq_queries.sample import sample
 from seq_queries.model import get_model
 from seq_queries.arguments import get_args, print_args
 from seq_queries.train import load_checkpoint

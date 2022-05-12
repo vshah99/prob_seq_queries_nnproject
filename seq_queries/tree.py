@@ -66,15 +66,15 @@ class BSNode(object):
 
     def __str__(self):
         return "Node({})".format(
-            "".join([self.tree.id_to_char[s] for s in self.lineage]))
+            "".join([self.tree.id_to_char.get(s) for s in self.lineage]))
 
     def __unicode__(self):
         return u"Node({})".format(
-            "".join([self.tree.id_to_char[s] for s in self.lineage]))
+            "".join([self.tree.id_to_char.get(s) for s in self.lineage]))
 
     def __repr__(self):
         return "Node({})".format(
-            "".join([self.tree.id_to_char[s] for s in self.lineage]))
+            "".join([self.tree.id_to_char.get(s) for s in self.lineage]))
 
 class BeamSearchSampleTree(object):
 
@@ -86,6 +86,7 @@ class BeamSearchSampleTree(object):
     def __init__(
         self,
         text_dict,
+        default_size=50267,
     ):
         """TODO: to be defined.
 
@@ -94,8 +95,8 @@ class BeamSearchSampleTree(object):
         """
         self.id_to_char = text_dict['id_to_char']
         self.char_to_id = text_dict['char_to_id']
-        self.vocab_size = len(self.char_to_id)
-        self.BOS = self.char_to_id['<BOS>']
+        self.vocab_size = len(self.char_to_id) if self.char_to_id else default_size
+        self.BOS = self.char_to_id['<BOS>'] if self.char_to_id else 0
         self.depth_sizes = [0]
         self.depth_dict = defaultdict(list)
 
@@ -104,13 +105,16 @@ class BeamSearchSampleTree(object):
         log_q_conditionals,
         log_p_conditionals,
         hidden_state,
+        uses_attention=False,
     ):
         self.root = BSNode(self.BOS,None,
-                           log_q_conditionals,
-                           log_p_conditionals,
-                           _hidden_state_select(hidden_state,0),
-                           tree=self,
-                           depth=0)
+            log_q_conditionals,
+            log_p_conditionals,
+            _hidden_state_select(hidden_state,0,
+                                is_root=True,
+                                uses_attention=uses_attention),
+            tree=self,
+            depth=0)
         self._add_depth(0,self.root)
         return [self.root]
 
@@ -120,6 +124,7 @@ class BeamSearchSampleTree(object):
         log_p_conditionals,
         hidden_states,
         parent_ids,depth,
+        uses_attention=False,
     ):
         #(beams x vocab)
         new_parents = []
@@ -129,10 +134,11 @@ class BeamSearchSampleTree(object):
         assert parent_ids.shape[0] == symbols.shape[0] == log_q_conditionals.shape[0] == log_p_conditionals.shape[0],\
             "Parent ids were of shape {} but symbols were of shape {} and q was of shape {} and p was of shape {} and h_state was of shape {}"\
             .format(parent_ids.shape,symbols.shape, log_q_conditionals.shape, log_p_conditionals.shape,hidden_states[0].shape)
-        
+
         for i in range(symbols.shape[0]):
             s,pid,q,p,h = (symbols[i],parent_ids[i],log_q_conditionals[i],
-                            log_p_conditionals[i],_hidden_state_select(hidden_states,i))
+                            log_p_conditionals[i],_hidden_state_select(hidden_states,i,uses_attention),
+                           )
             new_parents.append(self._add_child_node(s.item(),parents[pid],q,p,h,depth))
 
         return new_parents
@@ -215,14 +221,15 @@ class BeamSearchSampleTree(object):
             self._adjust_marginal_probabilities_by_depth(i)
         self._remove_terminal_depth()
 
-    def sample_sequence(self, seq_len):
+    def sample_sequence(self, seq_len, uses_attention=False):
         cur_node = self.root
         depth = 0
         log_p_total, log_q_total = 0.0, 0.0
-        sample = []
+        sample = []; attns = []
         while depth < seq_len:
             next_step = torch.distributions.Categorical(probs=cur_node.q_conditionals).sample()
             sample.append(next_step.item())
+            if uses_attention: attns.append(cur_node.hidden_state)
             log_p_total += cur_node.p_conditionals.log()[next_step]
             log_q_total += cur_node.q_conditionals.log()[next_step]
             depth += 1
@@ -230,5 +237,18 @@ class BeamSearchSampleTree(object):
                 cur_node = cur_node.children[next_step.item()]
             else:
                 break
-        
-        return log_p_total, log_q_total, cur_node.hidden_state, depth, next_step, sample
+
+        if uses_attention:
+            # (seq_len, (num_layers, (2, (samps, heads, seq, shape))))
+            layer_hiddens = []
+            for seq_data in zip(*attns):
+                print(len(seq_data))
+                layer_data= list(zip(*seq_data))
+                print(len(layer_data[0]))
+                layer_hiddens.append(
+                    (torch.cat(layer_data[0],dim=-2),
+                    torch.cat(layer_data[1],dim=-2)))
+
+            hidden_state = tuple(layer_hiddens)
+        else: hidden_state = cur_node.hidden_state
+        return log_p_total, log_q_total, hidden_state, depth, next_step, sample

@@ -36,6 +36,8 @@ def process_amazon_data(text_dict, args,
         train_ids = ids[split_pos[:int(num_seqs*tr_split)], :]
     if need_val:
         valid_ids = ids[split_pos[int(num_seqs*tr_split):int(num_seqs*(tr_split+v_split))], :]
+        if args.max_num_queries:
+            valid_ids = valid_ids[:args.max_num_queries]
     if need_test:
         test_ids = ids[split_pos[int(num_seqs*(tr_split+v_split)):], :]
 
@@ -56,6 +58,8 @@ def process_amazon_data(text_dict, args,
                     split_pos[int(num_seqs*tr_split):int(num_seqs*(tr_split+v_split))]
                 ] >= args.min_phase_shift,:
             ]
+            if args.max_num_queries:
+                valid_ids = valid_ids[:args.max_num_queries]
 
         if need_test:
             test_ids = test_ids[
@@ -145,11 +149,11 @@ def prepare_mobile_app_data_by_user(
 # General load information
 #######################################################################
 
-def load_wikitext_data(file_name, args):
+def load_wikitext_data(file_name, args, num_samples=100):
     df = pd.read_csv(file_name)
 
     return {
-        "text": df.values,
+        "text": df[:num_samples].values,
         "vocab": None,
         "vocab_size": 50267,
         "char_to_id": None,
@@ -163,6 +167,8 @@ def process_wikitext_data(text_dict, args,**kwargs): # batch_size, seq_len, dev=
 
     ids = text_dict['text']
     ids = torch.LongTensor(ids)
+    if args.max_num_queries:
+        ids = ids[:args.max_num_queries]
 
     valid_dl = torch.utils.data.DataLoader(
         ids,
@@ -257,6 +263,9 @@ def process_app_mooc_data(text_dict, args,**kwargs): # batch_size, seq_len, dev=
     valid_ids = ids[split_pos[int(num_seqs*tr_split):int(num_seqs*(tr_split+v_split))], :]
     test_ids = ids[split_pos[int(num_seqs*(tr_split+v_split)):], :]
 
+    if args.max_num_queries:
+        valid_ids = valid_ids[:args.max_num_queries]
+
     train_dl = torch.utils.data.DataLoader(
         train_ids,
         batch_size=args.batch_size,
@@ -301,6 +310,9 @@ def process_text_data(text_dict, args,**kwargs): # batch_size, seq_len, dev=torc
     train_ids = ids[split_pos[:int(num_seqs*tr_split)], :]
     valid_ids = ids[split_pos[int(num_seqs*tr_split):int(num_seqs*(tr_split+v_split))], :]
     test_ids = ids[split_pos[int(num_seqs*(tr_split+v_split)):], :]
+
+    if args.max_num_queries:
+        valid_ids = valid_ids[:args.max_num_queries]
 
     train_dl = torch.utils.data.DataLoader(
         train_ids,

@@ -200,6 +200,8 @@ def sample_dynamic_target_token(
         model_budget = model_budget_file['model_iters']
     elif 'num_mc_samples' in hybrid_artifacts:
         hybrid_artifacts.remove('num_mc_samples')
+    if (args.estimate_type.__name__ != "mc_pseudo_gt"
+        and 'num_mc_samples' in sample_artifacts):
         sample_artifacts.remove('num_mc_samples')
 
     all_excluded_terms = [];
@@ -233,7 +235,6 @@ def sample_dynamic_target_token(
                     args.num_beams = args.sub_estimates[-1]
                     assert isinstance(args.num_beams,int),"Num beams for model budget has to be an int"
 
-
             kwargs = vars(args)
             sample_output =args.estimate_type(sample,**kwargs)
             data_list.append(sample_output)
@@ -245,6 +246,7 @@ def sample_dynamic_target_token(
         artifacts = artifact_store_roster[args.estimate_type.__name__]
         for art in artifacts:
             _add_output(art,data_list)
+        # break
 
     for art in artifacts:
         _consolidate_output(art)

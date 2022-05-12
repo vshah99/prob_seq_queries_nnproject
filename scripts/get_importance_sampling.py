@@ -23,7 +23,6 @@ import torch
 from collections import defaultdict
 
 
-from seq_queries.sample import sample
 from seq_queries.model import get_model
 from seq_queries.arguments import get_args, print_args
 from seq_queries.train import load_checkpoint
@@ -35,27 +34,38 @@ from seq_queries.experiments import sample_dynamic_target_token, prep_experiment
 #   Function-Class Declaration
 #################################################################################
 
-device=6
+device=3
 sub_estimates = [10,100,1000]
-model_budget = True
+model_budget = False
 pseudo_gt = False
-folders = ["importance_sampling"]
-datasets = ['amazon']#,'apps','amazon','moocs','shakespeare']
+max_num_queries = 100
+folders = ["importance_sampling"] if not pseudo_gt else ['pseudo_gt']
+# datasets = ['shakespeare','apps','amazon','moocs']
+datasets = ['wikitext']
 config_path = "config/testing/sample.yaml"
 
 pseudo_gt_lengths = {
-    "wikitext":[(h,15) for h in reversed(range(12,14,1))],
-    "moocs":[(h,15) for h in reversed(range(5,14,1))],
-    "amazon":[(h,15) for h in reversed(range(5,14,1))],
-    "apps":[(h,15) for h in reversed(range(5,14,1))],
-    "shakespeare": [(h,20) for h in reversed(range(5,19,1))] + [(10,35),(10,60)],
+    "wikitext":[(h,15) for h in reversed(range(5,12,1))],
+    "moocs":[(h,15) for h in [11,8,4]],
+    "amazon":[(h,15) for h in [11,8,4]],
+    "apps":[(h,15) for h in [11,8,4]],
+    "shakespeare": [(h,20) for h in [16,12,8]],
 }
 lengths = {
+
+    # # Long lengths
+    # "wikitext":[(h,15) for h in reversed(range(12,14,1))],
+    # "moocs":[(h,15) for h in reversed(range(12,14,1))],
+    # "amazon":[(h,15) for h in reversed(range(12,14,1))],
+    # "apps":[(h,15) for h in reversed(range(12,14,1))],
+    # "shakespeare": [(h,20) for h in reversed(range(17,19,1))]
+
+    # Short lengths
     "wikitext":[(h,15) for h in reversed(range(12,14,1))],
-    "moocs":[(h,15) for h in reversed(range(5,14,1))],
-    "amazon":[(h,15) for h in reversed(range(5,13,1))],
-    "apps":[(h,15) for h in reversed(range(5,14,1))],
-    "shakespeare": [(h,20) for h in reversed(range(5,19,1))] + [(10,35),(10,60)],
+    "moocs":[(h,15) for h in reversed(range(12,14,1))],
+    "amazon":[(h,15) for h in reversed(range(12,14,1))],
+    "apps":[(h,15) for h in reversed(range(12,14,1))],
+    "shakespeare": [(h,20) for h in reversed(range(17,19,1))]
 }
 
 for dataset_name in datasets:
@@ -64,7 +74,7 @@ for dataset_name in datasets:
     print("====="*10)
     print(f"* Running for dataset {dataset_name}")
     print("====="*10)
-    extra_args = {}
+    extra_args = {"max_num_queries":100}
     prep_dict = prep_experiment(config_path,
                                 dataset_name,
                                 device=device,
@@ -83,6 +93,7 @@ for dataset_name in datasets:
         for hist_len,total_seq_len in len_info:
             args = copy.deepcopy(prep_dict['args'])
             args.estimate_type = mc_pseudo_gt if pseudo_gt else mc_estimate
+            args.variance_epsilon = 5e-6
             args.proposal_func = lm_proposal
             args.sub_estimates = sub_estimates
             args.num_mc_samples = args.sub_estimates[-1]
@@ -102,8 +113,8 @@ for dataset_name in datasets:
                     print("====="*10)
                     continue
 
-            print("[{}] | Dataset: {} | Sample type: {} | Num samples: {} | Hist length {} | Total Seq Length {} | Pseudo GT: {}"\
-                  .format(datetime.now(),dataset_name,folder,args.num_mc_samples,args.hist_len,args.total_seq_len, pseudo_gt))
+            print("[{}] | Dataset: {} | Sample type: {} | Num samples: {} | Hist length {} | Total Seq Length {} | Pseudo GT: {} | Model Budget: {}"\
+                  .format(datetime.now(),dataset_name,folder,args.num_mc_samples,args.hist_len,args.total_seq_len, pseudo_gt, model_budget))
             estimates = sample_dynamic_target_token(args, val_dl, model)
             os.makedirs(f"data/{folder}/{dataset_name}/val_dl/",exist_ok=True)
             estimates['metadata']['text_dict']['text'] = None
@@ -118,7 +129,7 @@ for dataset_name in datasets:
             write_pkl(estimates,
                     f"data/{folder}/{dataset_name}/val_dl/val-dl_{dataset_name}_{folder.replace('_','-')}_" +
                     f"{args.hist_len}h_{args.total_seq_len}s_{args.num_mc_samples}mc" +
-                    f"{'_' + 'model-budget' if args.model_budget_filepath else ('_pgt' if pseudo_gt else  '')}.pkl")
+            f"{'_' + 'model-budget' if args.model_budget_filepath else ('_pgt' if pseudo_gt else (f'_{args.max_num_queries}q' if args.max_num_queries else ''))}.pkl")
             estimates=None
             print("====="*10)
 

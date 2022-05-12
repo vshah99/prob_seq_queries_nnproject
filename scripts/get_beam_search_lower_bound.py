@@ -39,6 +39,7 @@ device=7
 folders = ["beam_search"]
 datasets = ['shakespeare','apps','moocs', 'amazon']
 model_budget = True
+max_num_queries=None
 config_path = "config/testing/sample.yaml"
 lengths_coverage = {
     # Regular GT
@@ -60,9 +61,11 @@ for dataset_name in datasets:
     print("====="*10)
     print(f"* Running for dataset {dataset_name}")
     print("====="*10)
+    extra_args = {"max_num_queries":100}
     prep_dict = prep_experiment(config_path,
                                 dataset_name,
-                                device=device)
+                                device=device,
+                                extra_args=extra_args)
     prep_dict['args'].text_dict['text'] = None
     args = prep_dict['args']
     val_dl = prep_dict['val_dl']
@@ -110,6 +113,10 @@ for dataset_name in datasets:
             #     if isinstance(d, (torch.Tensor, torch.LongTensor)):
             #         print(e, d.shape)
             # sys.exit(1)
+            write_pkl(estimates,
+                    f"data/{folder}/{dataset_name}/val_dl/val-dl_{dataset_name}_{folder.replace('_','-')}_" +
+                    f"{args.hist_len}h_{args.total_seq_len}s_{args.num_mc_samples}mc" +
+                    f"{'_' + 'model-budget' if not model_budget else (f'_{args.max_num_queries}q' if args.max_num_queries else str(args.num_beams) + 'b')}.pkl")
 
             write_pkl(estimates,
                     f"data/{folder}/{dataset_name}/val_dl/val-dl_{dataset_name}_" +
