@@ -469,7 +469,7 @@ def lin_interp(target_pct, n_current, n_end):
 
 @torch.no_grad()
 def beam_search_lower_bound(hist, num_beams, seq_len, model, excluded_terms,
-                            interp_func, batch_size, device, vocab_size,
+                            interp_func, batch_size, device, vocab_size, use_gpt2=False,
                             bs_tree=None, store_intermediate_lbs=False, sub_estimates=None,
                             min_variance=False,min_var_reduction=0.0,
                             max_num_tree_beams=None, **kwargs):
@@ -539,7 +539,7 @@ def beam_search_lower_bound(hist, num_beams, seq_len, model, excluded_terms,
         cur_log_probs = next_log_probs[indices]
         cur_restricted_log_probs = next_restricted_log_probs[indices]
         rnn_args = states
-        if bs_tree and bs_tree.uses_attention:
+        if use_gpt2:
             # (layers, 2, (samp, attn, seq_len, h))
             rnn_args = tuple(
                 [(h1[seq_inds], h2[seq_inds]) for

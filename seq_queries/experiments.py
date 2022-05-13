@@ -147,6 +147,129 @@ def inf_horizon_query(
 
 
 
+
+@torch.no_grad()
+def sample_dynamic_target_token(
+    args,
+    dataloader,
+    model = None,
+    sample_artifacts=["sample_estimates",'sample_estimate_var','sample_estimate_mean','model_iters','num_mc_samples'],
+    hybrid_artifacts=["bs_lower_bound",'is_estimates','sample_estimates','model_iters',
+                      'sample_estimate_var','sample_estimate_mean','num_beams','num_mc_samples'],
+    search_artifacts=['true_coverage','restricted_coverage','num_beams', 'model_iters',
+                      'bs_lower_bound','intermediate_lbs'],
+    **kwargs,):
+    """Sample from any of these methods given an
+    input dataloader, arguments, and potentially a model
+
+    :dataloader: TODO
+    :args: TODO
+    :model: TODO
+    :: TODO
+    :returns: TODO
+
+    """
+    args.model = model; print();
+    output = {}
+    artifact_store_roster = {
+        "beam_search_is_hybrid": hybrid_artifacts,
+        "beam_search_lower_bound":search_artifacts,
+        "mc_estimate":sample_artifacts,
+        "mc_pseudo_gt":sample_artifacts,
+    }
+
+    def _tensor_output(key, data,output=output):
+        if key not in output: output[key] = []
+        output[key].append(torch.Tensor([db[key] for db in data]))
+
+    def _add_output(key, data,output=output):
+        if key not in output: output[key] = []
+        output_data =[db[key] for db in data]
+        if not isinstance(output_data[0], (torch.Tensor, torch.LongTensor)):
+            output_data =[torch.Tensor(db[key]) for db in data]
+        output[key] += output_data
+
+    def _consolidate_output(key,output=output):
+        if isinstance(output[key],(torch.Tensor, torch.LongTensor)):
+            return
+        elif ((len(output[key][0].shape) == 1) or
+              (len(output[key][0].shape) == 2 and
+               ((args.sub_estimates) or
+               (key =='intermediate_lbs')))):
+            output[key] = torch.stack(output[key]).squeeze()
+        elif len(output[key][0].shape) >= 1:
+            output[key] = torch.cat(output[key])
+
+    model_budget = None; model_budget_name = ""; model_budget_i =0
+    if args.model_budget_filepath:
+        model_budget_file = read_pkl(args.model_budget_filepath)
+        model_budget = model_budget_file['model_iters']
+    elif 'num_mc_samples' in hybrid_artifacts:
+        hybrid_artifacts.remove('num_mc_samples')
+        # sample_artifacts.remove('num_mc_samples')
+    # if (args.estimate_type.__name__ != "mc_pseudo_gt"
+    #     and 'num_mc_samples' in sample_artifacts):
+    #     sample_artifacts.remove('num_mc_samples')
+
+    all_excluded_terms = [];
+    artifacts = artifact_store_roster[args.estimate_type.__name__]
+    for dbatch in tqdm(dataloader, disable=args.disable_tqdm):
+        data_list = []
+        all_excluded_terms.append(dbatch[:,args.total_seq_len].cpu())
+        data_batch =[dbatch[i,:args.hist_len] for i in range(dbatch.shape[0])]
+
+        for i in range(dbatch.shape[0]):
+            if (args.use_gpt2 and
+                args.disable_tqdm):
+                print(f"[{datetime.now()}] - {i}",flush=True)
+            elif i%10 == 0 and args.disable_tqdm:
+                print(".",end="",flush=True)
+            sample = data_batch[i]
+            args.seq_len = args.total_seq_len - args.hist_len
+            args.excluded_terms = [dbatch[i,args.total_seq_len].cpu().item()]
+
+            if args.model_budget_filepath:
+                if args.estimate_type.__name__ == "mc_estimate":
+                    args.sub_estimates = (torch.div(model_budget[model_budget_i],args.seq_len,
+                                                    rounding_mode="trunc").long() +
+                                        ((model_budget[model_budget_i]%args.seq_len > 0).long())).tolist()
+                    args.num_mc_samples = args.sub_estimates[-1]
+                elif args.estimate_type.__name__ == "beam_search_lower_bound":
+                    init_sub_estimates = (torch.div(model_budget[model_budget_i],args.seq_len,
+                                                    rounding_mode="trunc").long() +
+                                        ((model_budget[model_budget_i]%args.seq_len > 0).long())).tolist()
+                    args.sub_estimates = [
+                        compute_num_beams_from_budget(args.vocab_size,init_beam,args.seq_len,args.excluded_terms)
+                        for init_beam in init_sub_estimates]
+                    args.num_beams = args.sub_estimates[-1]
+                    assert isinstance(args.num_beams,int),"Num beams for model budget has to be an int"
+
+            kwargs = vars(args)
+            sample_output =args.estimate_type(sample,**kwargs)
+            data_list.append(sample_output)
+            model_budget_i += 1
+
+        print("",flush=True)
+        assert args.estimate_type.__name__ in artifact_store_roster,\
+            f"Estimate type {args.estimate_type.__name__} not found"
+        artifacts = artifact_store_roster[args.estimate_type.__name__]
+        for art in artifacts:
+            _add_output(art,data_list)
+        # break
+
+    for art in artifacts:
+        _consolidate_output(art)
+
+    args.model = None
+    output['metadata'] = vars(args)
+    output['excluded_terms'] = torch.cat(all_excluded_terms,dim=0).cpu()
+    return output
+
+#######################################################################
+# Static token
+#######################################################################
+
+
 @torch.no_grad()
 def sample_all_k_static_token(
     args,
@@ -220,8 +343,8 @@ def sample_all_k_static_token(
         data_batch =[dbatch[i,:args.hist_len] for i in range(dbatch.shape[0])]
 
         for i in range(dbatch.shape[0]):
-            if (args.estimate_type.__name__ == 'beam_search_is_hybrid'
-                and args.max_num_queries and args.disable_tqdm):
+            if (args.use_gpt2 and
+                args.disable_tqdm):
                 print(f"[{datetime.now()}] - {i}",flush=True)
             elif i%10 == 0 and args.disable_tqdm:
                 print(".",end="",flush=True)
@@ -271,123 +394,6 @@ def sample_all_k_static_token(
 #######################################################################
 # Comparison of Variance
 #######################################################################
-
-@torch.no_grad()
-def sample_dynamic_target_token(
-    args,
-    dataloader,
-    model = None,
-    sample_artifacts=["sample_estimates",'sample_estimate_var','sample_estimate_mean','model_iters','num_mc_samples'],
-    hybrid_artifacts=["bs_lower_bound",'is_estimates','sample_estimates','model_iters',
-                      'sample_estimate_var','sample_estimate_mean','num_beams','num_mc_samples'],
-    search_artifacts=['true_coverage','restricted_coverage','num_beams', 'model_iters',
-                      'bs_lower_bound','intermediate_lbs'],
-    **kwargs,):
-    """Sample from any of these methods given an
-    input dataloader, arguments, and potentially a model
-
-    :dataloader: TODO
-    :args: TODO
-    :model: TODO
-    :: TODO
-    :returns: TODO
-
-    """
-    args.model = model; print();
-    output = {}
-    artifact_store_roster = {
-        "beam_search_is_hybrid": hybrid_artifacts,
-        "beam_search_lower_bound":search_artifacts,
-        "mc_estimate":sample_artifacts,
-        "mc_pseudo_gt":sample_artifacts,
-    }
-
-    def _tensor_output(key, data,output=output):
-        if key not in output: output[key] = []
-        output[key].append(torch.Tensor([db[key] for db in data]))
-
-    def _add_output(key, data,output=output):
-        if key not in output: output[key] = []
-        output_data =[db[key] for db in data]
-        if not isinstance(output_data[0], (torch.Tensor, torch.LongTensor)):
-            output_data =[torch.Tensor(db[key]) for db in data]
-        output[key] += output_data
-
-    def _consolidate_output(key,output=output):
-        if isinstance(output[key],(torch.Tensor, torch.LongTensor)):
-            return
-        elif ((len(output[key][0].shape) == 1) or
-              (len(output[key][0].shape) == 2 and
-               ((args.sub_estimates) or
-               (key =='intermediate_lbs')))):
-            output[key] = torch.stack(output[key]).squeeze()
-        elif len(output[key][0].shape) >= 1:
-            output[key] = torch.cat(output[key])
-
-    model_budget = None; model_budget_name = ""; model_budget_i =0
-    if args.model_budget_filepath:
-        model_budget_file = read_pkl(args.model_budget_filepath)
-        model_budget = model_budget_file['model_iters']
-    elif 'num_mc_samples' in hybrid_artifacts:
-        hybrid_artifacts.remove('num_mc_samples')
-        # sample_artifacts.remove('num_mc_samples')
-    # if (args.estimate_type.__name__ != "mc_pseudo_gt"
-    #     and 'num_mc_samples' in sample_artifacts):
-    #     sample_artifacts.remove('num_mc_samples')
-
-    all_excluded_terms = [];
-    artifacts = artifact_store_roster[args.estimate_type.__name__]
-    for dbatch in tqdm(dataloader, disable=args.disable_tqdm):
-        data_list = []
-        all_excluded_terms.append(dbatch[:,args.total_seq_len].cpu())
-        data_batch =[dbatch[i,:args.hist_len] for i in range(dbatch.shape[0])]
-
-        for i in range(dbatch.shape[0]):
-            if (args.estimate_type.__name__ == 'beam_search_is_hybrid'
-                and args.max_num_queries and args.disable_tqdm):
-                print(f"[{datetime.now()}] - {i}",flush=True)
-            elif i%10 == 0 and args.disable_tqdm:
-                print(".",end="",flush=True)
-            sample = data_batch[i]
-            args.seq_len = args.total_seq_len - args.hist_len
-            args.excluded_terms = [dbatch[i,args.total_seq_len].cpu().item()]
-
-            if args.model_budget_filepath:
-                if args.estimate_type.__name__ == "mc_estimate":
-                    args.sub_estimates = (torch.div(model_budget[model_budget_i],args.seq_len,
-                                                    rounding_mode="trunc").long() +
-                                        ((model_budget[model_budget_i]%args.seq_len > 0).long())).tolist()
-                    args.num_mc_samples = args.sub_estimates[-1]
-                elif args.estimate_type.__name__ == "beam_search_lower_bound":
-                    init_sub_estimates = (torch.div(model_budget[model_budget_i],args.seq_len,
-                                                    rounding_mode="trunc").long() +
-                                        ((model_budget[model_budget_i]%args.seq_len > 0).long())).tolist()
-                    args.sub_estimates = [
-                        compute_num_beams_from_budget(args.vocab_size,init_beam,args.seq_len,args.excluded_terms)
-                        for init_beam in init_sub_estimates]
-                    args.num_beams = args.sub_estimates[-1]
-                    assert isinstance(args.num_beams,int),"Num beams for model budget has to be an int"
-
-            kwargs = vars(args)
-            sample_output =args.estimate_type(sample,**kwargs)
-            data_list.append(sample_output)
-            model_budget_i += 1
-
-        print("",flush=True)
-        assert args.estimate_type.__name__ in artifact_store_roster,\
-            f"Estimate type {args.estimate_type.__name__} not found"
-        artifacts = artifact_store_roster[args.estimate_type.__name__]
-        for art in artifacts:
-            _add_output(art,data_list)
-        # break
-
-    for art in artifacts:
-        _consolidate_output(art)
-
-    args.model = None
-    output['metadata'] = vars(args)
-    output['excluded_terms'] = torch.cat(all_excluded_terms,dim=0).cpu()
-    return output
 
 
 #######################################################################

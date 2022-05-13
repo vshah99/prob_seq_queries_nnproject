@@ -33,17 +33,17 @@ from seq_queries.experiments import sample_dynamic_target_token, prep_experiment
 #   Function-Class Declaration
 #################################################################################
 
-device=5
+device=7
 folders = ["beam_search"]
-datasets = ['moocs','apps', 'amazon']#'shakespeare'
-datasets = ['shakespeare']#'shakespeare'
+# datasets = ['shakespeare','moocs','apps', 'amazon']#'shakespeare'
+datasets = ['wikitext']
 model_budget = True
-max_num_queries=1000
+max_num_queries=100
 config_path = "config/testing/sample.yaml"
 lengths_coverage = {
 
     # Long GT
-    "wikitext":[(5,15,0.8),(8,15,0.8),(11,15,0.8)],
+    "wikitext":[(13,15,0.8),(12,15,0.8),(11,15,0.8)],
     "moocs":[(5,15,0.8),(8,15,0.8),(11,15,0.8)],
     "amazon":[(5,15,0.8),(8,15,0.8),(11,15,0.8)],
     "apps":[(5,15,0.8),(8,15,0.8),(11,15,0.8)],
@@ -89,6 +89,7 @@ for dataset_name in datasets:
             args.num_mc_samples = 1000 # For reading from hybrid correctly
             args.estimate_type = beam_search_lower_bound
             args.proposal_func = lm_proposal
+            args.use_gpt2 = (dataset_name == 'wikitext')
             args.store_intermediate_lbs=True
             args.min_variance = False
             args.hist_len = hist_len

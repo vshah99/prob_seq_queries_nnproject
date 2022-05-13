@@ -37,10 +37,10 @@ from seq_queries.experiments import sample_dynamic_target_token, prep_experiment
 device=4
 sub_estimates = [10,100,1000]
 model_budget = True
-max_num_queries=1000
+max_num_queries=100
 folders = ["random_sampling"]
-# datasets = ["amazon","apps",'moocs'] #'shakespeare'
-datasets = ['shakespeare'] #'shakespeare'
+# datasets = ['shakespeare',"amazon","apps",'moocs'] #'shakespeare'
+datasets = ['wikitext'] #'shakespeare'
 config_path = "config/testing/sample.yaml"
 lengths = {
 
@@ -50,6 +50,7 @@ lengths = {
     "amazon":[(h,15) for h in [11,8,5]],
     "apps":[(h,15) for h in [11,8,5]],
     "shakespeare": [(h,20) for h in [16,12,10]],
+    "wikitext":[(h,15) for h in reversed(range(11,14,1))],
 
     # # Short lengths
     # "wikitext":[(h,15) for h in reversed(range(12,14,1))],
@@ -85,6 +86,7 @@ for dataset_name in datasets:
             args = copy.deepcopy(prep_dict['args'])
             args.estimate_type = mc_estimate
             args.proposal_func = uniform_proposal
+            args.use_gpt2 = (dataset_name == 'wikitext')
             args.sub_estimates = sub_estimates
             args.num_mc_samples = args.sub_estimates[-1]
             args.hist_len = hist_len

@@ -302,4 +302,8 @@
 ==================================================
 [2022-05-13 12:17:58.580518] | Dataset: amazon | Sample type: pseudo_gt | Num samples: None | Hist length 11 | Total Seq Length 15 | Pseudo GT: True | Model Budget: False
 
-...............................................
+....................................................................................................
+==================================================
+[2022-05-13 12:23:48.882469] | Dataset: amazon | Sample type: pseudo_gt | Num samples: None | Hist length 8 | Total Seq Length 15 | Pseudo GT: True | Model Budget: False
+
+.......................................................................................
