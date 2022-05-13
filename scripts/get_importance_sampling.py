@@ -36,9 +36,9 @@ from seq_queries.experiments import sample_dynamic_target_token, prep_experiment
 
 device=7
 sub_estimates = [10,100,1000]
-model_budget = True
-pseudo_gt = False
-max_num_queries = 100
+model_budget = False
+pseudo_gt = True
+max_num_queries = 1500
 folders = ["importance_sampling"] if not pseudo_gt else ['pseudo_gt']
 datasets = ['shakespeare','apps','amazon','moocs']
 # datasets = ['wikitext']
