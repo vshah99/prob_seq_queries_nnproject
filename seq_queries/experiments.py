@@ -213,7 +213,7 @@ def sample_dynamic_target_token(
         data_batch =[dbatch[i,:args.hist_len] for i in range(dbatch.shape[0])]
 
         for i in range(dbatch.shape[0]):
-            # print(i)
+            # print(i,flush=True)
             if i%10 == 0 and args.disable_tqdm:
                 print(".",end="",flush=True)
             sample = data_batch[i]

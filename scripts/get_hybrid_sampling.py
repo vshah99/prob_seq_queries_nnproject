@@ -39,7 +39,7 @@ folders = ["beam_search_is_hybrid"]
 # datasets = ['moocs','amazon','apps','shakespeare']
 datasets = ['wikitext']
 max_num_queries = 100
-# datasets = ['wikitext']
+datasets = ['wikitext']
 config_path = "config/testing/sample.yaml"
 lengths = {
 
