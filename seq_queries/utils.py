@@ -194,7 +194,7 @@ def min_variance_top_k(logits, min_var_reduction = 0.0,
     global_var = probs.var()
     local_vars = torch.Tensor([
         (probs[:i].var(unbiased=False) + probs[i:].var(unbiased=False))
-        for i in range(1,num_logits-1,1)
+        for i in range(1,min(num_logits,max_num_tree_beams)-1,1)
     ])
 
     min_idx = torch.argmin(local_vars)

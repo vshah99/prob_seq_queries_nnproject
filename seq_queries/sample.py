@@ -105,6 +105,7 @@ def mc_pseudo_gt(hist, num_mc_samples, seq_len, model, excluded_terms, proposal_
     samp_est_var = 1.0 # Some general seeding
     total_samples = 0
     remaining_samples = min_num_mc_samples
+    model_iters = 0
     while ((samp_est_var > variance_epsilon) and
            (total_samples < max_num_mc_samples)):
         out_dict = defaultdict(list)
@@ -126,6 +127,7 @@ def mc_pseudo_gt(hist, num_mc_samples, seq_len, model, excluded_terms, proposal_
             term_log_prob = sample_out["next_log_dist"] + sample_out["model_log_prob"] - sample_out["proposal_log_prob"]
 
             temp_out_dict['sample_estimates'].append(term_log_prob.exp().cpu())
+            model_iters += model.model_iters
             # out_dict['q_log_prob'].append(sample_out['proposal_log_prob'])
 
         for item in cat_list:
@@ -136,7 +138,7 @@ def mc_pseudo_gt(hist, num_mc_samples, seq_len, model, excluded_terms, proposal_
         remaining_samples = var_check_interval
 
     out_dict['num_mc_samples'] = torch.LongTensor([total_samples])
-    out_dict['model_iters'] = torch.LongTensor([model.model_iters])
+    out_dict['model_iters'] = torch.LongTensor([model_iters])
     out_dict['sample_estimate_var'] =torch.var(out_dict['sample_estimates'],dim=0)
     out_dict['sample_estimates'] =out_dict['sample_estimates'].mean(dim=0)
     return out_dict
@@ -151,6 +153,7 @@ def mc_estimate(hist, num_mc_samples, seq_len, model, excluded_terms, proposal_f
                 cat_list = ['sample_estimates'],
                 sub_estimates=None,**kwargs):
     model.model_iters = 0
+    model_iters = 0
     assert(len(hist.shape) == 1)  # (hist_seq_len), Only conditions on a single history
     # assert(len(excluded_terms) == 1) # For most experiments
     out_dict = defaultdict(list)
@@ -173,6 +176,7 @@ def mc_estimate(hist, num_mc_samples, seq_len, model, excluded_terms, proposal_f
 
         out_dict['sample_estimates'].append(term_log_prob.exp().cpu())
         out_dict['num_mc_samples'] = torch.LongTensor(sub_estimates)
+        model_iters += model.model_iters
         # out_dict['q_log_prob'].append(sample_out['proposal_log_prob'])
 
     for item in cat_list:
@@ -195,7 +199,7 @@ def mc_estimate(hist, num_mc_samples, seq_len, model, excluded_terms, proposal_f
         )
 
     else:
-        out_dict['model_iters'] = torch.LongTensor([model.model_iters])
+        out_dict['model_iters'] = torch.LongTensor([model_iters])
         out_dict['sample_estimate_var'] =torch.var(out_dict['sample_estimates'],dim=0)
         out_dict['sample_estimate_mean'] =out_dict['sample_estimates'].mean(dim=0)
     return out_dict

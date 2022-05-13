@@ -37,9 +37,9 @@ device=2
 sub_estimates = [10,100,1000]
 folders = ["beam_search_is_hybrid"]
 # datasets = ['moocs','amazon','apps']
-# datasets = ['wikitext']
-datasets = ['shakespeare']
-max_num_queries = 1000
+datasets = ['wikitext']
+# datasets = ['shakespeare']
+max_num_queries = 100
 config_path = "config/testing/sample.yaml"
 lengths = {
 
@@ -50,7 +50,7 @@ lengths = {
     "shakespeare": [(h,20) for h in [12,10]],
 
     # # Short hybrid
-    "wikitext":[(h,15) for h in reversed(range(11,14,1))],
+    "wikitext":[(h,15) for h in reversed(range(11,13,1))],
     # "moocs":[(h,15) for h in reversed(range(12,14,1))],
     # "amazon":[(h,15) for h in reversed(range(12,14,1))],
     # "apps":[(h,15) for h in reversed(range(12,14,1))],
@@ -84,6 +84,7 @@ for dataset_name in datasets:
             args.estimate_type = beam_search_is_hybrid
             args.proposal_func = lm_proposal
             args.min_variance = True
+            args.max_num_tree_beams = 1500
             args.min_var_reduction = 0.1
             args.num_beams = 0.0
             args.sub_estimates = sub_estimates

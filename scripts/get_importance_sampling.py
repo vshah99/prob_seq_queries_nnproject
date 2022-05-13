@@ -34,14 +34,14 @@ from seq_queries.experiments import sample_dynamic_target_token, prep_experiment
 #   Function-Class Declaration
 #################################################################################
 
-device=6
+device=5
 sub_estimates = [10,100,1000]
-model_budget = True
-pseudo_gt = False
-max_num_queries = 1000
+model_budget = False
+pseudo_gt = True
+max_num_queries = 100
 folders = ["importance_sampling"] if not pseudo_gt else ['pseudo_gt']
-# datasets = ['moocs','apps','amazon'] #'shakespeare'
-datasets = ['shakespeare']
+# datasets = ['shakespeare','moocs','apps','amazon'] #'shakespeare'
+datasets = ['wikitext'] #'shakespeare'
 config_path = "config/testing/sample.yaml"
 
 pseudo_gt_lengths = {
@@ -97,8 +97,8 @@ for dataset_name in datasets:
             args.estimate_type = mc_pseudo_gt if pseudo_gt else mc_estimate
             args.variance_epsilon = 5e-6
             args.proposal_func = lm_proposal
-            args.sub_estimates = sub_estimates
-            args.num_mc_samples = args.sub_estimates[-1]
+            args.sub_estimates = sub_estimates if not pseudo_gt else None
+            args.num_mc_samples = args.sub_estimates[-1] if not pseudo_gt else None
             args.hist_len = hist_len
             args.total_seq_len = total_seq_len
 
