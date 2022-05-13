@@ -33,11 +33,12 @@ from seq_queries.experiments import sample_dynamic_target_token, prep_experiment
 #   Function-Class Declaration
 #################################################################################
 
-device=7
+device=5
 folders = ["beam_search"]
-datasets = ['shakespeare','apps','moocs', 'amazon']
+datasets = ['moocs','apps', 'amazon']#'shakespeare'
+datasets = ['shakespeare']#'shakespeare'
 model_budget = True
-max_num_queries=100
+max_num_queries=1000
 config_path = "config/testing/sample.yaml"
 lengths_coverage = {
 

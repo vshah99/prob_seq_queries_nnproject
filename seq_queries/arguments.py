@@ -159,6 +159,7 @@ def sampling_args(parser):
     group.add_argument("--top_p", type=_int_or_float, default=1, help="Top p coverage to take")
     group.add_argument("--min_variance", type=_str2bool, default=False, help="Use minimum variance to set beam search beam widths")
     group.add_argument("--min_var_reduction", type=float, default=0.0, help="Minimum variance reduction for minimum variance technique (otherwise, take all beams)")
+    group.add_argument("--hybrid_max_num_beams", type=int, default=1500, help="Maximum_number of beams the hybrid can hold at each step")
     group.add_argument("--num_beams", type=_int_or_float, default=10, help="Beam coverage (or number)")
     group.add_argument("--num_mc_samples", type=int, default=10, help="Number of MC samples")
     group.add_argument("--disable_tqdm", type=_str2bool,default=False,help="Disable tqdm monitoring runs for samplers")

@@ -19,6 +19,7 @@ from itertools import product
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+from datetime import datetime
 
 from tqdm import tqdm
 # from .data import load_text, process_data
@@ -213,8 +214,10 @@ def sample_dynamic_target_token(
         data_batch =[dbatch[i,:args.hist_len] for i in range(dbatch.shape[0])]
 
         for i in range(dbatch.shape[0]):
-            # print(i,flush=True)
-            if i%10 == 0 and args.disable_tqdm:
+            if (args.estimate_type.__name__ == 'beam_search_is_hybrid'
+                and args.max_num_queries and args.disable_tqdm):
+                print(f"[{datetime.now()}] - {i}",flush=True)
+            elif i%10 == 0 and args.disable_tqdm:
                 print(".",end="",flush=True)
             sample = data_batch[i]
             args.seq_len = args.total_seq_len - args.hist_len

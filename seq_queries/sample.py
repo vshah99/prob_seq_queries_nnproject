@@ -209,14 +209,15 @@ def mc_estimate(hist, num_mc_samples, seq_len, model, excluded_terms, proposal_f
 @torch.no_grad()
 def beam_search_is_hybrid(hist, num_beams,num_mc_samples, seq_len, model, excluded_terms, interp_func,
                           batch_size, device, vocab_size,use_gpt2=False,
-                          beam_search_outputs=['num_beams','true_coverage','restricted_coverage'],
-                          min_variance=False,min_var_reduction=0.0,
+                          beam_search_outputs=['num_beams','true_coverage','restricted_coverage','num_beams_over_time'],
+                          min_variance=False,min_var_reduction=0.0,max_num_tree_beams=None,
                           text_dict=None, **kwargs):
     model.model_iters = 0
     beam_search_output =beam_search_lower_bound(
         hist, num_beams, seq_len, model, excluded_terms, interp_func,
         batch_size, device, vocab_size, bs_tree=BeamSearchSampleTree(text_dict,uses_attention=use_gpt2),
-        min_variance=min_variance,min_var_reduction=min_var_reduction, **kwargs)
+        min_variance=min_variance,min_var_reduction=min_var_reduction,
+        max_num_tree_beams=max_num_tree_beams, **kwargs)
     tree = beam_search_output['tree']
     tree.prune()
 
@@ -466,7 +467,8 @@ def lin_interp(target_pct, n_current, n_end):
 def beam_search_lower_bound(hist, num_beams, seq_len, model, excluded_terms,
                             interp_func, batch_size, device, vocab_size,
                             bs_tree=None, store_intermediate_lbs=False, sub_estimates=None,
-                            min_variance=False,min_var_reduction=0.0, **kwargs):
+                            min_variance=False,min_var_reduction=0.0,
+                            max_num_tree_beams=None, **kwargs):
     assert(isinstance(num_beams, (int, float)))
     assert(len(hist.shape) == 1)
 
@@ -497,7 +499,8 @@ def beam_search_lower_bound(hist, num_beams, seq_len, model, excluded_terms,
         next_restricted_log_probs = next_restricted_log_probs.view(-1)
 
         if min_variance:
-                next_restricted_log_probs = min_variance_top_k(next_restricted_log_probs, min_var_reduction=min_var_reduction, is_log_prob=True)
+                next_restricted_log_probs = min_variance_top_k(next_restricted_log_probs, min_var_reduction=min_var_reduction,
+                                                               max_num_tree_beams=max_num_tree_beams,is_log_prob=True)
         elif isinstance(num_beams, int):
                 next_restricted_log_probs = top_k_top_p_filtering(next_restricted_log_probs, top_k=num_beams, is_log_prob=True)
         else:  # isinstance(num_beams, float)
@@ -532,7 +535,7 @@ def beam_search_lower_bound(hist, num_beams, seq_len, model, excluded_terms,
         cur_log_probs = next_log_probs[indices]
         cur_restricted_log_probs = next_restricted_log_probs[indices]
         rnn_args = states
-        if bs_tree.uses_attention:
+        if bs_tree and bs_tree.uses_attention:
             # (layers, 2, (samp, attn, seq_len, h))
             rnn_args = tuple(
                 [(h1[seq_inds], h2[seq_inds]) for
@@ -564,6 +567,7 @@ def beam_search_lower_bound(hist, num_beams, seq_len, model, excluded_terms,
         "true_coverage": cur_log_probs.exp(),
         "restricted_coverage": cur_restricted_log_probs.exp(),
         "num_beams": torch.LongTensor(num_beams_over_time),
+        "num_beams_over_time": torch.LongTensor(num_beams_over_time),
         "model_iters": torch.LongTensor([model.model_iters]),
         "intermediate_lbs": (torch.Tensor([]) if not store_intermediate_lbs
                              else torch.stack(intermediate_lbs)),
@@ -580,6 +584,7 @@ def beam_search_lower_bound(hist, num_beams, seq_len, model, excluded_terms,
                   for i in range(seq_len)]
              for sub_est in sub_estimates])
         out_dict['model_iters'] = model_breakout.sum(dim=-1)
+        out_dict['num_beams_over_time'] = torch.LongTensor(num_beams_over_time)
         out_dict['num_beams'] = torch.LongTensor(sub_estimates)
         out_dict['bs_lower_bound'] = torch.stack(
                 # (vocab)

@@ -37,9 +37,10 @@ from seq_queries.experiments import sample_dynamic_target_token, prep_experiment
 device=4
 sub_estimates = [10,100,1000]
 model_budget = True
-max_num_queries=100
+max_num_queries=1000
 folders = ["random_sampling"]
-datasets = ['shakespeare',"amazon","apps",'moocs']
+# datasets = ["amazon","apps",'moocs'] #'shakespeare'
+datasets = ['shakespeare'] #'shakespeare'
 config_path = "config/testing/sample.yaml"
 lengths = {
 

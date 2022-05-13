@@ -1,4 +1,5 @@
 import torch
+import time
 import torch.nn as nn
 import numpy as np
 import random
@@ -186,22 +187,23 @@ def flatten(list_of_lists):
 
 def min_variance_top_k(logits, min_var_reduction = 0.0,
                        filter_value=-float('Inf'),
-                       is_log_prob=False):
+                       is_log_prob=False,
+                       max_num_tree_beams=None):
     num_logits = logits.shape[0]
     probs, prob_inds = torch.sort(logits.exp(), descending=True)
-
     global_var = probs.var()
     local_vars = torch.Tensor([
         (probs[:i].var(unbiased=False) + probs[i:].var(unbiased=False))
         for i in range(1,num_logits-1,1)
     ])
+
     min_idx = torch.argmin(local_vars)
     min_sep_var = local_vars[min_idx]
 
     # Satisfies variance criteria
-    if (min_sep_var/global_var) <= (1 - min_var_reduction):
-        indices_to_remove = prob_inds[min_idx+1:]
-        logits[indices_to_remove] = filter_value
+    if not max_num_tree_beams: max_num_tree_beams=min_idx
+    indices_to_remove = prob_inds[min(max_num_tree_beams,min_idx)+1:]
+    logits[indices_to_remove] = filter_value
 
     return logits
 

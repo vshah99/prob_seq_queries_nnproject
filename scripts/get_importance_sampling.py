@@ -36,12 +36,12 @@ from seq_queries.experiments import sample_dynamic_target_token, prep_experiment
 
 device=6
 sub_estimates = [10,100,1000]
-model_budget = False
-pseudo_gt = True
-max_num_queries = 100
+model_budget = True
+pseudo_gt = False
+max_num_queries = 1000
 folders = ["importance_sampling"] if not pseudo_gt else ['pseudo_gt']
-# datasets = ['shakespeare','apps','amazon','moocs']
-datasets = ['wikitext']
+# datasets = ['moocs','apps','amazon'] #'shakespeare'
+datasets = ['shakespeare']
 config_path = "config/testing/sample.yaml"
 
 pseudo_gt_lengths = {
@@ -59,6 +59,7 @@ lengths = {
     "amazon":[(h,15) for h in [11,8,5]],
     "apps":[(h,15) for h in [11,8,5]],
     "shakespeare": [(h,20) for h in [16,12,10]],
+    "wikitext":[(h,15) for h in reversed(range(11,14,1))],
 
     # # Short lengths
     # "wikitext":[(h,15) for h in reversed(range(12,14,1))],

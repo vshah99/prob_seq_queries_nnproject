@@ -312,6 +312,7 @@ def process_text_data(text_dict, args,**kwargs): # batch_size, seq_len, dev=torc
     test_ids = ids[split_pos[int(num_seqs*(tr_split+v_split)):], :]
 
     if args.max_num_queries:
+        #REMOVE THIS
         valid_ids = valid_ids[:args.max_num_queries]
 
     train_dl = torch.utils.data.DataLoader(
