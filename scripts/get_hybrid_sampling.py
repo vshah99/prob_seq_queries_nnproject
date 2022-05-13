@@ -33,11 +33,12 @@ from seq_queries.experiments import sample_dynamic_target_token, prep_experiment
 #   Function-Class Declaration
 #################################################################################
 
-device=2
+device=7
 sub_estimates = [10,100,1000]
 folders = ["beam_search_is_hybrid"]
-datasets = ['moocs','amazon','apps','shakespeare']
-max_num_queries = 1000
+# datasets = ['moocs','amazon','apps','shakespeare']
+datasets = ['wikitext']
+max_num_queries = 100
 # datasets = ['wikitext']
 config_path = "config/testing/sample.yaml"
 lengths = {
@@ -49,7 +50,7 @@ lengths = {
     "shakespeare": [(h,20) for h in [16,12,10]],
 
     # # Short hybrid
-    "wikitext":[(h,15) for h in reversed(range(12,14,1))],
+    "wikitext":[(h,15) for h in reversed(range(11,14,1))],
     # "moocs":[(h,15) for h in reversed(range(12,14,1))],
     # "amazon":[(h,15) for h in reversed(range(12,14,1))],
     # "apps":[(h,15) for h in reversed(range(12,14,1))],
@@ -68,6 +69,7 @@ for dataset_name in datasets:
                                 extra_args=extra_args)
     prep_dict['args'].text_dict['text'] = None
     args = prep_dict['args']
+    if dataset_name=='wikitext':args.use_gpt2=True
     val_dl = prep_dict['val_dl']
     model = prep_dict['model']
     text_dict = args.text_dict
@@ -89,8 +91,8 @@ for dataset_name in datasets:
             args.hist_len = hist_len
             args.total_seq_len = total_seq_len
 
-            print("[{}] | Dataset: {} | Sample type: {} | Num samples: {} | Hist length {} | Total Seq Length {}"\
-                  .format(datetime.now(), dataset_name,folder,args.num_mc_samples,args.hist_len,args.total_seq_len))
+            print("[{}] | Dataset: {} | Sample type: {} | Num samples: {} | Hist length {} | Total Seq Length {} | Max num queries: {}"\
+                  .format(datetime.now(), dataset_name,folder,args.num_mc_samples,args.hist_len,args.total_seq_len,max_num_queries))
             estimates = sample_dynamic_target_token(args, val_dl, model)
             os.makedirs(f"data/{folder}/{dataset_name}/val_dl/",exist_ok=True)
             estimates['metadata']['text_dict']['text'] = None

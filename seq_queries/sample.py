@@ -208,19 +208,19 @@ def mc_estimate(hist, num_mc_samples, seq_len, model, excluded_terms, proposal_f
 
 @torch.no_grad()
 def beam_search_is_hybrid(hist, num_beams,num_mc_samples, seq_len, model, excluded_terms, interp_func,
-                          batch_size, device, vocab_size, use_gpt2=False,
+                          batch_size, device, vocab_size,use_gpt2=False,
                           beam_search_outputs=['num_beams','true_coverage','restricted_coverage'],
                           min_variance=False,min_var_reduction=0.0,
                           text_dict=None, **kwargs):
     model.model_iters = 0
     beam_search_output =beam_search_lower_bound(
         hist, num_beams, seq_len, model, excluded_terms, interp_func,
-        batch_size, device, vocab_size, bs_tree=BeamSearchSampleTree(text_dict),
-        use_gpt2=use_gpt2, min_variance=min_variance,min_var_reduction=min_var_reduction, **kwargs)
+        batch_size, device, vocab_size, bs_tree=BeamSearchSampleTree(text_dict,uses_attention=use_gpt2),
+        min_variance=min_variance,min_var_reduction=min_var_reduction, **kwargs)
     tree = beam_search_output['tree']
     tree.prune()
 
-    if use_gpt2:
+    if tree.uses_attention:
         hybrid_estimate = tree_is_estimate_attn(
             tree,
             beam_search_output['bs_lower_bound'],
@@ -256,86 +256,47 @@ def tree_is_estimate_attn(
     **kwargs,
  ):
     # Sample each sequence individually from tree
-    log_p_totals, log_q_totals = [], []
-    hidden_states, num_remaining_steps = [], []
-    last_tokens = []
+    dist_estimates = []
+    total_model_iters = model.model_iters; model_iters = []
+    for i in tqdm(range(num_mc_samples),disable=kwargs['disable_tqdm']):
+        log_p, log_q, rnn_args, depth_reached, last_token, _ = tree.sample_sequence(seq_len)
+        total_model_iters += seq_len - depth_reached
+        if sub_estimates and (i+1) in sub_estimates:
+            model_iters.append(total_model_iters)
+        for _ in range(depth_reached,seq_len+1):
 
-    for _ in range(num_mc_samples):
-        log_p, log_q, hs, depth_reached, last_token, _ = tree.sample_sequence(seq_len)
-        model_iters += seq_len - depth_reached
-        log_p_totals.append(log_p)
-        log_q_totals.append(log_q)
-        hidden_states.append(hs)
+            logits, rnn_args = model.get_next_probs(
+                last_token.unsqueeze(-1).unsqueeze(-1),
+                rnn_args=rnn_args,
+                max_batch_size=batch_size,
+                device=device,
+                return_logits=True,
+            )
 
-    log_p_totals = torch.stack(log_p_totals, dim=0)
-    log_q_totals = torch.stack(log_q_totals, dim=0)
+            proposal_logits = logits.clone()
+            proposal_logits[..., excluded_terms] = -float('inf')
+            logits, proposal_logits = torch.log_softmax(logits, dim=-1), torch.log_softmax(proposal_logits, dim=-1)
+            last_token = torch.distributions.Categorical(logits=proposal_logits).sample()
+            log_q += proposal_logits[...,last_token].squeeze()
+            log_p += logits[...,last_token].squeeze()
 
-    # Finish sampling incomplete sequences from model
-    model_iters = [model.model_iters + num_remaining_steps.sum()]
-
-    # if sub_estimates:
-    #     model_iters = []
-    #     samples_per_effort = [
-    #         (num_remaining_steps == i).sum().item() for i in range(num_remaining_steps.max()+1)
-    #     ];
-    #     j = 0
-    #     for i in range(len(sub_estimates)):
-    #         total_samp = 0; total_cost = model.model_iters
-    #         curr_model_iters = model.model_iters
-    #         for j in range(len(samples_per_effort)):
-    #             if total_samp < sub_estimates[i]:
-    #                 samp_left = min(sub_estimates[i] - total_samp,
-    #                                 samples_per_effort[j])
-    #                 total_samp += samples_per_effort[j]
-    #                 # print(total_samp,sub_estimates[i])
-    #                 total_cost += j*samp_left
-    #             if (total_samp >= sub_estimates[i]):
-    #                 model_iters.append(total_cost)
-    #                 break
-
-    while (num_remaining_steps > 0).any():
-        to_update = num_remaining_steps > 0
-        if isinstance(hidden_states, tuple):
-            rnn_args = (hidden_states[0][..., to_update, :], hidden_states[1][..., to_update, :])
-        else:
-            rnn_args = hidden_states[..., to_update, :]
-        logits, rnn_args = model.get_next_probs(
-            last_tokens[to_update, :],
-            rnn_args=rnn_args,
+        # Compute final distributions for estimate
+        next_log_dist, _ = model.get_next_probs(
+            last_token.unsqueeze(-1).unsqueeze(-1),
+            rnn_args,
             max_batch_size=batch_size,
             device=device,
             return_logits=True,
         )
 
-        proposal_logits = logits.clone()
-        proposal_logits[..., excluded_terms] = -float('inf')
-        logits, proposal_logits = torch.log_softmax(logits, dim=-1), torch.log_softmax(proposal_logits, dim=-1)
-        last_sample = torch.distributions.Categorical(logits=proposal_logits).sample().unsqueeze(-1)
-        log_q_totals[to_update] += torch.gather(proposal_logits, dim=-1, index=last_sample).squeeze(-1)
-        log_p_totals[to_update] += torch.gather(logits, dim=-1, index=last_sample).squeeze(-1)
-        if isinstance(hidden_states, tuple):
-            hidden_states[0][..., to_update, :] = rnn_args[0]
-            hidden_states[1][..., to_update, :] = rnn_args[1]
-        else:
-            hidden_states[..., to_update, :] = rnn_args
-        num_remaining_steps[to_update] -= 1
-        last_tokens[to_update, :] = last_sample
+        next_log_dist = torch.log_softmax(next_log_dist, dim=-1)
+        dist_estimate = next_log_dist + log_p - log_q
+        dist_estimates.append(dist_estimate.squeeze())
 
-    # Compute final distributions for estimate
-    next_log_dist, _ = model.get_next_probs(
-        last_tokens,
-        hidden_states,
-        max_batch_size=batch_size,
-        device=device,
-        return_logits=True,
-    )
-    next_log_dist = torch.log_softmax(next_log_dist, dim=-1)  # (num_seqs, vocab_size)
-    dist_estimate = next_log_dist + log_p_totals.unsqueeze(dim=-1) - log_q_totals.unsqueeze(dim=-1)
-    dist_estimate = dist_estimate.exp().cpu()
+    dist_estimate = torch.stack(dist_estimates,dim=0).exp().cpu()
     dist_est_var = dist_estimate.var(dim=0)
-    model_iters = [model_iter + sub_est for model_iter, sub_est in zip(model_iters,sub_estimates)]
 
-    if sub_estimates is not None and len(sub_estimates) > 0:
+    if sub_estimates:
         # (samples x vocab) -> (sub-estimates x vocab)
         dist_estimate = torch.stack(
             # (vocab)
@@ -347,6 +308,9 @@ def tree_is_estimate_attn(
             [dist_estimate[:s].var(dim=0).flatten()
              for s in sorted(sub_estimates)
         ]).squeeze()
+    else:
+        dist_estimate = dist_estimate.mean(dim=0)
+        dist_est_var = dist_estimate.var(dim=0)
 
     return {
         'bs_lower_bound':bs_lower_bound,
@@ -467,7 +431,7 @@ def tree_is_estimate_rnn(
     dist_est_var = dist_estimate.var(dim=0)
     model_iters = [model_iter + sub_est for model_iter, sub_est in zip(model_iters,sub_estimates)]
 
-    if sub_estimates is not None and len(sub_estimates) > 0:
+    if sub_estimates:
         # (samples x vocab) -> (sub-estimates x vocab)
         dist_estimate = torch.stack(
             # (vocab)
@@ -500,7 +464,7 @@ def lin_interp(target_pct, n_current, n_end):
 
 @torch.no_grad()
 def beam_search_lower_bound(hist, num_beams, seq_len, model, excluded_terms,
-                            interp_func, batch_size, device, vocab_size, use_gpt2=False,
+                            interp_func, batch_size, device, vocab_size,
                             bs_tree=None, store_intermediate_lbs=False, sub_estimates=None,
                             min_variance=False,min_var_reduction=0.0, **kwargs):
     assert(isinstance(num_beams, (int, float)))
@@ -547,7 +511,6 @@ def beam_search_lower_bound(hist, num_beams, seq_len, model, excluded_terms,
                     log_q_conditionals=stored_restricted_log_probs,
                     log_p_conditionals=stored_next_log_probs,
                     hidden_state=states,
-                    uses_attention=use_gpt2,
                 )
             else:
                 parents = bs_tree.add_child_nodes(
@@ -558,7 +521,6 @@ def beam_search_lower_bound(hist, num_beams, seq_len, model, excluded_terms,
                     hidden_states=states,
                     parent_ids=seq_inds,
                     depth=n_cur,
-                    uses_attention=use_gpt2,
                 )
 
         # (beams x 1)
@@ -570,7 +532,7 @@ def beam_search_lower_bound(hist, num_beams, seq_len, model, excluded_terms,
         cur_log_probs = next_log_probs[indices]
         cur_restricted_log_probs = next_restricted_log_probs[indices]
         rnn_args = states
-        if use_gpt2:
+        if bs_tree.uses_attention:
             # (layers, 2, (samp, attn, seq_len, h))
             rnn_args = tuple(
                 [(h1[seq_inds], h2[seq_inds]) for
@@ -594,7 +556,6 @@ def beam_search_lower_bound(hist, num_beams, seq_len, model, excluded_terms,
                     final_log_probs,
                     final_log_probs.clone(), #next_log_probs,
                     states, seq_inds,
-                    uses_attention=use_gpt2,
                     depth=n_cur+1)
 
     out_dict = {

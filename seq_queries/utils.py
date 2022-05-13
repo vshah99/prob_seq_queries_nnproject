@@ -22,7 +22,7 @@ def _hidden_state_select(state,i,
         state = tuple(
             # (layers, (2, (samples, num_heads, seq_len, dim)))
             [
-                (h1[i], h2[i])
+                (h1[i].unsqueeze(0), h2[i].unsqueeze(0))
                 for (h1,h2) in state
             ]
         )
@@ -39,7 +39,9 @@ def _hidden_state_select(state,i,
     return state
 
 def _tup_cpu(tup, force=False):
-    if force or isinstance(tup, tuple):
+    if isinstance(tup,tuple) and isinstance(tup[0],tuple):
+        return _tup_cpu_gpt2(tup)
+    elif force or isinstance(tup, tuple):
         return tuple([t.cpu() for t in tup])
     elif tup: return tup.cpu()
     else: return tup
@@ -58,10 +60,12 @@ def _tup_gpu_gpt2(tup, device,force=False):
     else: return tup.to(device)
 
 def _tup_gpu(tup, device,force=False):
+    if isinstance(tup,tuple) and isinstance(tup[0],tuple):
+        return _tup_gpu_gpt2(tup,device)
     if not tup: return tup
-    elif force or isinstance(tup, tuple):
+    if force or isinstance(tup, tuple):
         return tuple([t.to(device) for t in tup])
-    else: return tup.to(device)
+    return tup.to(device)
 
 def read_yaml(filename):
     if filename is None: return None

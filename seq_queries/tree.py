@@ -86,7 +86,8 @@ class BeamSearchSampleTree(object):
     def __init__(
         self,
         text_dict,
-        default_size=50267,
+        default_size=50257,
+        uses_attention=False,
     ):
         """TODO: to be defined.
 
@@ -99,20 +100,20 @@ class BeamSearchSampleTree(object):
         self.BOS = self.char_to_id['<BOS>'] if self.char_to_id else 0
         self.depth_sizes = [0]
         self.depth_dict = defaultdict(list)
+        self.uses_attention=uses_attention
 
     def add_root_node(
         self,
         log_q_conditionals,
         log_p_conditionals,
         hidden_state,
-        uses_attention=False,
     ):
         self.root = BSNode(self.BOS,None,
             log_q_conditionals,
             log_p_conditionals,
             _hidden_state_select(hidden_state,0,
                                 is_root=True,
-                                uses_attention=uses_attention),
+                                uses_attention=self.uses_attention),
             tree=self,
             depth=0)
         self._add_depth(0,self.root)
@@ -124,7 +125,6 @@ class BeamSearchSampleTree(object):
         log_p_conditionals,
         hidden_states,
         parent_ids,depth,
-        uses_attention=False,
     ):
         #(beams x vocab)
         new_parents = []
@@ -137,7 +137,8 @@ class BeamSearchSampleTree(object):
 
         for i in range(symbols.shape[0]):
             s,pid,q,p,h = (symbols[i],parent_ids[i],log_q_conditionals[i],
-                            log_p_conditionals[i],_hidden_state_select(hidden_states,i,uses_attention),
+                            log_p_conditionals[i],_hidden_state_select(hidden_states,i,
+                                                                       uses_attention=self.uses_attention),
                            )
             new_parents.append(self._add_child_node(s.item(),parents[pid],q,p,h,depth))
 
