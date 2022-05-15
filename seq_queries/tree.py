@@ -138,8 +138,8 @@ class BeamSearchSampleTree(object):
         for i in range(symbols.shape[0]):
             s,pid,q,p,h = (symbols[i],parent_ids[i],log_q_conditionals[i],
                             log_p_conditionals[i],_hidden_state_select(hidden_states,i,
-                                                                       uses_attention=self.uses_attention),
-                           )
+                                                        uses_attention=self.uses_attention),
+                    )
             new_parents.append(self._add_child_node(s.item(),parents[pid],q,p,h,depth))
 
         return new_parents
@@ -222,7 +222,7 @@ class BeamSearchSampleTree(object):
             self._adjust_marginal_probabilities_by_depth(i)
         self._remove_terminal_depth()
 
-    def sample_sequence(self, seq_len, uses_attention=False):
+    def sample_sequence(self, seq_len):
         cur_node = self.root
         depth = 0
         log_p_total, log_q_total = 0.0, 0.0
@@ -230,7 +230,7 @@ class BeamSearchSampleTree(object):
         while depth < seq_len:
             next_step = torch.distributions.Categorical(probs=cur_node.q_conditionals).sample()
             sample.append(next_step.item())
-            if uses_attention: attns.append(cur_node.hidden_state)
+            if self.uses_attention: attns.append(cur_node.hidden_state)
             log_p_total += cur_node.p_conditionals.log()[next_step]
             log_q_total += cur_node.q_conditionals.log()[next_step]
             depth += 1
@@ -239,17 +239,34 @@ class BeamSearchSampleTree(object):
             else:
                 break
 
-        if uses_attention:
+        if self.uses_attention:
             # (seq_len, (num_layers, (2, (samps, heads, seq, shape))))
             layer_hiddens = []
+            # print(len(attns))
+            # print(len(attns[0]))
+            # print(len(attns[0][0]))
+            # print(attns[0][0][0].shape)
+
             for seq_data in zip(*attns):
-                print(len(seq_data))
+                # # (seq_len, (2, (tensor))
+                # print(len(seq_data))
+                # print(len(seq_data[0]))
+                # print(seq_data[0][0].shape)
                 layer_data= list(zip(*seq_data))
-                print(len(layer_data[0]))
+                # (2, (seq_len, (tensor))
+                # print(len(layer_data))
+                # print(len(layer_data[0]))
+                # print(layer_data[0][0].shape)
+                # sys.exit(1)
                 layer_hiddens.append(
                     (torch.cat(layer_data[0],dim=-2),
                     torch.cat(layer_data[1],dim=-2)))
 
             hidden_state = tuple(layer_hiddens)
+            # print(len(hidden_state))
+            # print(len(hidden_state[0]))
+            # print(hidden_state[0][0].shape)
+            # print()
+            # sys.exit(1)
         else: hidden_state = cur_node.hidden_state
         return log_p_total, log_q_total, hidden_state, depth, next_step, sample

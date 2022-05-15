@@ -263,6 +263,7 @@ def get_model(args):
         )
 
     model.to(args.device)
+    model.eval()
     return model
 
 

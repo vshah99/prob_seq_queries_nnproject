@@ -63,7 +63,12 @@ class Gpt2ClassificationCollator(object):
 
 
 def load_GPT2_query_lm(device):
-    model = GPT2LMHeadModel.from_pretrained('gpt2')
+    # May be able to use a smaller model
+    model = GPT2LMHeadModel.from_pretrained('gpt2-medium')
+    total_params = 0
+    for p in model.parameters():
+        total_params += p.numel()
+    print(total_params)
     model.model_iters = 0
     model.temperature = None
 
@@ -131,7 +136,7 @@ def explore_gpt2(batch_size = 16,
     tokenizer = GPT2Tokenizer.from_pretrained('gpt2')
     tokenizer.padding_side = "right"
     tokenizer.pad_token = tokenizer.eos_token
-    tokenizer.decode([20526])
+    # tokenizer.decode([20526])
     model = load_GPT2_query_lm()
     dataset = load_dataset("wikitext",'wikitext-2-v1', split="validation")
     gpt2_classificaiton_collator = Gpt2ClassificationCollator(use_tokenizer=tokenizer)

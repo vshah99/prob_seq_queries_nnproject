@@ -34,11 +34,11 @@ from seq_queries.experiments import sample_dynamic_target_token, prep_experiment
 #   Function-Class Declaration
 #################################################################################
 
-device=1
+device=2
 sub_estimates = [10,100,1000]
 model_budget = True
 pseudo_gt = False
-max_num_queries = 100
+max_num_queries = 500
 folders = ["importance_sampling"] if not pseudo_gt else ['pseudo_gt']
 # datasets = ['shakespeare','moocs','apps','amazon'] #'shakespeare'
 datasets = ['wikitext'] #'shakespeare'
@@ -59,7 +59,8 @@ lengths = {
     "amazon":[(h,15) for h in [11,8,5]],
     "apps":[(h,15) for h in [11,8,5]],
     "shakespeare": [(h,20) for h in [16,12,10]],
-    "wikitext":[(h,15) for h in reversed(range(11,14,1))],
+    # "wikitext":[(h,15) for h in reversed(range(11,14,1))],
+    "wikitext":[(13,15)],
 
     # # Short lengths
     # "wikitext":[(h,15) for h in reversed(range(12,14,1))],
@@ -95,7 +96,7 @@ for dataset_name in datasets:
         for hist_len,total_seq_len in len_info:
             args = copy.deepcopy(prep_dict['args'])
             args.estimate_type = mc_pseudo_gt if pseudo_gt else mc_estimate
-            args.variance_epsilon = 5e-6
+            args.variance_epsilon = 3e-6
             args.use_gpt2 = (dataset_name == 'wikitext')
             args.proposal_func = lm_proposal
             args.sub_estimates = sub_estimates if not pseudo_gt else None
@@ -137,9 +138,6 @@ for dataset_name in datasets:
             f"{f'_{max_num_queries}q' if max_num_queries else ''}.pkl")
             estimates=None
             print("====="*10)
-
-
-
 
 
 #################################################################################

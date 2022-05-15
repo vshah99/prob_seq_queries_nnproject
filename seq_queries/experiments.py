@@ -54,7 +54,7 @@ def prep_experiment(
             "data_path": "data/wikitext/wikitext_val-dl.csv",
             "seq_len": 20,
             "vocab_size": 50257,
-            "batch_size":2048,
+            "batch_size":512,
             "use_gpt2":True,
             "checkpoint_path":None,
         },
@@ -246,6 +246,7 @@ def sample_dynamic_target_token(
 
             kwargs = vars(args)
             sample_output =args.estimate_type(sample,**kwargs)
+            # print(" - ", sample_output['sample_estimates'][-1,args.excluded_terms[0]].item())
             data_list.append(sample_output)
             model_budget_i += 1
 

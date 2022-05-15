@@ -220,7 +220,7 @@ def beam_search_is_hybrid(hist, num_beams,num_mc_samples, seq_len, model, exclud
     beam_search_output =beam_search_lower_bound(
         hist, num_beams, seq_len, model, excluded_terms, interp_func,
         batch_size, device, vocab_size, bs_tree=BeamSearchSampleTree(text_dict,uses_attention=use_gpt2),
-        min_variance=min_variance,min_var_reduction=min_var_reduction,
+        min_variance=min_variance,min_var_reduction=min_var_reduction, use_gpt2=use_gpt2,
         max_num_tree_beams=max_num_tree_beams, **kwargs)
     tree = beam_search_output['tree']
     tree.prune()
@@ -271,6 +271,7 @@ def tree_is_estimate_attn(
         for _ in range(depth_reached,seq_len+1):
 
             logits, rnn_args = model.get_next_probs(
+                # Unsqueeze 2x since a single token [1,1]
                 last_token.unsqueeze(-1).unsqueeze(-1),
                 rnn_args=rnn_args,
                 max_batch_size=batch_size,
@@ -285,7 +286,10 @@ def tree_is_estimate_attn(
             log_q += proposal_logits[...,last_token].squeeze()
             log_p += logits[...,last_token].squeeze()
 
+            # where should last bit go?
+
         # Compute final distributions for estimate
+        #TODO: Validate - double check hidden state
         next_log_dist, _ = model.get_next_probs(
             last_token.unsqueeze(-1).unsqueeze(-1),
             rnn_args,
@@ -368,12 +372,6 @@ def tree_is_estimate_rnn(
     # Finish sampling incomplete sequences from model
     model_iters = [model.model_iters + num_remaining_steps.sum()]
 
-    # print(num_remaining_steps.shape)
-    # print(num_remaining_steps.max())
-    # print(num_remaining_steps.sum())
-    # print(model_iters)
-    # print(model.model_iters)
-    # sys.exit(1)
     if sub_estimates:
         model_iters = []
         samples_per_effort = [

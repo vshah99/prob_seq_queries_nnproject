@@ -22,11 +22,8 @@ def _hidden_state_select(state,i,
     if uses_attention:
         state = tuple(
             # (layers, (2, (samples, num_heads, seq_len, dim)))
-            [
-                (h1[i].unsqueeze(0), h2[i].unsqueeze(0))
-                for (h1,h2) in state
-            ]
-        )
+            [(h1[i].unsqueeze(0), h2[i].unsqueeze(0))
+                for (h1,h2) in state])
         if not is_root:
             state = tuple(
                 [(h1[...,-1,:].unsqueeze(-2),
