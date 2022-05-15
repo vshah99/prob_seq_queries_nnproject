@@ -37,7 +37,7 @@ from seq_queries.experiments import sample_dynamic_target_token, prep_experiment
 device=5
 sub_estimates = [10,100,1000]
 model_budget = True
-max_num_queries=100
+max_num_queries=500
 folders = ["random_sampling"]
 # datasets = ['shakespeare',"amazon","apps",'moocs'] #'shakespeare'
 datasets = ['wikitext'] #'shakespeare'

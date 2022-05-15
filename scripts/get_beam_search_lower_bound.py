@@ -38,7 +38,7 @@ folders = ["beam_search"]
 # datasets = ['shakespeare','moocs','apps', 'amazon']#'shakespeare'
 datasets = ['wikitext']
 model_budget = True
-max_num_queries=100
+max_num_queries=500
 config_path = "config/testing/sample.yaml"
 lengths_coverage = {
 

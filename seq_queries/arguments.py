@@ -148,6 +148,8 @@ def sampling_args(parser):
     group.add_argument("--proposal_func",  type=_str2proposal,default="uniform", help="Get proposal distribution for sampling")
     group.add_argument("--interp_func",  type=_str2interp_func,default="linear", help="Get inpterpolation function for search coverage")
     group.add_argument("--excluded_terms", type=_str2list, default=[], help="List of excluded terms")
+    group.add_argument("--excluded_terms_list", type=_str2list, default=[[]], help="List of list of excluded terms (one list per sample for individual queries)")
+    group.add_argument("--k_range", type=_str2list, default=[], help="List of values of k to evaluate for a specific sample")
     group.add_argument("--terms_of_interest", type=_str2list, default=[], help="List of terms of interest")
     group.add_argument("--sub_estimates", type=_str2list, default=[], help="Sub-estimates (to track noise), all must be <= num_samples")
     group.add_argument("--min_num_mc_samples", type=int, default=10000, help="Minimum number of samples for pseudo ground truth")

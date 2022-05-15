@@ -35,22 +35,22 @@ from seq_queries.experiments import sample_dynamic_target_token, prep_experiment
 #   Function-Class Declaration
 #################################################################################
 
-device=1
+device=6
 sub_estimates = [10,100,1000]
 model_budget = True
 max_num_queries = 1000
 folders = ["temperature_ablation"]
 # datasets = ['shakespeare','moocs','apps','amazon'] #'shakespeare'
-datasets = ['shakespeare','apps','amazon','moocs']
+datasets = ['shakespeare','apps','amazon']
 config_path = "config/testing/sample.yaml"
 beams = {
     "apps":[(11,15,0.8)],
-    "amazon":[(11,15,0.8)],
+    "moocs":[(11,15,0.8)],
     "amazon":[(11,15,0.8)],
     "shakespeare":[(16,20,0.8)],
 }
 
-temperatures = [0.5, 0.75, 1.0,1.25,1.75, 2, 3, 4,5, 10]
+temperatures = [0.01,0.1]
 lengths = {
 
     # # Long lengths
