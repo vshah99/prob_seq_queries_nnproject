@@ -55,11 +55,13 @@ def uniform_proposal(hists, seq_len, model, vocab_size, excluded_terms,
         "next_log_dist": torch.log_softmax(logits, dim=-1)[..., -1, :],
     }
 
+
 def lm_proposal(hists, seq_len, model, vocab_size, excluded_terms,
                 batch_size=128,device='cpu',top_k=0, top_p=1.0, temperature=1.0,  **kwargs):
     assert(len(hists.shape) == 2)
 
     proposal_log_prob, model_log_prob = 0.0, 0.0
+    intermediate_query_probs = []; entropy_probs = []
     samples = []; all_logits = []; started = False
     last_sample, rnn_args = hists, None
     for _ in range(seq_len):
@@ -71,15 +73,28 @@ def lm_proposal(hists, seq_len, model, vocab_size, excluded_terms,
         proposal_logits = logits.clone()
         proposal_logits[..., excluded_terms] = -float('inf')
         proposal_logits = torch.log_softmax(top_k_top_p_filtering(proposal_logits/temperature, top_k=top_k, top_p=top_p), dim=-1)
+        logits = torch.log_softmax(logits, dim=-1)
+
+        # compute intermediate query probability
+        if isinstance(model_log_prob,float) and isinstance(proposal_log_prob,float):
+            intermediate_query_probs.append(logits.exp())
+        else: intermediate_query_probs.append((logits + model_log_prob.unsqueeze(-1) - proposal_log_prob.unsqueeze(-1)).exp())
 
         last_sample = torch.distributions.Categorical(logits=proposal_logits).sample().unsqueeze(-1)
-        proposal_log_prob += torch.gather(proposal_logits, dim=-1, index=last_sample).squeeze(-1)
-        model_log_prob += torch.gather(torch.log_softmax(logits, dim=-1), dim=-1, index=last_sample).squeeze(-1)
+        proposal_log_prob += torch.gather(proposal_logits, dim=-1, index=last_sample).squeeze()
+        model_log_prob += torch.gather(logits, dim=-1, index=last_sample).squeeze()
+        entropy_probs.append(-(model_log_prob/proposal_log_prob.exp()))
         samples.append(last_sample)
 
     logits, _ = model.get_next_probs(last_sample, rnn_args=rnn_args, device=device,
                                      max_batch_size=batch_size,return_logits=True)  # get last subsequent distribution
     all_logits.append(logits)
+    logits = torch.log_softmax(logits, dim=-1)
+
+    last_sample = torch.distributions.Categorical(logits=logits).sample().unsqueeze(-1)
+    proposal_log_prob += torch.gather(logits, dim=-1, index=last_sample).squeeze(-1)
+    model_log_prob += torch.gather(logits, dim=-1, index=last_sample).squeeze(-1)
+    entropy_probs.append(-(torch.log(model_log_prob) - proposal_log_prob).exp())
 
     samples = torch.cat((samples + [torch.ones_like(samples[0])*excluded_terms[0]]), dim=-1)
     return {
@@ -87,7 +102,9 @@ def lm_proposal(hists, seq_len, model, vocab_size, excluded_terms,
         "model_log_prob": model_log_prob.unsqueeze(-1),
         "samples": samples,
         "logits": torch.stack(all_logits,dim=1),
-        "next_log_dist": torch.log_softmax(logits, dim=-1),
+        "next_log_dist": logits,
+        "intermediate_query_probs": torch.stack(intermediate_query_probs,dim=1),
+        "entropy_probs": torch.stack(entropy_probs,dim=-1).unsqueeze(0),
     }
 
 
@@ -150,7 +167,7 @@ def mc_pseudo_gt(hist, num_mc_samples, seq_len, model, excluded_terms, proposal_
 @torch.no_grad()
 def mc_estimate(hist, num_mc_samples, seq_len, model, excluded_terms, proposal_func,
                 vocab_size, batch_size=128,temperature=1, top_k=0, top_p=0.0, device='cpu',
-                cat_list = ['sample_estimates'],
+                cat_list = ['sample_estimates','entropy_probs', 'intermediate_query_probs'],
                 sub_estimates=None,**kwargs):
     model.model_iters = 0
     model_iters = 0
@@ -175,13 +192,19 @@ def mc_estimate(hist, num_mc_samples, seq_len, model, excluded_terms, proposal_f
         term_log_prob = sample_out["next_log_dist"] + sample_out["model_log_prob"] - sample_out["proposal_log_prob"]
 
         out_dict['sample_estimates'].append(term_log_prob.exp().cpu())
+        out_dict['entropy_probs'].append(sample_out['entropy_probs'].mean(dim=0).cpu())
+        out_dict['intermediate_query_probs'].append(sample_out['intermediate_query_probs'].cpu())
         out_dict['num_mc_samples'] = torch.LongTensor(sub_estimates)
         model_iters += model.model_iters
-        # out_dict['q_log_prob'].append(sample_out['proposal_log_prob'])
 
+    # out_dict['entropy_probs'] =
     for item in cat_list:
         out_dict[item] = torch.cat(out_dict[item],dim=0)
 
+    out_dict['entropy_probs'] = out_dict['entropy_probs'].mean(dim=0)
+    out_dict['intermediate_query_probs'] = torch.cat((out_dict['intermediate_query_probs'],
+                                                      out_dict['sample_estimates'].unsqueeze(1))
+                                                     ,dim=1).mean(dim=0).unsqueeze(0)
     if sub_estimates:
         # (samples x vocab) -> (sub-estimates x vocab)
         out_dict['sample_estimates'] = torch.stack(
@@ -269,6 +292,7 @@ def tree_is_estimate_attn(
         if sub_estimates and (i+1) in sub_estimates:
             model_iters.append(total_model_iters)
         for _ in range(depth_reached,seq_len+1):
+            # print(rnn_args[0][0].shape)
 
             logits, rnn_args = model.get_next_probs(
                 # Unsqueeze 2x since a single token [1,1]
@@ -289,7 +313,8 @@ def tree_is_estimate_attn(
             # where should last bit go?
 
         # Compute final distributions for estimate
-        #TODO: Validate - double check hidden state
+        ##TODO: Validate - double check hidden state
+        #print(rnn_args[0][0].shape)
         next_log_dist, _ = model.get_next_probs(
             last_token.unsqueeze(-1).unsqueeze(-1),
             rnn_args,
@@ -297,6 +322,7 @@ def tree_is_estimate_attn(
             device=device,
             return_logits=True,
         )
+        sys.exit(1)
 
         next_log_dist = torch.log_softmax(next_log_dist, dim=-1)
         dist_estimate = next_log_dist + log_p - log_q
@@ -386,7 +412,6 @@ def tree_is_estimate_rnn(
                     samp_left = min(sub_estimates[i] - total_samp,
                                     samples_per_effort[j])
                     total_samp += samples_per_effort[j]
-                    # print(total_samp,sub_estimates[i])
                     total_cost += j*samp_left
                 if (total_samp >= sub_estimates[i]):
                     model_iters.append(total_cost)
@@ -692,7 +717,6 @@ def tree_is_estimate_nr(
                     samp_left = min(sub_estimates[i] - total_samp,
                                     samples_per_effort[j])
                     total_samp += samples_per_effort[j]
-                    # print(total_samp,sub_estimates[i])
                     total_cost += j*samp_left
                 if (total_samp >= sub_estimates[i]):
                     model_iters.append(total_cost)
@@ -761,4 +785,44 @@ def tree_is_estimate_nr(
         'sample_estimate_mean':(bs_lower_bound + dist_estimate).mean(dim=0) if not sub_estimates else torch.Tensor([]),
         'model_iters': torch.LongTensor(model_iters),
     }
+
+#######################################################################
+# Deprecated
+#######################################################################
+
+
+# def lm_proposal(hists, seq_len, model, vocab_size, excluded_terms,
+#                 batch_size=128,device='cpu',top_k=0, top_p=1.0, temperature=1.0,  **kwargs):
+#     assert(len(hists.shape) == 2)
+
+#     proposal_log_prob, model_log_prob = 0.0, 0.0
+#     samples = []; all_logits = []; started = False
+#     last_sample, rnn_args = hists, None
+#     for _ in range(seq_len):
+#         logits, rnn_args = model.get_next_probs(last_sample, rnn_args=rnn_args, max_batch_size=batch_size,
+#                                                 device=device, return_logits=True)
+#         if not started: model.model_iters = 0; started= True
+#         all_logits.append(logits)
+
+#         proposal_logits = logits.clone()
+#         proposal_logits[..., excluded_terms] = -float('inf')
+#         proposal_logits = torch.log_softmax(top_k_top_p_filtering(proposal_logits/temperature, top_k=top_k, top_p=top_p), dim=-1)
+
+#         last_sample = torch.distributions.Categorical(logits=proposal_logits).sample().unsqueeze(-1)
+#         proposal_log_prob += torch.gather(proposal_logits, dim=-1, index=last_sample).squeeze(-1)
+#         model_log_prob += torch.gather(torch.log_softmax(logits, dim=-1), dim=-1, index=last_sample).squeeze(-1)
+#         samples.append(last_sample)
+
+#     logits, _ = model.get_next_probs(last_sample, rnn_args=rnn_args, device=device,
+#                                      max_batch_size=batch_size,return_logits=True)  # get last subsequent distribution
+#     all_logits.append(logits)
+
+#     samples = torch.cat((samples + [torch.ones_like(samples[0])*excluded_terms[0]]), dim=-1)
+#     return {
+#         "proposal_log_prob": proposal_log_prob.unsqueeze(-1),
+#         "model_log_prob": model_log_prob.unsqueeze(-1),
+#         "samples": samples,
+#         "logits": torch.stack(all_logits,dim=1),
+#         "next_log_dist": torch.log_softmax(logits, dim=-1),
+#     }
 

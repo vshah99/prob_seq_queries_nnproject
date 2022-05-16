@@ -35,19 +35,23 @@ from seq_queries.experiments import sample_dynamic_target_token, prep_experiment
 
 device=6
 folders = ["beam_search"]
-# datasets = ['shakespeare','moocs','apps', 'amazon']#'shakespeare'
-datasets = ['wikitext']
+datasets = ['shakespeare','moocs','apps', 'amazon']#'shakespeare'
+# datasets = ['wikitext']
 model_budget = True
-max_num_queries=500
+max_num_queries=1000
 config_path = "config/testing/sample.yaml"
 lengths_coverage = {
 
     # Long GT
     # "wikitext":[(13,15,0.8),(12,15,0.8),(11,15,0.8)],
-    "moocs":[(5,15,0.8),(8,15,0.8),(11,15,0.8)],
-    "amazon":[(5,15,0.8),(8,15,0.8),(11,15,0.8)],
-    "apps":[(5,15,0.8),(8,15,0.8),(11,15,0.8)],
-    "shakespeare":[(10,20,0.8),(12,20,0.8),(16,20,0.8)],
+    # "moocs":[(5,15,0.8),(8,15,0.8),(11,15,0.8)],
+    # "amazon":[(5,15,0.8),(8,15,0.8),(11,15,0.8)],
+    # "apps":[(5,15,0.8),(8,15,0.8),(11,15,0.8)],
+    # "shakespeare":[(10,20,0.8),(12,20,0.8),(16,20,0.8)],
+    "moocs":[(h,15,0.8) for h in [10,7,6]],
+    "amazon":[(h,15,0.8) for h in [10,7,6] ],
+    "apps":[(h,15,0.8) for h in [10,7,6]],
+    "shakespeare": [(h,20,0.8) for h in [15,13,11]],
 
     # # Regular GT
     "wikitext":[(12,15,0.8)],

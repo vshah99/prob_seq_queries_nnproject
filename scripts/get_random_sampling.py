@@ -46,10 +46,14 @@ lengths = {
 
     # # Long lengths
     # "wikitext":[(h,15) for h in reversed(range(12,14,1))],
-    "moocs":[(h,15) for h in [11,8,5]],
-    "amazon":[(h,15) for h in [11,8,5]],
-    "apps":[(h,15) for h in [11,8,5]],
-    "shakespeare": [(h,20) for h in [16,12,10]],
+    # "moocs":[(h,15) for h in [11,8,5]],
+    # "amazon":[(h,15) for h in [11,8,5]],
+    # "apps":[(h,15) for h in [11,8,5]],
+    # "shakespeare": [(h,20) for h in [16,12,10]],
+    "moocs":[(h,15) for h in [10,7,6]],
+    "amazon":[(h,15) for h in [10,7,6] ],
+    "apps":[(h,15) for h in [10,7,6]],
+    "shakespeare": [(h,20) for h in [15,13,11]],
     "wikitext":[(12,15)],
 
     # # Short lengths

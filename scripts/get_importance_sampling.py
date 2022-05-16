@@ -38,7 +38,7 @@ device=1
 sub_estimates = [10,100,1000]
 model_budget = False
 pseudo_gt = True
-max_num_queries = 100
+max_num_queries = 10
 folders = ["importance_sampling"] if not pseudo_gt else ['pseudo_gt']
 # datasets = ['shakespeare','moocs','apps','amazon'] #'shakespeare'
 datasets = ['wikitext'] #'shakespeare'
@@ -56,12 +56,16 @@ lengths = {
 
     # # Long lengths
     # "wikitext":[(h,15) for h in reversed(range(12,14,1))],
-    "moocs":[(h,15) for h in [11,8,5]],
-    "amazon":[(h,15) for h in [11,8,5]],
-    "apps":[(h,15) for h in [11,8,5]],
-    "shakespeare": [(h,20) for h in [16,12,10]],
+    "moocs":[(h,15) for h in [10,7,6]],
+    "amazon":[(h,15) for h in [10,7,6] ],
+    "apps":[(h,15) for h in [10,7,6]],
+    "shakespeare": [(h,20) for h in [15,13,11]],
+    # "moocs":[(h,15) for h in [11,8,5]],
+    # "amazon":[(h,15) for h in [11,8,5]],
+    # "apps":[(h,15) for h in [11,8,5]],
+    # "shakespeare": [(h,20) for h in [16,12,10]],
     # "wikitext":[(h,15) for h in reversed(range(11,14,1))],
-    "wikitext":[(12,15)],
+    "wikitext":[(13,15)],
 
     # # Short lengths
     # "wikitext":[(h,15) for h in reversed(range(12,14,1))],
@@ -97,7 +101,7 @@ for dataset_name in datasets:
         for hist_len,total_seq_len in len_info:
             args = copy.deepcopy(prep_dict['args'])
             args.estimate_type = mc_pseudo_gt if pseudo_gt else mc_estimate
-            args.variance_epsilon = 3e-6
+            args.variance_epsilon = 1e-7
             args.use_gpt2 = (dataset_name == 'wikitext')
             args.proposal_func = lm_proposal
             args.sub_estimates = sub_estimates if not pseudo_gt else None

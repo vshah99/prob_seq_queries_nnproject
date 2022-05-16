@@ -139,11 +139,83 @@ def prep_experiment(
     }
 
 
-def inf_horizon_query(
-    sample,
+def tau_ab_inf_horizon_query(
     args,
+    dataloader,
+    model=None,
+    sample_artifacts=["sample_estimates",'sample_estimate_var','sample_estimate_mean','model_iters','num_mc_samples'],
+    hybrid_artifacts=["bs_lower_bound",'is_estimates','sample_estimates','model_iters',
+                      'sample_estimate_var','sample_estimate_mean','num_beams','num_mc_samples'],
+    search_artifacts=['true_coverage','restricted_coverage','num_beams', 'model_iters',
+                      'bs_lower_bound','intermediate_lbs'],
  ):
-    pass
+
+    args.model = model; print();
+    args.proposal_func=lm_proposal_tau_ab
+    output = {}
+    artifact_store_roster = {
+        "beam_search_is_hybrid": hybrid_artifacts,
+        "beam_search_lower_bound":search_artifacts,
+        "mc_estimate":sample_artifacts,
+        "mc_pseudo_gt":sample_artifacts,
+    }
+    def _add_output(key, data,output=output):
+        if key not in output: output[key] = []
+        if isinstance(data, dict):
+            output_data = [data]
+        else:
+            output_data =[db[key] for db in data]
+        if not isinstance(output_data[0], (torch.Tensor, torch.LongTensor)):
+            output_data =[torch.Tensor(db[key]) for db in data]
+        output[key].append(output_data)
+
+    def _consolidate_output(key,output=output):
+        if isinstance(output[key],(torch.Tensor, torch.LongTensor)):
+            return
+        elif ((len(output[key][0].shape) == 1) or
+              (len(output[key][0].shape) == 2 and
+               ((args.sub_estimates) or
+               (key =='intermediate_lbs')))):
+            output[key] = torch.stack(
+                [torch.stack(data).squeeze()
+                 for data in output[key]]
+            )
+        elif len(output[key][0].shape) > 1:
+            output[key] = torch.stack(
+                [torch.cat(data).squeeze()
+                 for data in output[key]]
+            )
+
+    all_excluded_terms = args.excluded_terms_list;
+    artifacts = artifact_store_roster[args.estimate_type.__name__]
+    for i,sample in tqdm(enumerate(sample_list), disable=args.disable_tqdm):
+        for k in args.k_range:
+            data_list = []
+
+            if (args.disable_tqdm):
+                print(f"[{datetime.now()}] - {i}",flush=True)
+            args.seq_len = args.total_seq_len - args.hist_len
+            args.excluded_terms = all_excluded_terms[i]
+
+            kwargs = vars(args)
+            sample_output =args.estimate_type(sample,**kwargs)
+            # print(" - ", sample_output['sample_estimates'][-1,args.excluded_terms[0]].item())
+            data_list.append(sample_output)
+
+        print("",flush=True)
+        assert args.estimate_type.__name__ in artifact_store_roster,\
+            f"Estimate type {args.estimate_type.__name__} not found"
+        artifacts = artifact_store_roster[args.estimate_type.__name__]
+        for art in artifacts:
+            _add_output(art,data_list)
+
+    for art in artifacts:
+        _consolidate_output(art)
+
+    args.model = None
+    output['metadata'] = vars(args)
+    output['excluded_terms'] = all_excluded_terms
+    return output
 
 def all_k_fixed_term_query(
     args,
@@ -166,10 +238,13 @@ def all_k_fixed_term_query(
     }
     def _add_output(key, data,output=output):
         if key not in output: output[key] = []
-        output_data =[db[key] for db in data]
+        if isinstance(data, dict):
+            output_data = [data]
+        else:
+            output_data =[db[key] for db in data]
         if not isinstance(output_data[0], (torch.Tensor, torch.LongTensor)):
             output_data =[torch.Tensor(db[key]) for db in data]
-        output[key] += output_data
+        output[key].append(output_data)
 
     def _consolidate_output(key,output=output):
         if isinstance(output[key],(torch.Tensor, torch.LongTensor)):
@@ -178,13 +253,18 @@ def all_k_fixed_term_query(
               (len(output[key][0].shape) == 2 and
                ((args.sub_estimates) or
                (key =='intermediate_lbs')))):
-            output[key] = torch.stack(output[key]).squeeze()
-        elif len(output[key][0].shape) >= 1:
-            output[key] = torch.cat(output[key])
+            output[key] = torch.stack(
+                [torch.stack(data).squeeze()
+                 for data in output[key]]
+            )
+        elif len(output[key][0].shape) > 1:
+            output[key] = torch.stack(
+                [torch.cat(data).squeeze()
+                 for data in output[key]]
+            )
 
     all_excluded_terms = args.excluded_terms_list;
     artifacts = artifact_store_roster[args.estimate_type.__name__]
-    data_list = []
     for i,sample in tqdm(enumerate(sample_list), disable=args.disable_tqdm):
 
         if (args.disable_tqdm):
@@ -221,7 +301,8 @@ def sample_dynamic_target_token(
     args,
     dataloader,
     model=None,
-    sample_artifacts=["sample_estimates",'sample_estimate_var','sample_estimate_mean','model_iters','num_mc_samples'],
+    sample_artifacts=["sample_estimates",'sample_estimate_var','sample_estimate_mean','entropy_probs',
+                      'model_iters','num_mc_samples','intermediate_query_probs'],
     hybrid_artifacts=["bs_lower_bound",'is_estimates','sample_estimates','model_iters',
                       'sample_estimate_var','sample_estimate_mean','num_beams','num_mc_samples'],
     search_artifacts=['true_coverage','restricted_coverage','num_beams', 'model_iters',
@@ -324,7 +405,6 @@ def sample_dynamic_target_token(
         artifacts = artifact_store_roster[args.estimate_type.__name__]
         for art in artifacts:
             _add_output(art,data_list)
-        # break
 
     for art in artifacts:
         _consolidate_output(art)
