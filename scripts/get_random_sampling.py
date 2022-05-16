@@ -50,7 +50,7 @@ lengths = {
     "amazon":[(h,15) for h in [11,8,5]],
     "apps":[(h,15) for h in [11,8,5]],
     "shakespeare": [(h,20) for h in [16,12,10]],
-    "wikitext":[(13,15)],
+    "wikitext":[(12,15)],
 
     # # Short lengths
     # "wikitext":[(h,15) for h in reversed(range(12,14,1))],
