@@ -52,6 +52,8 @@ def uniform_proposal(hists, seq_len, model, vocab_size, excluded_terms,
         "model_log_prob": model_log_prob.unsqueeze(-1),
         "samples": samples,
         "logits": logits,
+        "intermediate_query_probs":torch.Tensor([]),
+        "entropy_probs":torch.Tensor([]),
         "next_log_dist": torch.log_softmax(logits, dim=-1)[..., -1, :],
     }
 
@@ -78,12 +80,13 @@ def lm_proposal(hists, seq_len, model, vocab_size, excluded_terms,
         # compute intermediate query probability
         if isinstance(model_log_prob,float) and isinstance(proposal_log_prob,float):
             intermediate_query_probs.append(logits.exp())
-        else: intermediate_query_probs.append((logits + model_log_prob.unsqueeze(-1) - proposal_log_prob.unsqueeze(-1)).exp())
+        else: intermediate_query_probs.append((logits + model_log_prob.unsqueeze(-1)
+                                               - proposal_log_prob.unsqueeze(-1)).exp())
 
         last_sample = torch.distributions.Categorical(logits=proposal_logits).sample().unsqueeze(-1)
         proposal_log_prob += torch.gather(proposal_logits, dim=-1, index=last_sample).squeeze()
         model_log_prob += torch.gather(logits, dim=-1, index=last_sample).squeeze()
-        entropy_probs.append(-(model_log_prob/proposal_log_prob.exp()))
+        entropy_probs.append(-proposal_log_prob)
         samples.append(last_sample)
 
     logits, _ = model.get_next_probs(last_sample, rnn_args=rnn_args, device=device,
@@ -94,7 +97,7 @@ def lm_proposal(hists, seq_len, model, vocab_size, excluded_terms,
     last_sample = torch.distributions.Categorical(logits=logits).sample().unsqueeze(-1)
     proposal_log_prob += torch.gather(logits, dim=-1, index=last_sample).squeeze(-1)
     model_log_prob += torch.gather(logits, dim=-1, index=last_sample).squeeze(-1)
-    entropy_probs.append(-(torch.log(model_log_prob) - proposal_log_prob).exp())
+    entropy_probs.append(-proposal_log_prob)
 
     samples = torch.cat((samples + [torch.ones_like(samples[0])*excluded_terms[0]]), dim=-1)
     return {
@@ -104,7 +107,7 @@ def lm_proposal(hists, seq_len, model, vocab_size, excluded_terms,
         "logits": torch.stack(all_logits,dim=1),
         "next_log_dist": logits,
         "intermediate_query_probs": torch.stack(intermediate_query_probs,dim=1),
-        "entropy_probs": torch.stack(entropy_probs,dim=-1).unsqueeze(0),
+        "entropy_probs": torch.stack(entropy_probs,dim=-1),
     }
 
 
@@ -192,7 +195,7 @@ def mc_estimate(hist, num_mc_samples, seq_len, model, excluded_terms, proposal_f
         term_log_prob = sample_out["next_log_dist"] + sample_out["model_log_prob"] - sample_out["proposal_log_prob"]
 
         out_dict['sample_estimates'].append(term_log_prob.exp().cpu())
-        out_dict['entropy_probs'].append(sample_out['entropy_probs'].mean(dim=0).cpu())
+        out_dict['entropy_probs'].append(sample_out['entropy_probs'].cpu())
         out_dict['intermediate_query_probs'].append(sample_out['intermediate_query_probs'].cpu())
         out_dict['num_mc_samples'] = torch.LongTensor(sub_estimates)
         model_iters += model.model_iters

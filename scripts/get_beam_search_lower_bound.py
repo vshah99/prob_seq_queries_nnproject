@@ -48,10 +48,10 @@ lengths_coverage = {
     # "amazon":[(5,15,0.8),(8,15,0.8),(11,15,0.8)],
     # "apps":[(5,15,0.8),(8,15,0.8),(11,15,0.8)],
     # "shakespeare":[(10,20,0.8),(12,20,0.8),(16,20,0.8)],
-    "moocs":[(h,15,0.8) for h in [10,7,6]],
-    "amazon":[(h,15,0.8) for h in [10,7,6] ],
-    "apps":[(h,15,0.8) for h in [10,7,6]],
-    "shakespeare": [(h,20,0.8) for h in [15,13,11]],
+    "moocs":[(h,15,0.8) for h in [9]],
+    "amazon":[(h,15,0.8) for h in [9]],
+    "apps":[(h,15,0.8) for h in [9]],
+    "shakespeare": [(h,20,0.8) for h in [14]],
 
     # # Regular GT
     "wikitext":[(12,15,0.8)],

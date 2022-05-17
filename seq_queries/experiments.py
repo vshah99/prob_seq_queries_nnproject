@@ -405,6 +405,7 @@ def sample_dynamic_target_token(
         artifacts = artifact_store_roster[args.estimate_type.__name__]
         for art in artifacts:
             _add_output(art,data_list)
+        # break
 
     for art in artifacts:
         _consolidate_output(art)
