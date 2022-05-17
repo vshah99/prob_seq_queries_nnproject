@@ -133,53 +133,34 @@ def load_GPT2_query_lm(device):
 def explore_gpt2(batch_size = 16,
               device=0,
               **kwargs):
+    samples = [
+        "in my opinion, ",
+        "to clarify ",
+        "go",
+        "hi, my name is ",
+        "where is ",
+        "I don't ",
+        "get",
+     ]
+    res = ['?','.','!',';']
+
     tokenizer = GPT2Tokenizer.from_pretrained('gpt2')
     tokenizer.padding_side = "right"
     tokenizer.pad_token = tokenizer.eos_token
+
+    data = []
+    for s in samples:
+        print(s,tokenizer.encode(s))
+        data.append(tokenizer.encode(s))
+
+    for r in res:
+        print(r,tokenizer.encode(r))
+
+    print(data)
+    data =[[259, 616, 4459, 11, 220], [1462, 18282, 220], [2188],
+           [5303, 11, 616, 1438, 318, 220], [3003, 318, 220], [40, 836, 470, 220],[1136]]
+    # Punctuation: [30,13,0,26]
     # tokenizer.decode([20526])
-    model = load_GPT2_query_lm()
-    dataset = load_dataset("wikitext",'wikitext-2-v1', split="validation")
-    gpt2_classificaiton_collator = Gpt2ClassificationCollator(use_tokenizer=tokenizer)
-    dataloader = torch.utils.data.DataLoader(dataset, batch_size=batch_size,
-                                          shuffle=True, collate_fn=gpt2_classificaiton_collator)
-    # dataloader = torch.utils.data.DataLoader(dataset, batch_size=batch_size)
-    data_list = []; data_str = []
-    df = pd.read_csv('/home/showalte/research/prob_seq_queries/data/wikitext/wikitext_val-dl.csv')
-    with torch.no_grad():
-        model.to('cuda:4')
-        # model.to(device)
-        for data in dataloader:
-            # print(torch.Tensor(data['input_ids']))
-            data, attn_mask = data.values()
-            # data_str += [tokenizer.decode(d) for d in data]
-            data = torch.LongTensor(df.values[0,:13])
-            print(data)
-            logits, hiddens = model.get_next_probs(data.unsqueeze(0), max_batch_size = 1,
-                                                   rnn_args=None,
-                                                   device = 'cuda:4')
-            print(logits.shape)
-            print(torch.softmax(logits,dim=-1).max(dim=-1))
-            sys.exit(1)
-            print("Hiddens")
-            logits, hiddens = model.get_next_probs(data[0,11:], max_batch_size = 1,
-                                                   rnn_args=hiddens,
-                                                   device = 'cuda:4')
-            print(logits.shape)
-            sys.exit(1)
-            # data_list.append(data)
-
-            # print(F.softmax(res.logits[...,-1,:],dim = -1).max(dim=-1))
-            print(res['logits'].shape)
-            sys.exit(1)
-            # res = model.forward(input_ids = data['input_ids'], attention_mask=data['attention_mask'])
-
-        # data = torch.cat(data_list,dim=0)
-        # 1678
-        return {
-            "model":model,
-            "tokenizer": tokenizer,
-            "dataset":dataset,
-        }
 
 # res = explore_gpt2()
 

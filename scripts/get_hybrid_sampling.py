@@ -33,13 +33,13 @@ from seq_queries.experiments import sample_dynamic_target_token, prep_experiment
 #   Function-Class Declaration
 #################################################################################
 
-device=5
-sub_estimates = [10,100,1000]
+device=4
+sub_estimates = [10,100,1000,5000]
 folders = ["beam_search_is_hybrid"]
-datasets = ['shakespeare','moocs','amazon','apps']
-# datasets = ['wikitext']
+# datasets = ['shakespeare','moocs','amazon','apps']
+datasets = ['wikitext']
 # datasets = ['shakespeare']
-max_num_queries = 1000
+max_num_queries = 100
 config_path = "config/testing/sample.yaml"
 lengths = {
 
@@ -50,7 +50,7 @@ lengths = {
     "shakespeare": [(h,20) for h in [14]],
 
     # # Short hybrid
-    "wikitext":[(h,15) for h in reversed(range(11,13,1))],
+    "wikitext":[(h,15) for h in [12]],
     # "moocs":[(h,15) for h in reversed(range(12,14,1))],
     # "amazon":[(h,15) for h in reversed(range(12,14,1))],
     # "apps":[(h,15) for h in reversed(range(12,14,1))],

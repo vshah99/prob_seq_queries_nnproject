@@ -179,6 +179,7 @@ def mc_estimate(hist, num_mc_samples, seq_len, model, excluded_terms, proposal_f
     out_dict = defaultdict(list)
     remaining_samples = num_mc_samples
     while remaining_samples > 0:
+        print(remaining_samples)
         sample_out = proposal_func(
             hists=hist.unsqueeze(0).expand(min(remaining_samples, batch_size), -1),
             seq_len=seq_len,
@@ -240,7 +241,7 @@ def mc_estimate(hist, num_mc_samples, seq_len, model, excluded_terms, proposal_f
 def beam_search_is_hybrid(hist, num_beams,num_mc_samples, seq_len, model, excluded_terms, interp_func,
                           batch_size, device, vocab_size,use_gpt2=False,
                           beam_search_outputs=['num_beams','true_coverage','restricted_coverage','num_beams_over_time'],
-                          min_variance=False,min_var_reduction=0.0,max_num_tree_beams=None,
+                          min_variance=False,min_var_reduction=0.0,max_num_tree_beams=None,flashy=False,
                           text_dict=None, **kwargs):
     model.model_iters = 0
     beam_search_output =beam_search_lower_bound(
@@ -257,6 +258,7 @@ def beam_search_is_hybrid(hist, num_beams,num_mc_samples, seq_len, model, exclud
             beam_search_output['bs_lower_bound'],
             num_mc_samples, seq_len, model,
             excluded_terms, batch_size, device,
+            flashy=flashy,
             **kwargs
         )
     else:
@@ -283,13 +285,15 @@ def tree_is_estimate_attn(
     excluded_terms,
     batch_size,
     device,
+    flashy=False,
     sub_estimates=None,
     **kwargs,
  ):
     # Sample each sequence individually from tree
     dist_estimates = []
     total_model_iters = model.model_iters; model_iters = []
-    for i in tqdm(range(num_mc_samples),disable=kwargs['disable_tqdm']):
+    # for i in tqdm(range(num_mc_samples),disable=not flashy and kwargs['disable_tqdm']):
+    for i in tqdm(range(num_mc_samples),disable=not flashy and kwargs['disable_tqdm']):
         log_p, log_q, rnn_args, depth_reached, last_token, _ = tree.sample_sequence(seq_len)
         total_model_iters += seq_len - depth_reached
         if sub_estimates and (i+1) in sub_estimates:
@@ -325,7 +329,6 @@ def tree_is_estimate_attn(
             device=device,
             return_logits=True,
         )
-        sys.exit(1)
 
         next_log_dist = torch.log_softmax(next_log_dist, dim=-1)
         dist_estimate = next_log_dist + log_p - log_q
@@ -643,7 +646,7 @@ def beam_search_lower_bound(hist, num_beams, seq_len, model, excluded_terms,
 def beam_search_is_hybrid_nr(hist, num_beams,num_mc_samples, seq_len, model, excluded_terms, interp_func,
                           batch_size, device, vocab_size,
                           beam_search_outputs=['num_beams','true_coverage','restricted_coverage'],
-                          min_variance=False,min_var_reduction=0.0,
+                          min_variance=False,min_var_reduction=0.0, flashy=False,
                           text_dict=None, **kwargs):
     model.model_iters = 0
     beam_search_output =beam_search_lower_bound(
@@ -658,6 +661,7 @@ def beam_search_is_hybrid_nr(hist, num_beams,num_mc_samples, seq_len, model, exc
         beam_search_output['bs_lower_bound'],
         num_mc_samples, seq_len, model,
         excluded_terms, batch_size, device,
+        flashy=flashy,
         **kwargs
     )
     for bso in beam_search_outputs:

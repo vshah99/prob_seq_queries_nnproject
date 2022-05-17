@@ -94,7 +94,7 @@ for dataset_name in datasets:
             # sys.exit(1)
 
             write_pkl(estimates,
-            f"data/{folder}/{dataset_name}/val_dl/val-dl_{dataset_name}_{folder.replace('_','-')}_" +
+            f"data/{folder}/{dataset_name}/val_dl/val-dl_{dataset_name}_unrestricted-{folder.replace('_','-')}_" +
             f"{args.hist_len}h_{args.total_seq_len}s_{args.num_mc_samples}mc" +
             f"{f'_{max_num_queries}q' if max_num_queries else ''}.pkl")
             estimates=None

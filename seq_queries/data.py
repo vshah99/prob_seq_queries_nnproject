@@ -6,11 +6,64 @@ import pandas as pd
 import numpy as np
 import pandas as pd
 
+from transformers import GPT2Tokenizer
 from .utils import read_pkl, write_pkl, write_json, read_json
 
 #######################################################################
 # Utilities for loading app data
 #######################################################################
+
+def load_flashy_apps(data_path, args):
+    text_dict = {}
+
+    # text, vocab = prepare_mobile_app_data_by_user(args.data_path, args.seq_len)
+    # vocab.add("<BOS>")  # beginning of sequence
+    # char_to_id = {v:i for i,v in enumerate(sorted(list(vocab)))}
+    # id_to_char = {i:v for v,i in char_to_id.items()}
+
+    data =[
+        [45]*2, #Minesweeper
+        [85]*2, #Youtube
+        [47]*2, #Netflix
+        [31]*2, #Hulu
+        [8]*2,  #Calculator
+        [65]*2, #Settings
+        [67]*2, #Snapchat
+        [9]*2, #Calendar
+        [57]*2 # Reddit
+    ]
+    text_dict['vocab_size'] = 50257
+    text_dict['text'] = data
+    # text_dict['vocab'] = vocab
+    # text_dict['id_to_char'] = id_to_char
+    # text_dict['char_to_id'] = char_to_id
+    text_dict['vocab'] = None
+    text_dict['id_to_char'] = None
+    text_dict['char_to_id'] = None
+    return text_dict
+
+def load_flashy_gpt_data(data_path, args):
+    text_dict = {}
+    tokenizer = GPT2Tokenizer.from_pretrained('gpt2')
+    samples = [
+        "in my opinion, ",
+        "go",
+        "hi, my name is ",
+        "where is ",
+        "once upon a ",
+        "I wish ",
+        "say",
+     ]
+
+    data = []
+    for s in samples:
+        data.append(tokenizer.encode(s))
+    text_dict['vocab_size'] = 50257
+    text_dict['text'] = data
+    text_dict['vocab'] = None
+    text_dict['id_to_char'] = samples
+    text_dict['char_to_id'] = None
+    return text_dict
 
 def load_amazon_data(data_path,args):
     text_dict = read_pkl(data_path)

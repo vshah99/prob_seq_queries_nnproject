@@ -49,6 +49,19 @@ def prep_experiment(
     set_random_seed(args)
     name = name.lower()
     config_roster = {
+        "flashy_gpt2": {
+            "checkpoint_path": None,
+            "data_path": "data/wikitext/wikitext_val-dl.csv",
+            "seq_len": 20,
+            "vocab_size": 50257,
+            "batch_size":512,
+            "use_gpt2":True,
+            "checkpoint_path":None,
+            "needs_dl":False,
+            "fixed_seq_len": 20,
+            "excluded_terms":[30,13,0,26],
+            "flashy":True,
+        },
         "wikitext": {
             "checkpoint_path": None,
             "data_path": "data/wikitext/wikitext_val-dl.csv",
@@ -57,6 +70,7 @@ def prep_experiment(
             "batch_size":512,
             "use_gpt2":True,
             "checkpoint_path":None,
+            "needs_dl":True,
         },
         "amazon": {
             "checkpoint_path": "/home/showalte/research/prob_seq_queries/models/amazon/",
@@ -65,6 +79,17 @@ def prep_experiment(
             "seq_len": 15,
             "vocab_size": 30,
             "val_data_pct": 0.0001,
+            "needs_dl":True,
+        },
+
+        "flashy_apps": {
+            "checkpoint_path": "/home/showalte/research/prob_seq_queries/models/apps/",
+            "data_path": "data/apps/lsapp.tsv",
+            "hidden_size": 512,
+            "fixed_seq_len": 15,
+            "vocab_size": 88,
+            "val_data_pct": 0.001,
+            "needs_dl":False,
         },
         "apps": {
             "checkpoint_path": "/home/showalte/research/prob_seq_queries/models/apps/",
@@ -73,6 +98,7 @@ def prep_experiment(
             "seq_len": 15,
             "vocab_size": 88,
             "val_data_pct": 0.001,
+            "needs_dl":True,
         },
         "moocs": {
             "checkpoint_path": "/home/showalte/research/prob_seq_queries/models/moocs/",
@@ -81,6 +107,7 @@ def prep_experiment(
             "seq_len": 15,
             "vocab_size": 98,
             "val_data_pct": 0.01,
+            "needs_dl":True,
         },
         "shakespeare": {
             "checkpoint_path": "/home/showalte/research/prob_seq_queries/models/shakespeare/",
@@ -89,6 +116,7 @@ def prep_experiment(
             "seq_len": 100,
             "vocab_size": 68,
             "val_data_pct": 0.05,
+            "needs_dl":True,
         },
     }
 
@@ -98,6 +126,8 @@ def prep_experiment(
         "moocs": load_mooc_data,
         "shakespeare": load_text_data,
         "wikitext": load_wikitext_data,
+        "flashy_gpt2": load_flashy_gpt_data,
+        "flashy_apps": load_flashy_apps,
     }
     assert name in load_roster,\
         "Dataset {} not found in roster"
@@ -113,16 +143,18 @@ def prep_experiment(
     for argument,details in extra_args.items():
         args.__dict__[argument] = details
     args.device=device
+    args.dataset = name
     text_dict= load_roster[name](args.data_path,args)
     args.text_dict = text_dict
     # print(text_dict['char_to_id'],flush=True)
     # print("====="*10)
-    train_dl, val_dl, test_dl = process_roster[name](
-        text_dict, args,
-        need_train=need_train,
-        need_val=need_val,
-        need_test=need_test,
-    )
+    if args.needs_dl:
+        train_dl, val_dl, test_dl = process_roster[name](
+            text_dict, args,
+            need_train=need_train,
+            need_val=need_val,
+            need_test=need_test,
+        )
 
     model = get_model(args)
     if args.checkpoint_path:
@@ -133,7 +165,7 @@ def prep_experiment(
     return {
         "train_dl": train_dl if need_train else None,
         "test_dl": test_dl if need_test else None,
-        "val_dl": val_dl,
+        "val_dl": val_dl if args.needs_dl else None,
         "args": args,
         "model":model,
     }
@@ -217,17 +249,29 @@ def tau_ab_inf_horizon_query(
     output['excluded_terms'] = all_excluded_terms
     return output
 
-def all_k_fixed_term_query(
+
+@torch.no_grad()
+def flashy_query(
     args,
-    sample_list,
+    dataloader,
     model=None,
-    sample_artifacts=["sample_estimates",'sample_estimate_var','sample_estimate_mean','model_iters','num_mc_samples'],
+    sample_artifacts=["sample_estimates",'sample_estimate_var','sample_estimate_mean','entropy_probs',
+                      'model_iters','num_mc_samples','intermediate_query_probs'],
     hybrid_artifacts=["bs_lower_bound",'is_estimates','sample_estimates','model_iters',
                       'sample_estimate_var','sample_estimate_mean','num_beams','num_mc_samples'],
     search_artifacts=['true_coverage','restricted_coverage','num_beams', 'model_iters',
                       'bs_lower_bound','intermediate_lbs'],
- ):
+    **kwargs,):
+    """Sample from any of these methods given an
+    input dataloader, arguments, and potentially a model
 
+    :dataloader: TODO
+    :args: TODO
+    :model: TODO
+    :: TODO
+    :returns: TODO
+
+    """
     args.model = model; print();
     output = {}
     artifact_store_roster = {
@@ -236,15 +280,17 @@ def all_k_fixed_term_query(
         "mc_estimate":sample_artifacts,
         "mc_pseudo_gt":sample_artifacts,
     }
+
+    def _tensor_output(key, data,output=output):
+        if key not in output: output[key] = []
+        output[key].append(torch.Tensor([db[key] for db in data]))
+
     def _add_output(key, data,output=output):
         if key not in output: output[key] = []
-        if isinstance(data, dict):
-            output_data = [data]
-        else:
-            output_data =[db[key] for db in data]
+        output_data =[db[key] for db in data]
         if not isinstance(output_data[0], (torch.Tensor, torch.LongTensor)):
             output_data =[torch.Tensor(db[key]) for db in data]
-        output[key].append(output_data)
+        output[key] += output_data
 
     def _consolidate_output(key,output=output):
         if isinstance(output[key],(torch.Tensor, torch.LongTensor)):
@@ -253,34 +299,38 @@ def all_k_fixed_term_query(
               (len(output[key][0].shape) == 2 and
                ((args.sub_estimates) or
                (key =='intermediate_lbs')))):
-            output[key] = torch.stack(
-                [torch.stack(data).squeeze()
-                 for data in output[key]]
-            )
-        elif len(output[key][0].shape) > 1:
-            output[key] = torch.stack(
-                [torch.cat(data).squeeze()
-                 for data in output[key]]
-            )
+            output[key] = torch.stack(output[key]).squeeze()
+        elif len(output[key][0].shape) >= 1:
+            output[key] = torch.cat(output[key])
 
-    all_excluded_terms = args.excluded_terms_list;
+    all_excluded_terms = [];
     artifacts = artifact_store_roster[args.estimate_type.__name__]
-    for i,sample in tqdm(enumerate(sample_list), disable=args.disable_tqdm):
+    data_list = []
+    for i,sample in tqdm(enumerate(args.text_dict['text']),
+                         disable=args.disable_tqdm):
+        sample = torch.LongTensor(sample)
+        print(sample,args.vocab_size)
+        if args.dataset == "flashy_apps":
+            args.excluded_terms = list(set(range(args.vocab_size)) - set([sample[0].item()]))
+            all_excluded_terms.append(torch.LongTensor(args.excluded_terms))
 
-        if (args.disable_tqdm):
+        if (args.use_gpt2 and
+            args.disable_tqdm):
             print(f"[{datetime.now()}] - {i}",flush=True)
-        args.seq_len = args.total_seq_len - args.hist_len
-        args.excluded_terms = all_excluded_terms[i]
+        elif i%10 == 0 and args.disable_tqdm:
+            print(".",end="",flush=True)
+        args.seq_len = args.fixed_seq_len
 
         kwargs = vars(args)
         sample_output =args.estimate_type(sample,**kwargs)
-        # print(" - ", sample_output['sample_estimates'][-1,args.excluded_terms[0]].item())
+            # print(" - ", sample_output['sample_estimates'][-1,args.excluded_terms[0]].item())
         data_list.append(sample_output)
 
-    print("",flush=True)
-    assert args.estimate_type.__name__ in artifact_store_roster,\
-        f"Estimate type {args.estimate_type.__name__} not found"
-    artifacts = artifact_store_roster[args.estimate_type.__name__]
+        print("",flush=True)
+        assert args.estimate_type.__name__ in artifact_store_roster,\
+            f"Estimate type {args.estimate_type.__name__} not found"
+        artifacts = artifact_store_roster[args.estimate_type.__name__]
+
     for art in artifacts:
         _add_output(art,data_list)
 
@@ -289,9 +339,12 @@ def all_k_fixed_term_query(
 
     args.model = None
     output['metadata'] = vars(args)
-    output['excluded_terms'] = all_excluded_terms
+    output['excluded_terms'] = torch.LongTensor(args.excluded_terms)
     return output
 
+#######################################################################
+# Static token
+#######################################################################
 
 
 
@@ -376,6 +429,7 @@ def sample_dynamic_target_token(
             sample = data_batch[i]
             args.seq_len = args.total_seq_len - args.hist_len
             args.excluded_terms = [dbatch[i,args.total_seq_len].cpu().item()]
+            # print("excluding NOTHING")
 
             if args.model_budget_filepath:
                 if args.estimate_type.__name__ == "mc_estimate":
@@ -395,6 +449,7 @@ def sample_dynamic_target_token(
 
             kwargs = vars(args)
             sample_output =args.estimate_type(sample,**kwargs)
+            # print(sample_output['num_mc_samples'])
             # print(" - ", sample_output['sample_estimates'][-1,args.excluded_terms[0]].item())
             data_list.append(sample_output)
             model_budget_i += 1
