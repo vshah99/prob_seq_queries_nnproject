@@ -1,7 +1,6 @@
 #################################################################################
 #
 #             Project Title:  Ground Truth Experiments
-#             Author:         Sam Showalter
 #             Date:           2022-04-30
 #
 #################################################################################
@@ -34,7 +33,7 @@ from seq_queries.experiments import sample_dynamic_target_token, prep_experiment
 #   Function-Class Declaration
 #################################################################################
 
-device=5
+device=6
 sub_estimates = [10,100,1000]
 model_budget = True
 max_num_queries=500

@@ -1,0 +1,48 @@
+# General args
+seed: 42
+dont_print_args: True
+cuda: true
+device_num: 0
+train_data_pct: 0.9
+val_data_pct: 0.05
+seq_len: 100
+do_test: false
+do_valid: true
+valid_epochs: 1
+
+# Model args
+rnn_type: LSTM
+hidden_size: 128
+finetune: false
+dropout: 0.3
+num_layers: 2
+masked_lm: false
+checkpoint_path: /home/showalte/research/prob_seq_queries/models/shakespeare/
+vocab_size: 68
+
+# Data args
+data_path: data/shakespeare/shakespeare_input.txt
+# data_path: data/lsapp.tsv
+batch_size: 4096
+
+# Training args not needed here
+# Evaluation arguments not needed here
+# Sampling arguments are provided by the testing script explicitly
+disable_tqdm: true
+
+# Sampling args
+estimate_type: search
+proposal_func: lm
+interp_func: linear
+top_k: 0
+top_p: 0
+min_variance: true
+min_var_reduction: 0.10
+num_beams: 0.0
+num_mc_samples: 100
+sub_estimates: []
+total_seq_len: 20
+hist_len: 18
+excluded_terms: [1]
+
+

@@ -221,7 +221,8 @@ def process_wikitext_data(text_dict, args,**kwargs): # batch_size, seq_len, dev=
     ids = text_dict['text']
     ids = torch.LongTensor(ids)
     if args.max_num_queries:
-        ids = ids[:args.max_num_queries]
+        print('starting at 100')
+        ids = ids[100:100 + args.max_num_queries]
 
     valid_dl = torch.utils.data.DataLoader(
         ids,

@@ -1,7 +1,6 @@
 #################################################################################
 #
 #             Project Title:  Ground Truth Experiments
-#             Author:         Sam Showalter
 #             Date:           2022-04-30
 #
 #################################################################################
@@ -34,11 +33,11 @@ from seq_queries.experiments import sample_dynamic_target_token, prep_experiment
 #   Function-Class Declaration
 #################################################################################
 
-device=1
-sub_estimates = [10,100,1000,10000]
+device=5
+sub_estimates = [10,100,1000]
 model_budget = False
 pseudo_gt = True
-max_num_queries = 100
+max_num_queries = 25
 folders = ["importance_sampling"] if not pseudo_gt else ['pseudo_gt']
 # datasets = ['shakespeare','moocs','apps','amazon'] #'shakespeare'
 datasets = ['wikitext'] #'shakespeare'

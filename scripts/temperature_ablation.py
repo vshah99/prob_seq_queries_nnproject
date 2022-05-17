@@ -2,7 +2,6 @@
 #################################################################################
 #
 #             Project Title:  Temperature ablation
-#             Author:         Sam Showalter
 #             Date:           2022-04-30
 #
 #################################################################################
@@ -17,6 +16,7 @@ import sys
 import copy
 from datetime import datetime
 
+# NEED TO REMOVE
 sys.path.insert(1, '/home/showalte/research/prob_seq_queries/')
 
 import numpy as np

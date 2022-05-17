@@ -1,7 +1,6 @@
 #################################################################################
 #
 #             Project Title:  Sampling
-#             Author:         Sam Showalter and Alex Boyd
 #             Date:           2022.04.13
 #
 #################################################################################
@@ -179,7 +178,6 @@ def mc_estimate(hist, num_mc_samples, seq_len, model, excluded_terms, proposal_f
     out_dict = defaultdict(list)
     remaining_samples = num_mc_samples
     while remaining_samples > 0:
-        print(remaining_samples)
         sample_out = proposal_func(
             hists=hist.unsqueeze(0).expand(min(remaining_samples, batch_size), -1),
             seq_len=seq_len,

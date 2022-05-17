@@ -1,7 +1,6 @@
 #################################################################################
 #
 #             Project Title:  Sequential Queries
-#             Author:         Sam Showalter
 #             Date:           2022.04.11
 #
 #################################################################################
@@ -429,7 +428,6 @@ def sample_dynamic_target_token(
             sample = data_batch[i]
             args.seq_len = args.total_seq_len - args.hist_len
             args.excluded_terms = [dbatch[i,args.total_seq_len].cpu().item()]
-            # print("excluding NOTHING")
 
             if args.model_budget_filepath:
                 if args.estimate_type.__name__ == "mc_estimate":

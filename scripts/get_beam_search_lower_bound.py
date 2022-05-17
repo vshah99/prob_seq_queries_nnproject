@@ -1,7 +1,6 @@
 #################################################################################
 #
 #             Project Title:  Ground Truth Experiments
-#             Author:         Sam Showalter
 #             Date:           2022-04-30
 #
 #################################################################################
@@ -33,7 +32,7 @@ from seq_queries.experiments import sample_dynamic_target_token, prep_experiment
 #   Function-Class Declaration
 #################################################################################
 
-device=6
+device=7
 folders = ["beam_search"]
 # datasets = ['shakespeare','moocs','apps', 'amazon']#'shakespeare'
 datasets = ['wikitext']

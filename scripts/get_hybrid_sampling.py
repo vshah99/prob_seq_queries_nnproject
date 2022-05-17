@@ -1,7 +1,6 @@
 #################################################################################
 #
 #             Project Title:  Ground Truth Experiments
-#             Author:         Sam Showalter
 #             Date:           2022-04-30
 #
 #################################################################################
@@ -33,13 +32,13 @@ from seq_queries.experiments import sample_dynamic_target_token, prep_experiment
 #   Function-Class Declaration
 #################################################################################
 
-device=4
+device=6
 sub_estimates = [10,100,1000,5000]
 folders = ["beam_search_is_hybrid"]
 # datasets = ['shakespeare','moocs','amazon','apps']
 datasets = ['wikitext']
 # datasets = ['shakespeare']
-max_num_queries = 100
+max_num_queries = 25
 config_path = "config/testing/sample.yaml"
 lengths = {
 
@@ -50,7 +49,7 @@ lengths = {
     "shakespeare": [(h,20) for h in [14]],
 
     # # Short hybrid
-    "wikitext":[(h,15) for h in [12]],
+    "wikitext":[(h,15) for h in [11]],
     # "moocs":[(h,15) for h in reversed(range(12,14,1))],
     # "amazon":[(h,15) for h in reversed(range(12,14,1))],
     # "apps":[(h,15) for h in reversed(range(12,14,1))],
