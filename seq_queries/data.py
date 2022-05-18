@@ -3,6 +3,7 @@ import sys
 import random
 import pickle as pkl
 import pandas as pd
+import time
 import numpy as np
 import pandas as pd
 
@@ -21,25 +22,31 @@ def load_flashy_apps(data_path, args):
     # char_to_id = {v:i for i,v in enumerate(sorted(list(vocab)))}
     # id_to_char = {i:v for v,i in char_to_id.items()}
 
-    data =[
-        [45]*2, #Minesweeper
-        [85]*2, #Youtube
-        [47]*2, #Netflix
-        [31]*2, #Hulu
-        [8]*2,  #Calculator
-        [65]*2, #Settings
-        [67]*2, #Snapchat
-        [9]*2, #Calendar
-        [57]*2 # Reddit
-    ]
-    text_dict['vocab_size'] = 50257
+    np.random.seed(int(time.time())%2**32)
+    comms = [3,14,16,23,30,39,44,40,41,51,60,73,74,79,81,82,84]
+    social_media = [18,19,33,34,47,52,55,57,67,78]
+
+
+    all_comm = [[40, 73, 40, 82, 60, 40, 51, 82, 40, 79],
+                 [81, 16, 3, 79, 3, 41, 74, 44, 30, 74]]
+    mid = [[57, 19, 52, 34, 52, 14, 81, 44, 51, 60],
+            [81, 44, 40, 81, 73, 52, 57, 55, 33, 57],]
+
+    few_social = [[34, 47, 67, 18, 81, 74, 16, 41, 16, 74]]
+    all_social = [[57, 34, 19, 52, 52, 34, 52, 19, 19, 34],
+ [57, 55, 67, 57, 47, 19, 47, 57, 67, 67]]
+    data = all_comm + few_social + mid + all_social
+    text_dict['vocab_size'] = 88
     text_dict['text'] = data
     # text_dict['vocab'] = vocab
     # text_dict['id_to_char'] = id_to_char
     # text_dict['char_to_id'] = char_to_id
     text_dict['vocab'] = None
+    text_dict['samples'] = data
     text_dict['id_to_char'] = None
     text_dict['char_to_id'] = None
+    text_dict['social_media'] = social_media
+    text_dict['comms'] =comms
     return text_dict
 
 def load_flashy_gpt_data(data_path, args):
@@ -47,12 +54,13 @@ def load_flashy_gpt_data(data_path, args):
     tokenizer = GPT2Tokenizer.from_pretrained('gpt2')
     samples = [
         "in my opinion, ",
+        "with that said, ",
+        "in other words, ",
         "go",
         "hi, my name is ",
         "where is ",
         "once upon a ",
         "I wish ",
-        "say",
      ]
 
     data = []

@@ -57,7 +57,7 @@ def prep_experiment(
             "use_gpt2":True,
             "checkpoint_path":None,
             "needs_dl":False,
-            "fixed_seq_len": 20,
+            "fixed_seq_len": 30,
             "excluded_terms":[30,13,0,26],
             "flashy":True,
         },
@@ -85,7 +85,9 @@ def prep_experiment(
             "checkpoint_path": "/home/showalte/research/prob_seq_queries/models/apps/",
             "data_path": "data/apps/lsapp.tsv",
             "hidden_size": 512,
-            "fixed_seq_len": 15,
+            "fixed_seq_len": 50,
+            "excluded_terms":[18,19,33,34,47,52,55,57,67] +[3,14,16,23,30,39,44,40,41,51,60,73,74,79,81,82,84],
+            "excluded_terms":[3,14,16,23,30,39,44,40,41,51,60,73,74,79,81,82,84],
             "vocab_size": 88,
             "val_data_pct": 0.001,
             "needs_dl":False,
@@ -309,9 +311,9 @@ def flashy_query(
                          disable=args.disable_tqdm):
         sample = torch.LongTensor(sample)
         print(sample,args.vocab_size)
-        if args.dataset == "flashy_apps":
-            args.excluded_terms = list(set(range(args.vocab_size)) - set([sample[0].item()]))
-            all_excluded_terms.append(torch.LongTensor(args.excluded_terms))
+        # if args.dataset == "flashy_apps":
+        #     args.excluded_terms = list(set(range(args.vocab_size)) - set([sample[0].item()]))
+        #     all_excluded_terms.append(torch.LongTensor(args.excluded_terms))
 
         if (args.use_gpt2 and
             args.disable_tqdm):
@@ -458,7 +460,6 @@ def sample_dynamic_target_token(
         artifacts = artifact_store_roster[args.estimate_type.__name__]
         for art in artifacts:
             _add_output(art,data_list)
-        # break
 
     for art in artifacts:
         _consolidate_output(art)
@@ -478,7 +479,7 @@ def sample_all_k_static_token(
     args,
     dataloader,
     model = None,
-    sample_artifacts=["sample_estimates",'sample_estimate_var','sample_estimate_mean','model_iters','num_mc_samples'],
+    sample_artifacts=["sample_estimates",'sample_estimate_var','sample_estimate_mean','model_iters','num_mc_samples','intermediate_query_probs'],
     hybrid_artifacts=["bs_lower_bound",'is_estimates','sample_estimates','model_iters',
                       'sample_estimate_var','sample_estimate_mean','num_beams','num_mc_samples'],
     search_artifacts=['true_coverage','restricted_coverage','num_beams', 'model_iters',
@@ -582,7 +583,6 @@ def sample_all_k_static_token(
         artifacts = artifact_store_roster[args.estimate_type.__name__]
         for art in artifacts:
             _add_output(art,data_list)
-        # break
 
     for art in artifacts:
         _consolidate_output(art)
@@ -678,6 +678,71 @@ def _get_joint_log_prob_of_all_seqs(
 
 
 
+@torch.no_grad()
+def beam_search_ablation(
+    args,
+    dataloader,
+    model=None,
+    search_artifacts=['num_beams_over_time'],
+    **kwargs,):
+    """Sample from any of these methods given an
+    input dataloader, arguments, and potentially a model
+
+    :dataloader: TODO
+    :args: TODO
+    :model: TODO
+    :: TODO
+    :returns: TODO
+
+    """
+    args.model = model; print();
+    output = {}
+    artifact_store_roster = {
+        "beam_search_lower_bound":search_artifacts,
+    }
+
+
+    def _add_output(key, data,output=output):
+        if key not in output: output[key] = []
+        output_data =[db[key] for db in data]
+        output[key] += output_data
+
+    all_excluded_terms = [];
+    artifacts = artifact_store_roster[args.estimate_type.__name__]
+    for dbatch in tqdm(dataloader, disable=args.disable_tqdm):
+        data_list = []
+        data_batch =[dbatch[i,:args.hist_len] for i in range(dbatch.shape[0])]
+
+        for i in range(dbatch.shape[0]):
+            if (args.use_gpt2 and
+                args.disable_tqdm):
+                print(f"[{datetime.now()}] - {i}",flush=True)
+            elif i%10 == 0 and args.disable_tqdm:
+                print(".",end="",flush=True)
+            sample = data_batch[i]
+            args.seq_len = args.total_seq_len - args.hist_len
+            args.excluded_terms = []
+
+            kwargs = vars(args)
+            sample_output =args.estimate_type(sample,**kwargs)
+            # print(sample_output['num_mc_samples'])
+            # print(" - ", sample_output['sample_estimates'][-1,args.excluded_terms[0]].item())
+            data_list.append(sample_output)
+
+        print("",flush=True)
+        assert args.estimate_type.__name__ in artifact_store_roster,\
+            f"Estimate type {args.estimate_type.__name__} not found"
+        artifacts = artifact_store_roster[args.estimate_type.__name__]
+        for art in artifacts:
+            _add_output(art,data_list)
+
+    args.model = None
+    output['metadata'] = vars(args)
+    return output
+
+#######################################################################
+# Static token
+#######################################################################
 
 
 

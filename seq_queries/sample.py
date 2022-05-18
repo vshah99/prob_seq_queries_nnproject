@@ -12,6 +12,7 @@
 import os
 import sys
 import copy
+import time
 from collections import defaultdict
 import pickle as pkl
 
@@ -23,7 +24,7 @@ import torch.nn as nn
 from tqdm import tqdm
 # from .data import load_text, process_data
 from .model import CausalLM, MaskedLM
-from .utils import top_k_top_p_filtering, min_variance_top_k
+from .utils import top_k_top_p_filtering, min_variance_top_k, _set_random_seed
 from .tree import BeamSearchSampleTree
 
 #################################################################################
@@ -76,15 +77,14 @@ def lm_proposal(hists, seq_len, model, vocab_size, excluded_terms,
         proposal_logits = torch.log_softmax(top_k_top_p_filtering(proposal_logits/temperature, top_k=top_k, top_p=top_p), dim=-1)
         logits = torch.log_softmax(logits, dim=-1)
 
-        # compute intermediate query probability
-        if isinstance(model_log_prob,float) and isinstance(proposal_log_prob,float):
-            intermediate_query_probs.append(logits.exp())
-        else: intermediate_query_probs.append((logits + model_log_prob.unsqueeze(-1)
-                                               - proposal_log_prob.unsqueeze(-1)).exp())
-
         last_sample = torch.distributions.Categorical(logits=proposal_logits).sample().unsqueeze(-1)
         proposal_log_prob += torch.gather(proposal_logits, dim=-1, index=last_sample).squeeze()
         model_log_prob += torch.gather(logits, dim=-1, index=last_sample).squeeze()
+
+        if isinstance(model_log_prob,float) and isinstance(proposal_log_prob,float):
+            intermediate_query_probs.append(logits.exp())
+        else: intermediate_query_probs.append((logits + model_log_prob.unsqueeze(-1)
+                                               - proposal_log_prob.unsqueeze(-1)).exp().cpu())
         entropy_probs.append(-proposal_log_prob)
         samples.append(last_sample)
 
@@ -114,11 +114,13 @@ def lm_proposal(hists, seq_len, model, vocab_size, excluded_terms,
 def mc_pseudo_gt(hist, num_mc_samples, seq_len, model, excluded_terms, proposal_func,
                  min_num_mc_samples, max_num_mc_samples, variance_epsilon, vocab_size,
                  var_check_interval=1000, batch_size=128,temperature=1, top_k=0, top_p=0.0,
-                 device='cpu', cat_list = ['sample_estimates'],
+                 device='cpu', cat_list = ['sample_estimates', 'intermediate_query_probs'],
                 sub_estimates=None,**kwargs):
+
+    # _set_random_seed(int(time.time()) %2**32)
     model.model_iters = 0
     assert(len(hist.shape) == 1)  # (hist_seq_len), Only conditions on a single history
-    # assert(len(excluded_terms) == 1) # For most experiments
+    assert(len(excluded_terms) == 1) # For most experiments
     temp_out_dict = defaultdict(list)
     out_dict = defaultdict(list)
     samp_est_var = 1.0 # Some general seeding
@@ -142,23 +144,31 @@ def mc_pseudo_gt(hist, num_mc_samples, seq_len, model, excluded_terms, proposal_
                 batch_size=batch_size,
                 temperature=temperature,
             )
+
             remaining_samples -= batch_size
             term_log_prob = sample_out["next_log_dist"] + sample_out["model_log_prob"] - sample_out["proposal_log_prob"]
 
             temp_out_dict['sample_estimates'].append(term_log_prob.exp().cpu())
+            temp_out_dict['intermediate_query_probs'].append(sample_out['intermediate_query_probs'].cpu())
             model_iters += model.model_iters
-            # out_dict['q_log_prob'].append(sample_out['proposal_log_prob'])
 
         for item in cat_list:
             out_dict[item] = torch.cat(temp_out_dict[item],dim=0)
 
-        samp_est_var = (out_dict['sample_estimates'][:,excluded_terms[0]].var()/
-                        out_dict['sample_estimates'].shape[0])
+
+        samp_est_var = min((out_dict['sample_estimates'][:,excluded_terms[0]].var()/
+                            out_dict['sample_estimates'].shape[0]),
+                           (out_dict['intermediate_query_probs'][...,excluded_terms[0]].var()/
+                            out_dict['intermediate_query_probs'].shape[0]).min(),
+                           )
         remaining_samples = var_check_interval
 
-    out_dict['num_mc_samples'] = torch.LongTensor([total_samples])
+    out_dict['num_mc_samples'] = torch.LongTensor([total_samples]*out_dict['intermediate_query_probs'].shape[-2])
     out_dict['model_iters'] = torch.LongTensor([model_iters])
     out_dict['sample_estimate_var'] =torch.var(out_dict['sample_estimates'],dim=0)
+    out_dict['intermediate_query_probs'] = torch.cat((out_dict['intermediate_query_probs'],
+                                                      out_dict['sample_estimates'].unsqueeze(1))
+                                                     ,dim=1).mean(dim=0).unsqueeze(0)
     out_dict['sample_estimates'] =out_dict['sample_estimates'].mean(dim=0)
     return out_dict
 
@@ -198,6 +208,7 @@ def mc_estimate(hist, num_mc_samples, seq_len, model, excluded_terms, proposal_f
         out_dict['intermediate_query_probs'].append(sample_out['intermediate_query_probs'].cpu())
         out_dict['num_mc_samples'] = torch.LongTensor(sub_estimates)
         model_iters += model.model_iters
+        print(remaining_samples)
 
     # out_dict['entropy_probs'] =
     for item in cat_list:
@@ -498,8 +509,8 @@ def lin_interp(target_pct, n_current, n_end):
 def beam_search_lower_bound(hist, num_beams, seq_len, model, excluded_terms,
                             interp_func, batch_size, device, vocab_size, use_gpt2=False,
                             bs_tree=None, store_intermediate_lbs=False, sub_estimates=None,
-                            min_variance=False,min_var_reduction=0.0,
-                            max_num_tree_beams=None, **kwargs):
+                            min_variance=False,min_var_reduction=0.0,bs_ablation=False,
+                            bs_ablation_max_beams=10000,max_num_tree_beams=None, **kwargs):
     assert(isinstance(num_beams, (int, float)))
     assert(len(hist.shape) == 1)
 
@@ -578,7 +589,8 @@ def beam_search_lower_bound(hist, num_beams, seq_len, model, excluded_terms,
                 rnn_args = rnn_args[..., seq_inds, :]
 
         num_beams_over_time.append(cur_log_probs.shape[0])
-        # print(num_beams_over_time)
+        if bs_ablation and num_beams_over_time[-1] >= bs_ablation_max_beams:
+            break
 
     logits, states = model.get_next_probs(beams, rnn_args=rnn_args, device=device, return_logits=True,
                                         max_batch_size=batch_size)
@@ -615,7 +627,6 @@ def beam_search_lower_bound(hist, num_beams, seq_len, model, excluded_terms,
                   for i in range(seq_len)]
              for sub_est in sub_estimates])
         out_dict['model_iters'] = model_breakout.sum(dim=-1)
-        out_dict['num_beams_over_time'] = torch.LongTensor(num_beams_over_time)
         out_dict['num_beams'] = torch.LongTensor(sub_estimates)
         out_dict['bs_lower_bound'] = torch.stack(
                 # (vocab)

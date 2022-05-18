@@ -35,13 +35,13 @@ from seq_queries.experiments import sample_dynamic_target_token, prep_experiment
 #   Function-Class Declaration
 #################################################################################
 
-device=6
+device=0
 sub_estimates = [10,100,1000]
 model_budget = True
 max_num_queries = 1000
 folders = ["temperature_ablation"]
 # datasets = ['shakespeare','moocs','apps','amazon'] #'shakespeare'
-datasets = ['shakespeare','apps','amazon']
+datasets = ['shakespeare','apps','amazon','moocs']
 config_path = "config/testing/sample.yaml"
 beams = {
     "apps":[(11,15,0.8)],
@@ -50,7 +50,7 @@ beams = {
     "shakespeare":[(16,20,0.8)],
 }
 
-temperatures = [0.01,0.1]
+temperatures = [0.01,0.1,0.5,0.75,1,1.25,1.75,2,3,4,5,10]
 lengths = {
 
     # # Long lengths
@@ -97,7 +97,6 @@ for dataset_name in datasets:
                 model.temperature = temp
                 args = copy.deepcopy(prep_dict['args'])
                 args.estimate_type = mc_estimate
-                args.variance_epsilon = 5e-6
                 args.use_gpt2 = (dataset_name == 'wikitext')
                 args.proposal_func = lm_proposal
                 args.sub_estimates = sub_estimates
@@ -141,7 +140,9 @@ for dataset_name in datasets:
                     .format(datetime.now(),dataset_name,temp,folder,args.num_mc_samples,args.hist_len,args.total_seq_len, False, model_budget))
 
                 args.estimate_type = mc_pseudo_gt
-                args.variance_epsilon = 5e-6
+                if dataset_name == "apps":
+                    args.variance_epsilon = 1e-8
+                else: args.variance_epsilon = 1e-7
                 args.sub_estimates = None
                 estimates = sample_dynamic_target_token(args, val_dl, model)
                 os.makedirs(f"data/{folder}/{dataset_name}/val_dl/temp_pgt/",exist_ok=True)

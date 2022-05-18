@@ -163,6 +163,8 @@ def sampling_args(parser):
     group.add_argument("--top_k", type=int, default=1, help="Top k beams/samples to take")
     group.add_argument("--top_p", type=_int_or_float, default=1, help="Top p coverage to take")
     group.add_argument("--min_variance", type=_str2bool, default=False, help="Use minimum variance to set beam search beam widths")
+    group.add_argument("--bs_ablation", type=_str2bool, default=False, help="Beam search ablation, checks on intermediate runs from function")
+    group.add_argument("--bs_ablation_max_beams", type=int, default=10000, help="Beam search ablation, checks on intermediate runs from function")
     group.add_argument("--min_var_reduction", type=float, default=0.0, help="Minimum variance reduction for minimum variance technique (otherwise, take all beams)")
     group.add_argument("--hybrid_max_num_beams", type=int, default=1500, help="Maximum_number of beams the hybrid can hold at each step")
     group.add_argument("--num_beams", type=_int_or_float, default=10, help="Beam coverage (or number)")

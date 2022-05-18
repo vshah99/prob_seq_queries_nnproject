@@ -33,21 +33,21 @@ from seq_queries.experiments import sample_dynamic_target_token, prep_experiment
 #   Function-Class Declaration
 #################################################################################
 
-device=5
+device=7
 sub_estimates = [10,100,1000]
 model_budget = False
 pseudo_gt = True
-max_num_queries = 25
+max_num_queries = 10
 folders = ["importance_sampling"] if not pseudo_gt else ['pseudo_gt']
-# datasets = ['shakespeare','moocs','apps','amazon'] #'shakespeare'
-datasets = ['wikitext'] #'shakespeare'
+datasets = ['apps','shakespeare','moocs','amazon'] #'shakespeare'
+# datasets = ['wikitext'] #'shakespeare'
 config_path = "config/testing/sample.yaml"
 
 pseudo_gt_lengths = {
-    "moocs":[(h,15) for h in [9]],
-    "amazon":[(h,15) for h in [9]],
-    "apps":[(h,15) for h in [9]],
-    "shakespeare": [(h,20) for h in [14]],
+    "moocs":[(h,15) for h in [5]],
+    "amazon":[(h,15) for h in [5]],
+    "apps":[(h,15) for h in [5]],
+    "shakespeare": [(h,20) for h in [10]],
     # "wikitext":[(h,15) for h in reversed(range(11,14,1))],
     "wikitext":[(11,15)],
 }
@@ -100,7 +100,10 @@ for dataset_name in datasets:
         for hist_len,total_seq_len in len_info:
             args = copy.deepcopy(prep_dict['args'])
             args.estimate_type = mc_pseudo_gt if pseudo_gt else mc_estimate
-            args.variance_epsilon = 1e-8
+            if dataset_name == "apps":
+                args.variance_epsilon = 1e-7
+            else: args.variance_epsilon = 1e-6
+            args.max_num_mc_samples = 100000
             args.use_gpt2 = (dataset_name == 'wikitext')
             args.proposal_func = lm_proposal
             args.sub_estimates = sub_estimates if not pseudo_gt else None

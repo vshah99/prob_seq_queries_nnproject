@@ -1,0 +1,394 @@
+==================================================
+* Running for dataset shakespeare
+==================================================
+[2022-05-17 15:34:07.983309] Checkpoint path [/home/showalte/research/prob_seq_queries/models/shakespeare/] does exist.
+[2022-05-17 15:34:07.995946] Loaded model from /home/showalte/research/prob_seq_queries/models/shakespeare/shakespeare_model.pt
+==================================================
+[2022-05-17 15:34:07.998564] batch_size ................. 8000
+[2022-05-17 15:34:07.998579] checkpoint_path ............ /home/showalte/research/prob_seq_queries/models/shakespeare/
+[2022-05-17 15:34:07.998591] cuda ....................... True
+[2022-05-17 15:34:07.998597] data_path .................. data/shakespeare/shakespeare_input.txt
+[2022-05-17 15:34:07.998603] dataset .................... shakespeare
+[2022-05-17 15:34:07.998608] dataset_phase_shift_path ... /srv/disk00/samshow/amazon/amazon_phase_trans.pkl
+[2022-05-17 15:34:07.998615] device ..................... 0
+[2022-05-17 15:34:07.998620] device_num ................. 0
+[2022-05-17 15:34:07.998626] disable_tqdm ............... True
+[2022-05-17 15:34:07.998632] do_test .................... False
+[2022-05-17 15:34:07.998638] do_valid ................... True
+[2022-05-17 15:34:07.998643] dont_print_args ............ True
+[2022-05-17 15:34:07.998652] dont_shuffle ............... None
+[2022-05-17 15:34:07.998664] dropout .................... 0.3
+[2022-05-17 15:34:07.998672] estimate_type .............. <function beam_search_lower_bound at 0x7f8a366b1280>
+[2022-05-17 15:34:07.998682] excluded_terms ............. [1]
+[2022-05-17 15:34:07.998690] excluded_terms_list ........ [[]]
+[2022-05-17 15:34:07.998696] finetune ................... False
+[2022-05-17 15:34:07.998703] grad_clip .................. 1.0
+[2022-05-17 15:34:07.998709] hidden_size ................ 128
+[2022-05-17 15:34:07.998714] hist_len ................... 18
+[2022-05-17 15:34:07.998720] hybrid_max_num_beams ....... 1500
+[2022-05-17 15:34:07.998728] interp_func ................ <function lin_interp at 0x7f8a366b1160>
+[2022-05-17 15:34:07.998734] log_interval ............... 100
+[2022-05-17 15:34:07.998741] lr ......................... 0.001
+[2022-05-17 15:34:07.998746] lr_decay_style ............. constant
+[2022-05-17 15:34:07.998752] masked_lm .................. False
+[2022-05-17 15:34:07.998758] max_k ...................... None
+[2022-05-17 15:34:07.998764] max_num_mc_samples ......... 100000
+[2022-05-17 15:34:07.998769] max_num_queries ............ 1000
+[2022-05-17 15:34:07.998775] min_num_mc_samples ......... 10000
+[2022-05-17 15:34:07.998780] min_phase_shift ............ 0
+[2022-05-17 15:34:07.998786] min_var_reduction .......... 0.1
+[2022-05-17 15:34:07.998792] min_variance ............... True
+[2022-05-17 15:34:07.998798] model_budget_filepath ...... None
+[2022-05-17 15:34:07.998804] needs_dl ................... True
+[2022-05-17 15:34:07.998810] num_beams .................. 0.0
+[2022-05-17 15:34:07.998816] num_layers ................. 2
+[2022-05-17 15:34:07.998821] num_mc_samples ............. 100
+[2022-05-17 15:34:07.998827] num_workers ................ 0
+[2022-05-17 15:34:07.998832] optimizer .................. adam
+[2022-05-17 15:34:07.998839] proposal_func .............. <function lm_proposal at 0x7f8a366ab160>
+[2022-05-17 15:34:07.998844] rnn_type ................... LSTM
+[2022-05-17 15:34:07.998850] save_epochs ................ 1
+[2022-05-17 15:34:07.998855] seed ....................... 42
+[2022-05-17 15:34:07.998861] seq_len .................... 100
+[2022-05-17 15:34:07.998866] shuffle .................... True
+[2022-05-17 15:34:07.998872] store_intermediate_lbs ..... True
+[2022-05-17 15:34:07.998878] sub_estimates .............. []
+[2022-05-17 15:34:07.998884] tau_a_excl_terms ........... []
+[2022-05-17 15:34:07.998889] tau_b_excl_terms ........... []
+[2022-05-17 15:34:07.998895] terms_of_interest .......... []
+[2022-05-17 15:34:07.998900] text_dict .................. None
+[2022-05-17 15:34:07.998906] top_k ...................... 0
+[2022-05-17 15:34:07.998911] top_p ...................... 0
+[2022-05-17 15:34:07.998917] total_seq_len .............. 20
+[2022-05-17 15:34:07.998923] train_data_pct ............. 0.9
+[2022-05-17 15:34:07.998928] train_epochs ............... 40
+[2022-05-17 15:34:07.998934] use_gpt2 ................... False
+[2022-05-17 15:34:07.998939] val_data_pct ............... 0.05
+[2022-05-17 15:34:07.998948] val_metrics ................ ['accuracy']
+[2022-05-17 15:34:07.998953] valid_epochs ............... 1
+[2022-05-17 15:34:07.998962] variance_epsilon ........... 5e-06
+[2022-05-17 15:34:07.998967] vocab_size ................. 68
+[2022-05-17 15:34:07.998973] warmup_pct ................. 0.01
+[2022-05-17 15:34:07.998979] weight_decay ............... 0.0
+==================================================
+[2022-05-17 15:34:08.013311] | Dataset: shakespeare | Temperature: 0.01 |Sample type: temperature_ablation | Num samples: 1000 | Hist length 16 | Total Seq Length 20 | Pseudo GT: False | Model Budget: True
+
+....................................................................................................
+==================================================
+ * Pseudo GT
+==================================================
+[2022-05-17 15:37:28.044371] | Dataset: shakespeare | Temperature: 0.01 |Sample type: temperature_ablation | Num samples: 1000 | Hist length 16 | Total Seq Length 20 | Pseudo GT: False | Model Budget: True
+
+....................................................................................................
+==================================================
+ * Beam search
+==================================================
+/home/showalte/research/prob_seq_queries/data/beam_search_is_hybrid/shakespeare/val_dl/val-dl_shakespeare_beam-search-is-hybrid_16h_20s_1000mc_1000q.pkl
+[2022-05-17 15:50:46.427771] | Dataset: shakespeare | Temperature 0.01 | Sample type: temperature_ablation | Num Beams: 0.8 | Hist length 16 | Total Seq Length 20
+
+....................................................................................................
+==================================================
+[2022-05-17 15:52:32.208566] | Dataset: shakespeare | Temperature: 0.1 |Sample type: temperature_ablation | Num samples: 1000 | Hist length 16 | Total Seq Length 20 | Pseudo GT: False | Model Budget: True
+
+....................................................................................................
+==================================================
+ * Pseudo GT
+==================================================
+[2022-05-17 15:56:03.961563] | Dataset: shakespeare | Temperature: 0.1 |Sample type: temperature_ablation | Num samples: 1000 | Hist length 16 | Total Seq Length 20 | Pseudo GT: False | Model Budget: True
+
+....................................................................................................
+==================================================
+ * Beam search
+==================================================
+/home/showalte/research/prob_seq_queries/data/beam_search_is_hybrid/shakespeare/val_dl/val-dl_shakespeare_beam-search-is-hybrid_16h_20s_1000mc_1000q.pkl
+[2022-05-17 16:35:31.882017] | Dataset: shakespeare | Temperature 0.1 | Sample type: temperature_ablation | Num Beams: 0.8 | Hist length 16 | Total Seq Length 20
+
+....................................................................................................
+==================================================
+[2022-05-17 16:37:46.309358] | Dataset: shakespeare | Temperature: 0.5 |Sample type: temperature_ablation | Num samples: 1000 | Hist length 16 | Total Seq Length 20 | Pseudo GT: False | Model Budget: True
+
+....................................................................................................
+==================================================
+ * Pseudo GT
+==================================================
+[2022-05-17 16:39:29.031659] | Dataset: shakespeare | Temperature: 0.5 |Sample type: temperature_ablation | Num samples: 1000 | Hist length 16 | Total Seq Length 20 | Pseudo GT: False | Model Budget: True
+
+....................................................................................................
+==================================================
+ * Beam search
+==================================================
+/home/showalte/research/prob_seq_queries/data/beam_search_is_hybrid/shakespeare/val_dl/val-dl_shakespeare_beam-search-is-hybrid_16h_20s_1000mc_1000q.pkl
+[2022-05-17 18:23:25.605927] | Dataset: shakespeare | Temperature 0.5 | Sample type: temperature_ablation | Num Beams: 0.8 | Hist length 16 | Total Seq Length 20
+
+....................................................................................................
+==================================================
+[2022-05-17 18:24:39.091596] | Dataset: shakespeare | Temperature: 0.75 |Sample type: temperature_ablation | Num samples: 1000 | Hist length 16 | Total Seq Length 20 | Pseudo GT: False | Model Budget: True
+
+....................................................................................................
+==================================================
+ * Pseudo GT
+==================================================
+[2022-05-17 18:25:53.928911] | Dataset: shakespeare | Temperature: 0.75 |Sample type: temperature_ablation | Num samples: 1000 | Hist length 16 | Total Seq Length 20 | Pseudo GT: False | Model Budget: True
+
+....................................................................................................
+==================================================
+ * Beam search
+==================================================
+/home/showalte/research/prob_seq_queries/data/beam_search_is_hybrid/shakespeare/val_dl/val-dl_shakespeare_beam-search-is-hybrid_16h_20s_1000mc_1000q.pkl
+[2022-05-17 20:03:12.714729] | Dataset: shakespeare | Temperature 0.75 | Sample type: temperature_ablation | Num Beams: 0.8 | Hist length 16 | Total Seq Length 20
+
+....................................................................................................
+==================================================
+[2022-05-17 20:04:18.952644] | Dataset: shakespeare | Temperature: 1 |Sample type: temperature_ablation | Num samples: 1000 | Hist length 16 | Total Seq Length 20 | Pseudo GT: False | Model Budget: True
+
+....................................................................................................
+==================================================
+ * Pseudo GT
+==================================================
+[2022-05-17 20:05:29.345252] | Dataset: shakespeare | Temperature: 1 |Sample type: temperature_ablation | Num samples: 1000 | Hist length 16 | Total Seq Length 20 | Pseudo GT: False | Model Budget: True
+
+....................................................................................................
+==================================================
+ * Beam search
+==================================================
+/home/showalte/research/prob_seq_queries/data/beam_search_is_hybrid/shakespeare/val_dl/val-dl_shakespeare_beam-search-is-hybrid_16h_20s_1000mc_1000q.pkl
+[2022-05-17 21:42:12.799045] | Dataset: shakespeare | Temperature 1 | Sample type: temperature_ablation | Num Beams: 0.8 | Hist length 16 | Total Seq Length 20
+
+....................................................................................................
+==================================================
+[2022-05-17 21:43:11.709427] | Dataset: shakespeare | Temperature: 1.25 |Sample type: temperature_ablation | Num samples: 1000 | Hist length 16 | Total Seq Length 20 | Pseudo GT: False | Model Budget: True
+
+....................................................................................................
+==================================================
+ * Pseudo GT
+==================================================
+[2022-05-17 21:44:34.653922] | Dataset: shakespeare | Temperature: 1.25 |Sample type: temperature_ablation | Num samples: 1000 | Hist length 16 | Total Seq Length 20 | Pseudo GT: False | Model Budget: True
+
+....................................................................................................
+==================================================
+ * Beam search
+==================================================
+/home/showalte/research/prob_seq_queries/data/beam_search_is_hybrid/shakespeare/val_dl/val-dl_shakespeare_beam-search-is-hybrid_16h_20s_1000mc_1000q.pkl
+[2022-05-17 22:46:30.266915] | Dataset: shakespeare | Temperature 1.25 | Sample type: temperature_ablation | Num Beams: 0.8 | Hist length 16 | Total Seq Length 20
+
+....................................................................................................
+==================================================
+[2022-05-17 22:47:18.934148] | Dataset: shakespeare | Temperature: 1.75 |Sample type: temperature_ablation | Num samples: 1000 | Hist length 16 | Total Seq Length 20 | Pseudo GT: False | Model Budget: True
+
+....................................................................................................
+==================================================
+ * Pseudo GT
+==================================================
+[2022-05-17 22:48:11.516418] | Dataset: shakespeare | Temperature: 1.75 |Sample type: temperature_ablation | Num samples: 1000 | Hist length 16 | Total Seq Length 20 | Pseudo GT: False | Model Budget: True
+
+....................................................................................................
+==================================================
+ * Beam search
+==================================================
+/home/showalte/research/prob_seq_queries/data/beam_search_is_hybrid/shakespeare/val_dl/val-dl_shakespeare_beam-search-is-hybrid_16h_20s_1000mc_1000q.pkl
+[2022-05-17 23:29:56.775309] | Dataset: shakespeare | Temperature 1.75 | Sample type: temperature_ablation | Num Beams: 0.8 | Hist length 16 | Total Seq Length 20
+
+....................................................................................................
+==================================================
+[2022-05-17 23:30:43.873961] | Dataset: shakespeare | Temperature: 2 |Sample type: temperature_ablation | Num samples: 1000 | Hist length 16 | Total Seq Length 20 | Pseudo GT: False | Model Budget: True
+
+....................................................................................................
+==================================================
+ * Pseudo GT
+==================================================
+[2022-05-17 23:31:38.453629] | Dataset: shakespeare | Temperature: 2 |Sample type: temperature_ablation | Num samples: 1000 | Hist length 16 | Total Seq Length 20 | Pseudo GT: False | Model Budget: True
+
+....................................................................................................
+==================================================
+ * Beam search
+==================================================
+/home/showalte/research/prob_seq_queries/data/beam_search_is_hybrid/shakespeare/val_dl/val-dl_shakespeare_beam-search-is-hybrid_16h_20s_1000mc_1000q.pkl
+[2022-05-18 00:11:26.802785] | Dataset: shakespeare | Temperature 2 | Sample type: temperature_ablation | Num Beams: 0.8 | Hist length 16 | Total Seq Length 20
+
+....................................................................................................
+==================================================
+[2022-05-18 00:12:02.340115] | Dataset: shakespeare | Temperature: 3 |Sample type: temperature_ablation | Num samples: 1000 | Hist length 16 | Total Seq Length 20 | Pseudo GT: False | Model Budget: True
+
+....................................................................................................
+==================================================
+ * Pseudo GT
+==================================================
+[2022-05-18 00:12:43.063713] | Dataset: shakespeare | Temperature: 3 |Sample type: temperature_ablation | Num samples: 1000 | Hist length 16 | Total Seq Length 20 | Pseudo GT: False | Model Budget: True
+
+....................................................................................................
+==================================================
+ * Beam search
+==================================================
+/home/showalte/research/prob_seq_queries/data/beam_search_is_hybrid/shakespeare/val_dl/val-dl_shakespeare_beam-search-is-hybrid_16h_20s_1000mc_1000q.pkl
+[2022-05-18 00:27:53.089765] | Dataset: shakespeare | Temperature 3 | Sample type: temperature_ablation | Num Beams: 0.8 | Hist length 16 | Total Seq Length 20
+
+....................................................................................................
+==================================================
+[2022-05-18 00:28:35.393995] | Dataset: shakespeare | Temperature: 4 |Sample type: temperature_ablation | Num samples: 1000 | Hist length 16 | Total Seq Length 20 | Pseudo GT: False | Model Budget: True
+
+....................................................................................................
+==================================================
+ * Pseudo GT
+==================================================
+[2022-05-18 00:29:11.306032] | Dataset: shakespeare | Temperature: 4 |Sample type: temperature_ablation | Num samples: 1000 | Hist length 16 | Total Seq Length 20 | Pseudo GT: False | Model Budget: True
+
+....................................................................................................
+==================================================
+ * Beam search
+==================================================
+/home/showalte/research/prob_seq_queries/data/beam_search_is_hybrid/shakespeare/val_dl/val-dl_shakespeare_beam-search-is-hybrid_16h_20s_1000mc_1000q.pkl
+[2022-05-18 00:36:24.717793] | Dataset: shakespeare | Temperature 4 | Sample type: temperature_ablation | Num Beams: 0.8 | Hist length 16 | Total Seq Length 20
+
+....................................................................................................
+==================================================
+[2022-05-18 00:37:03.054519] | Dataset: shakespeare | Temperature: 5 |Sample type: temperature_ablation | Num samples: 1000 | Hist length 16 | Total Seq Length 20 | Pseudo GT: False | Model Budget: True
+
+....................................................................................................
+==================================================
+ * Pseudo GT
+==================================================
+[2022-05-18 00:37:56.422372] | Dataset: shakespeare | Temperature: 5 |Sample type: temperature_ablation | Num samples: 1000 | Hist length 16 | Total Seq Length 20 | Pseudo GT: False | Model Budget: True
+
+....................................................................................................
+==================================================
+ * Beam search
+==================================================
+/home/showalte/research/prob_seq_queries/data/beam_search_is_hybrid/shakespeare/val_dl/val-dl_shakespeare_beam-search-is-hybrid_16h_20s_1000mc_1000q.pkl
+[2022-05-18 00:44:11.429179] | Dataset: shakespeare | Temperature 5 | Sample type: temperature_ablation | Num Beams: 0.8 | Hist length 16 | Total Seq Length 20
+
+....................................................................................................
+==================================================
+[2022-05-18 00:45:04.196402] | Dataset: shakespeare | Temperature: 10 |Sample type: temperature_ablation | Num samples: 1000 | Hist length 16 | Total Seq Length 20 | Pseudo GT: False | Model Budget: True
+
+....................................................................................................
+==================================================
+ * Pseudo GT
+==================================================
+[2022-05-18 00:46:03.249071] | Dataset: shakespeare | Temperature: 10 |Sample type: temperature_ablation | Num samples: 1000 | Hist length 16 | Total Seq Length 20 | Pseudo GT: False | Model Budget: True
+
+....................................................................................................
+==================================================
+ * Beam search
+==================================================
+/home/showalte/research/prob_seq_queries/data/beam_search_is_hybrid/shakespeare/val_dl/val-dl_shakespeare_beam-search-is-hybrid_16h_20s_1000mc_1000q.pkl
+[2022-05-18 00:50:51.919045] | Dataset: shakespeare | Temperature 10 | Sample type: temperature_ablation | Num Beams: 0.8 | Hist length 16 | Total Seq Length 20
+
+....................................................................................................
+==================================================
+==================================================
+* Running for dataset apps
+==================================================
+[2022-05-18 00:52:12.647067] Checkpoint path [/home/showalte/research/prob_seq_queries/models/apps/] does exist.
+[2022-05-18 00:52:12.656695] Loaded model from /home/showalte/research/prob_seq_queries/models/apps/model_100.pt
+==================================================
+[2022-05-18 00:52:13.067615] batch_size ................. 8000
+[2022-05-18 00:52:13.067643] checkpoint_path ............ /home/showalte/research/prob_seq_queries/models/apps/
+[2022-05-18 00:52:13.067653] cuda ....................... True
+[2022-05-18 00:52:13.067659] data_path .................. data/apps/lsapp.tsv
+[2022-05-18 00:52:13.067665] dataset .................... apps
+[2022-05-18 00:52:13.067671] dataset_phase_shift_path ... /srv/disk00/samshow/amazon/amazon_phase_trans.pkl
+[2022-05-18 00:52:13.067676] device ..................... 0
+[2022-05-18 00:52:13.067682] device_num ................. 0
+[2022-05-18 00:52:13.067688] disable_tqdm ............... True
+[2022-05-18 00:52:13.067694] do_test .................... False
+[2022-05-18 00:52:13.067700] do_valid ................... True
+[2022-05-18 00:52:13.067713] dont_print_args ............ True
+[2022-05-18 00:52:13.067720] dont_shuffle ............... None
+[2022-05-18 00:52:13.067732] dropout .................... 0.3
+[2022-05-18 00:52:13.067740] estimate_type .............. <function beam_search_lower_bound at 0x7f8a366b1280>
+[2022-05-18 00:52:13.067751] excluded_terms ............. [1]
+[2022-05-18 00:52:13.067758] excluded_terms_list ........ [[]]
+[2022-05-18 00:52:13.067764] finetune ................... False
+[2022-05-18 00:52:13.067770] grad_clip .................. 1.0
+[2022-05-18 00:52:13.067777] hidden_size ................ 512
+[2022-05-18 00:52:13.067782] hist_len ................... 18
+[2022-05-18 00:52:13.067788] hybrid_max_num_beams ....... 1500
+[2022-05-18 00:52:13.067795] interp_func ................ <function lin_interp at 0x7f8a366b1160>
+[2022-05-18 00:52:13.067805] log_interval ............... 100
+[2022-05-18 00:52:13.067813] lr ......................... 0.001
+[2022-05-18 00:52:13.067818] lr_decay_style ............. constant
+[2022-05-18 00:52:13.067824] masked_lm .................. False
+[2022-05-18 00:52:13.067830] max_k ...................... None
+[2022-05-18 00:52:13.067836] max_num_mc_samples ......... 100000
+[2022-05-18 00:52:13.067842] max_num_queries ............ 1000
+[2022-05-18 00:52:13.067847] min_num_mc_samples ......... 10000
+[2022-05-18 00:52:13.067852] min_phase_shift ............ 0
+[2022-05-18 00:52:13.067859] min_var_reduction .......... 0.1
+[2022-05-18 00:52:13.067864] min_variance ............... True
+[2022-05-18 00:52:13.067871] model_budget_filepath ...... None
+[2022-05-18 00:52:13.067876] needs_dl ................... True
+[2022-05-18 00:52:13.067882] needs_encoding ............. True
+[2022-05-18 00:52:13.067888] num_beams .................. 0.0
+[2022-05-18 00:52:13.067894] num_layers ................. 2
+[2022-05-18 00:52:13.067899] num_mc_samples ............. 100
+[2022-05-18 00:52:13.067905] num_workers ................ 0
+[2022-05-18 00:52:13.067912] optimizer .................. adam
+[2022-05-18 00:52:13.067918] proposal_func .............. <function lm_proposal at 0x7f8a366ab160>
+[2022-05-18 00:52:13.067924] rnn_type ................... LSTM
+[2022-05-18 00:52:13.067929] save_epochs ................ 1
+[2022-05-18 00:52:13.067934] seed ....................... 42
+[2022-05-18 00:52:13.067940] seq_len .................... 15
+[2022-05-18 00:52:13.067946] shuffle .................... True
+[2022-05-18 00:52:13.067952] store_intermediate_lbs ..... True
+[2022-05-18 00:52:13.067957] sub_estimates .............. []
+[2022-05-18 00:52:13.067963] tau_a_excl_terms ........... []
+[2022-05-18 00:52:13.067968] tau_b_excl_terms ........... []
+[2022-05-18 00:52:13.067974] terms_of_interest .......... []
+[2022-05-18 00:52:13.067980] text_dict .................. None
+[2022-05-18 00:52:13.067985] top_k ...................... 0
+[2022-05-18 00:52:13.067990] top_p ...................... 0
+[2022-05-18 00:52:13.067997] total_seq_len .............. 20
+[2022-05-18 00:52:13.068003] train_data_pct ............. 0.9
+[2022-05-18 00:52:13.068008] train_epochs ............... 40
+[2022-05-18 00:52:13.068014] use_gpt2 ................... False
+[2022-05-18 00:52:13.068020] val_data_pct ............... 0.001
+[2022-05-18 00:52:13.068027] val_metrics ................ ['accuracy']
+[2022-05-18 00:52:13.068032] valid_epochs ............... 1
+[2022-05-18 00:52:13.068040] variance_epsilon ........... 5e-06
+[2022-05-18 00:52:13.068046] vocab_size ................. 88
+[2022-05-18 00:52:13.068053] warmup_pct ................. 0.01
+[2022-05-18 00:52:13.068059] weight_decay ............... 0.0
+==================================================
+[2022-05-18 00:52:13.069563] | Dataset: apps | Temperature: 0.01 |Sample type: temperature_ablation | Num samples: 1000 | Hist length 11 | Total Seq Length 15 | Pseudo GT: False | Model Budget: True
+
+....................................................................................................
+==================================================
+ * Pseudo GT
+==================================================
+[2022-05-18 00:54:30.391423] | Dataset: apps | Temperature: 0.01 |Sample type: temperature_ablation | Num samples: 1000 | Hist length 11 | Total Seq Length 15 | Pseudo GT: False | Model Budget: True
+
+....................................................................................................
+==================================================
+ * Beam search
+==================================================
+/home/showalte/research/prob_seq_queries/data/beam_search_is_hybrid/apps/val_dl/val-dl_apps_beam-search-is-hybrid_11h_15s_1000mc_1000q.pkl
+[2022-05-18 01:07:11.500340] | Dataset: apps | Temperature 0.01 | Sample type: temperature_ablation | Num Beams: 0.8 | Hist length 11 | Total Seq Length 15
+
+....................................................................................................
+==================================================
+[2022-05-18 01:08:42.238399] | Dataset: apps | Temperature: 0.1 |Sample type: temperature_ablation | Num samples: 1000 | Hist length 11 | Total Seq Length 15 | Pseudo GT: False | Model Budget: True
+
+....................................................................................................
+==================================================
+ * Pseudo GT
+==================================================
+[2022-05-18 01:10:54.212132] | Dataset: apps | Temperature: 0.1 |Sample type: temperature_ablation | Num samples: 1000 | Hist length 11 | Total Seq Length 15 | Pseudo GT: False | Model Budget: True
+
+....................................................................................................
+==================================================
+ * Beam search
+==================================================
+/home/showalte/research/prob_seq_queries/data/beam_search_is_hybrid/apps/val_dl/val-dl_apps_beam-search-is-hybrid_11h_15s_1000mc_1000q.pkl
+[2022-05-18 01:23:25.519866] | Dataset: apps | Temperature 0.1 | Sample type: temperature_ablation | Num Beams: 0.8 | Hist length 11 | Total Seq Length 15
+
+....................................................................................................
+==================================================
+[2022-05-18 01:25:14.835705] | Dataset: apps | Temperature: 0.5 |Sample type: temperature_ablation | Num samples: 1000 | Hist length 11 | Total Seq Length 15 | Pseudo GT: False | Model Budget: True
+
+....................................................................................................
+==================================================
+ * Pseudo GT
+==================================================
+[2022-05-18 01:27:03.415792] | Dataset: apps | Temperature: 0.5 |Sample type: temperature_ablation | Num samples: 1000 | Hist length 11 | Total Seq Length 15 | Pseudo GT: False | Model Budget: True
+
+................................

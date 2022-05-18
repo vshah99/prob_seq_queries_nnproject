@@ -274,6 +274,14 @@ def compute_num_beams_from_budget(vocab_size, beam, seq_len, excluded_terms):
         final_beams.append(new_beam)
     return final_beams[-1]
 
+def _set_random_seed(seed):
+    """Set random seed for reproducibility."""
+
+    assert seed != 0,"Random seed cannot be 0"
+    if seed is not None:
+        random.seed(seed)
+        np.random.seed(seed)
+        torch.manual_seed(seed)
 
 def set_random_seed(args):
     """Set random seed for reproducibility."""
