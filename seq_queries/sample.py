@@ -208,7 +208,7 @@ def mc_estimate(hist, num_mc_samples, seq_len, model, excluded_terms, proposal_f
         out_dict['intermediate_query_probs'].append(sample_out['intermediate_query_probs'].cpu())
         out_dict['num_mc_samples'] = torch.LongTensor(sub_estimates)
         model_iters += model.model_iters
-        print(remaining_samples)
+        # print(remaining_samples)
 
     # out_dict['entropy_probs'] =
     for item in cat_list:

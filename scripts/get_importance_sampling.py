@@ -33,21 +33,22 @@ from seq_queries.experiments import sample_dynamic_target_token, prep_experiment
 #   Function-Class Declaration
 #################################################################################
 
-device=7
+device=6
 sub_estimates = [10,100,1000]
 model_budget = False
 pseudo_gt = True
-max_num_queries = 10
+max_num_queries = 1000
 folders = ["importance_sampling"] if not pseudo_gt else ['pseudo_gt']
-datasets = ['apps','shakespeare','moocs','amazon'] #'shakespeare'
+# datasets = ['apps','shakespeare','moocs','amazon'] #'shakespeare'
+datasets = ['shakespeare'] #'shakespeare'
 # datasets = ['wikitext'] #'shakespeare'
 config_path = "config/testing/sample.yaml"
 
 pseudo_gt_lengths = {
-    "moocs":[(h,15) for h in [5]],
-    "amazon":[(h,15) for h in [5]],
-    "apps":[(h,15) for h in [5]],
-    "shakespeare": [(h,20) for h in [10]],
+    "moocs":[(h,15) for h in range(5,14,1)],
+    "amazon":[(h,15) for h in range(5,14,1)],
+    "apps":[(h,15) for h in range(5,14,1)],
+    "shakespeare": [(h,20) for h in range(10,19,1)],
     # "wikitext":[(h,15) for h in reversed(range(11,14,1))],
     "wikitext":[(11,15)],
 }
@@ -101,8 +102,8 @@ for dataset_name in datasets:
             args = copy.deepcopy(prep_dict['args'])
             args.estimate_type = mc_pseudo_gt if pseudo_gt else mc_estimate
             if dataset_name == "apps":
-                args.variance_epsilon = 1e-7
-            else: args.variance_epsilon = 1e-6
+                args.variance_epsilon = 1e-8
+            else: args.variance_epsilon = 1e-7
             args.max_num_mc_samples = 100000
             args.use_gpt2 = (dataset_name == 'wikitext')
             args.proposal_func = lm_proposal
@@ -124,6 +125,7 @@ for dataset_name in datasets:
                     print(e)
                     print("====="*10)
                     continue
+
 
             print("[{}] | Dataset: {} | Sample type: {} | Num samples: {} | Hist length {} | Total Seq Length {} | Pseudo GT: {} | Model Budget: {}"\
                   .format(datetime.now(),dataset_name,folder,args.num_mc_samples,args.hist_len,args.total_seq_len, pseudo_gt, model_budget))

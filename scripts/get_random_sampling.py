@@ -33,10 +33,10 @@ from seq_queries.experiments import sample_dynamic_target_token, prep_experiment
 #   Function-Class Declaration
 #################################################################################
 
-device=6
-sub_estimates = [10,100,1000]
+device=2
+sub_estimates = [10,100,1000,5000]
 model_budget = True
-max_num_queries=500
+max_num_queries=100
 folders = ["random_sampling"]
 # datasets = ['shakespeare',"amazon","apps",'moocs'] #'shakespeare'
 datasets = ['wikitext'] #'shakespeare'
