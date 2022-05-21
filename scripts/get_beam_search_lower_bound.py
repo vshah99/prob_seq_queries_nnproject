@@ -32,17 +32,18 @@ from seq_queries.experiments import sample_dynamic_target_token, prep_experiment
 #   Function-Class Declaration
 #################################################################################
 
-device=3
+device=0
 folders = ["beam_search"]
 datasets = ['shakespeare','moocs','apps', 'amazon']#'shakespeare'
 # datasets = ['wikitext']
-num_mc_samples = 5000
-num_beams = 10000
-model_budget = False
-max_num_queries=100
+num_mc_samples = 10000
+sub_estimates = [10,30,50,100,300, 500,1000,3000,5000,10000]
+num_beams = 0.8
+model_budget = True
+max_num_queries=1000
 config_path = "config/testing/sample.yaml"
-steps = [5]
-shake_steps = [10]
+steps = [5,9,13]
+shake_steps = [10,14,18]
 lengths_coverage = {
 
     # Long GT
@@ -125,10 +126,10 @@ for dataset_name in datasets:
             estimates['metadata']['text_dict']['text'] = None
             args.num_beams = float(coverage)
 
-            for e,d in estimates.items():
-                if isinstance(d, (torch.Tensor, torch.LongTensor)):
-                    print(e, d.shape)
-            sys.exit(1)
+            # for e,d in estimates.items():
+            #     if isinstance(d, (torch.Tensor, torch.LongTensor)):
+            #         print(e, d.shape)
+            # sys.exit(1)
 
 
             write_pkl(estimates,

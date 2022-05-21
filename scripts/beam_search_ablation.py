@@ -40,7 +40,7 @@ config_path = "config/testing/sample.yaml"
 covs =[0.95,0.75,0.5]
 lengths_coverage = {
     # Long GT
-    "moocs":[(5,15,h) for h in covs],
+    "moocs":[(5,15,0.8), for h in covs],
     "amazon":[(5,15,h) for h in covs],
     "apps":[(5,15,h) for h in covs],
     "shakespeare": [(10,20,h) for h in covs],

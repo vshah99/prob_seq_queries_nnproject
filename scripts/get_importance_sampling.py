@@ -33,15 +33,16 @@ from seq_queries.experiments import sample_dynamic_target_token, prep_experiment
 #   Function-Class Declaration
 #################################################################################
 
-device=6
+device=1
+# sub_estimates = [10,30,50,100,300, 500,1000,3000,5000,10000]
 sub_estimates = [10,100,1000]
-model_budget = False
-pseudo_gt = True
-max_num_queries = 1000
+model_budget = True
+pseudo_gt = False
+max_num_queries = 100
 folders = ["importance_sampling"] if not pseudo_gt else ['pseudo_gt']
-# datasets = ['apps','shakespeare','moocs','amazon'] #'shakespeare'
-datasets = ['shakespeare'] #'shakespeare'
-# datasets = ['wikitext'] #'shakespeare'
+# datasets = ['amazon'] #'shakespeare'
+# datasets = ['shakespeare'] #'shakespeare'
+datasets = ['wikitext'] #'shakespeare'
 config_path = "config/testing/sample.yaml"
 
 pseudo_gt_lengths = {
@@ -56,10 +57,10 @@ lengths = {
 
     # # Long lengths
     # "wikitext":[(h,15) for h in reversed(range(12,14,1))],
-    "moocs":[(h,15) for h in [9]],
-    "amazon":[(h,15) for h in [9]],
-    "apps":[(h,15) for h in [9]],
-    "shakespeare": [(h,20) for h in [14]],
+    "moocs":[(h,15) for h in [5,9,13]],
+    "amazon":[(h,15) for h in [9,13]],
+    "apps":[(h,15) for h in [5,9,13]],
+    "shakespeare": [(h,20) for h in [10,14,18]],
     # "moocs":[(h,15) for h in [11,8,5]],
     # "amazon":[(h,15) for h in [11,8,5]],
     # "apps":[(h,15) for h in [11,8,5]],

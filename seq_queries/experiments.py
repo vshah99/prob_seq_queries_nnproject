@@ -450,7 +450,11 @@ def sample_dynamic_target_token(
                     assert isinstance(args.num_beams,int),"Num beams for model budget has to be an int"
 
             kwargs = vars(args)
+            # print(model_budget[model_budget_i])
+            # print(args.sub_estimates)
+            # print(args.num_mc_samples)
             sample_output =args.estimate_type(sample,**kwargs)
+            # print("========"*5)
             # print(sample_output['num_mc_samples'])
             # print(" - ", sample_output['sample_estimates'][-1,args.excluded_terms[0]].item())
             data_list.append(sample_output)

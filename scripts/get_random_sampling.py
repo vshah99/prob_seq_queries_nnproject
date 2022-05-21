@@ -34,12 +34,12 @@ from seq_queries.experiments import sample_dynamic_target_token, prep_experiment
 #################################################################################
 
 device=2
-sub_estimates = [10,100,1000,5000]
+sub_estimates = [10,30,50,100,300, 500,1000,3000,5000,10000]
 model_budget = True
-max_num_queries=100
+max_num_queries=1000
 folders = ["random_sampling"]
-# datasets = ['shakespeare',"amazon","apps",'moocs'] #'shakespeare'
-datasets = ['wikitext'] #'shakespeare'
+datasets = ['shakespeare',"amazon","apps",'moocs'] #'shakespeare'
+# datasets = ['wikitext'] #'shakespeare'
 config_path = "config/testing/sample.yaml"
 lengths = {
 
@@ -49,10 +49,10 @@ lengths = {
     # "amazon":[(h,15) for h in [11,8,5]],
     # "apps":[(h,15) for h in [11,8,5]],
     # "shakespeare": [(h,20) for h in [16,12,10]],
-    "moocs":[(h,15) for h in [9]],
-    "amazon":[(h,15) for h in [9]],
-    "apps":[(h,15) for h in [9]],
-    "shakespeare": [(h,20) for h in [14]],
+    "moocs":[(h,15) for h in [5,9,13]],
+    "amazon":[(h,15) for h in [5,9,13]],
+    "apps":[(h,15) for h in [5,9,13]],
+    "shakespeare": [(h,20) for h in [10,14,18]],
     "wikitext":[(11,15)],
 
     # # Short lengths
