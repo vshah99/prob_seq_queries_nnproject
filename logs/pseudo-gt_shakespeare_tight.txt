@@ -75,4 +75,37 @@
 ==================================================
 [2022-05-18 08:21:12.096281] | Dataset: shakespeare | Sample type: pseudo_gt | Num samples: None | Hist length 10 | Total Seq Length 20 | Pseudo GT: True | Model Budget: False
 
-..................
+....................................................................................................
+==================================================
+[2022-05-18 08:57:03.628487] | Dataset: shakespeare | Sample type: pseudo_gt | Num samples: None | Hist length 11 | Total Seq Length 20 | Pseudo GT: True | Model Budget: False
+
+....................................................................................................
+==================================================
+[2022-05-18 09:26:21.845418] | Dataset: shakespeare | Sample type: pseudo_gt | Num samples: None | Hist length 12 | Total Seq Length 20 | Pseudo GT: True | Model Budget: False
+
+....................................................................................................
+==================================================
+[2022-05-18 09:54:06.309923] | Dataset: shakespeare | Sample type: pseudo_gt | Num samples: None | Hist length 13 | Total Seq Length 20 | Pseudo GT: True | Model Budget: False
+
+....................................................................................................
+==================================================
+[2022-05-18 10:17:00.655889] | Dataset: shakespeare | Sample type: pseudo_gt | Num samples: None | Hist length 14 | Total Seq Length 20 | Pseudo GT: True | Model Budget: False
+
+....................................................................................................
+==================================================
+[2022-05-18 10:36:48.003734] | Dataset: shakespeare | Sample type: pseudo_gt | Num samples: None | Hist length 15 | Total Seq Length 20 | Pseudo GT: True | Model Budget: False
+
+....................................................................................................
+==================================================
+[2022-05-18 10:50:09.442666] | Dataset: shakespeare | Sample type: pseudo_gt | Num samples: None | Hist length 16 | Total Seq Length 20 | Pseudo GT: True | Model Budget: False
+
+....................................................................................................
+==================================================
+[2022-05-18 11:02:22.526886] | Dataset: shakespeare | Sample type: pseudo_gt | Num samples: None | Hist length 17 | Total Seq Length 20 | Pseudo GT: True | Model Budget: False
+
+....................................................................................................
+==================================================
+[2022-05-18 11:12:15.376800] | Dataset: shakespeare | Sample type: pseudo_gt | Num samples: None | Hist length 18 | Total Seq Length 20 | Pseudo GT: True | Model Budget: False
+
+....................................................................................................
+==================================================

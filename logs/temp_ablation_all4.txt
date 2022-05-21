@@ -753,4 +753,358 @@
 ==================================================
 [2022-05-18 08:19:33.190475] | Dataset: amazon | Temperature: 2 |Sample type: temperature_ablation | Num samples: 1000 | Hist length 11 | Total Seq Length 15 | Pseudo GT: False | Model Budget: True
 
-.............................................................................
+....................................................................................................
+==================================================
+ * Beam search
+==================================================
+/home/showalte/research/prob_seq_queries/data/beam_search_is_hybrid/amazon/val_dl/val-dl_amazon_beam-search-is-hybrid_11h_15s_1000mc_1000q.pkl
+[2022-05-18 08:29:14.313204] | Dataset: amazon | Temperature 2 | Sample type: temperature_ablation | Num Beams: 0.8 | Hist length 11 | Total Seq Length 15
+
+....................................................................................................
+==================================================
+[2022-05-18 08:30:30.998524] | Dataset: amazon | Temperature: 3 |Sample type: temperature_ablation | Num samples: 1000 | Hist length 11 | Total Seq Length 15 | Pseudo GT: False | Model Budget: True
+
+....................................................................................................
+==================================================
+ * Pseudo GT
+==================================================
+[2022-05-18 08:31:52.093613] | Dataset: amazon | Temperature: 3 |Sample type: temperature_ablation | Num samples: 1000 | Hist length 11 | Total Seq Length 15 | Pseudo GT: False | Model Budget: True
+
+....................................................................................................
+==================================================
+ * Beam search
+==================================================
+/home/showalte/research/prob_seq_queries/data/beam_search_is_hybrid/amazon/val_dl/val-dl_amazon_beam-search-is-hybrid_11h_15s_1000mc_1000q.pkl
+[2022-05-18 08:43:25.252876] | Dataset: amazon | Temperature 3 | Sample type: temperature_ablation | Num Beams: 0.8 | Hist length 11 | Total Seq Length 15
+
+....................................................................................................
+==================================================
+[2022-05-18 08:44:46.376670] | Dataset: amazon | Temperature: 4 |Sample type: temperature_ablation | Num samples: 1000 | Hist length 11 | Total Seq Length 15 | Pseudo GT: False | Model Budget: True
+
+....................................................................................................
+==================================================
+ * Pseudo GT
+==================================================
+[2022-05-18 08:46:15.702346] | Dataset: amazon | Temperature: 4 |Sample type: temperature_ablation | Num samples: 1000 | Hist length 11 | Total Seq Length 15 | Pseudo GT: False | Model Budget: True
+
+....................................................................................................
+==================================================
+ * Beam search
+==================================================
+/home/showalte/research/prob_seq_queries/data/beam_search_is_hybrid/amazon/val_dl/val-dl_amazon_beam-search-is-hybrid_11h_15s_1000mc_1000q.pkl
+[2022-05-18 08:57:44.367573] | Dataset: amazon | Temperature 4 | Sample type: temperature_ablation | Num Beams: 0.8 | Hist length 11 | Total Seq Length 15
+
+....................................................................................................
+==================================================
+[2022-05-18 08:59:01.721341] | Dataset: amazon | Temperature: 5 |Sample type: temperature_ablation | Num samples: 1000 | Hist length 11 | Total Seq Length 15 | Pseudo GT: False | Model Budget: True
+
+....................................................................................................
+==================================================
+ * Pseudo GT
+==================================================
+[2022-05-18 09:00:25.110878] | Dataset: amazon | Temperature: 5 |Sample type: temperature_ablation | Num samples: 1000 | Hist length 11 | Total Seq Length 15 | Pseudo GT: False | Model Budget: True
+
+....................................................................................................
+==================================================
+ * Beam search
+==================================================
+/home/showalte/research/prob_seq_queries/data/beam_search_is_hybrid/amazon/val_dl/val-dl_amazon_beam-search-is-hybrid_11h_15s_1000mc_1000q.pkl
+[2022-05-18 09:09:45.405738] | Dataset: amazon | Temperature 5 | Sample type: temperature_ablation | Num Beams: 0.8 | Hist length 11 | Total Seq Length 15
+
+....................................................................................................
+==================================================
+[2022-05-18 09:10:37.342441] | Dataset: amazon | Temperature: 10 |Sample type: temperature_ablation | Num samples: 1000 | Hist length 11 | Total Seq Length 15 | Pseudo GT: False | Model Budget: True
+
+....................................................................................................
+==================================================
+ * Pseudo GT
+==================================================
+[2022-05-18 09:11:44.024557] | Dataset: amazon | Temperature: 10 |Sample type: temperature_ablation | Num samples: 1000 | Hist length 11 | Total Seq Length 15 | Pseudo GT: False | Model Budget: True
+
+....................................................................................................
+==================================================
+ * Beam search
+==================================================
+/home/showalte/research/prob_seq_queries/data/beam_search_is_hybrid/amazon/val_dl/val-dl_amazon_beam-search-is-hybrid_11h_15s_1000mc_1000q.pkl
+[2022-05-18 09:20:23.825499] | Dataset: amazon | Temperature 10 | Sample type: temperature_ablation | Num Beams: 0.8 | Hist length 11 | Total Seq Length 15
+
+....................................................................................................
+==================================================
+==================================================
+* Running for dataset moocs
+==================================================
+[2022-05-18 09:21:22.747282] Checkpoint path [/home/showalte/research/prob_seq_queries/models/moocs/] does exist.
+[2022-05-18 09:21:22.750845] Loaded model from /home/showalte/research/prob_seq_queries/models/moocs/model_999.pt
+==================================================
+[2022-05-18 09:21:22.913223] batch_size ................. 8000
+[2022-05-18 09:21:22.913256] checkpoint_path ............ /home/showalte/research/prob_seq_queries/models/moocs/
+[2022-05-18 09:21:22.913268] cuda ....................... True
+[2022-05-18 09:21:22.913275] data_path .................. data/moocs/mooc.csv
+[2022-05-18 09:21:22.913280] dataset .................... moocs
+[2022-05-18 09:21:22.913287] dataset_phase_shift_path ... /srv/disk00/samshow/amazon/amazon_phase_trans.pkl
+[2022-05-18 09:21:22.913294] device ..................... 0
+[2022-05-18 09:21:22.913299] device_num ................. 0
+[2022-05-18 09:21:22.913307] disable_tqdm ............... True
+[2022-05-18 09:21:22.913313] do_test .................... False
+[2022-05-18 09:21:22.913319] do_valid ................... True
+[2022-05-18 09:21:22.913325] dont_print_args ............ True
+[2022-05-18 09:21:22.913332] dont_shuffle ............... None
+[2022-05-18 09:21:22.913346] dropout .................... 0.3
+[2022-05-18 09:21:22.913354] estimate_type .............. <function beam_search_lower_bound at 0x7f8a366b1280>
+[2022-05-18 09:21:22.913365] excluded_terms ............. [1]
+[2022-05-18 09:21:22.913372] excluded_terms_list ........ [[]]
+[2022-05-18 09:21:22.913378] finetune ................... False
+[2022-05-18 09:21:22.913387] grad_clip .................. 1.0
+[2022-05-18 09:21:22.913394] hidden_size ................ 128
+[2022-05-18 09:21:22.913399] hist_len ................... 18
+[2022-05-18 09:21:22.913405] hybrid_max_num_beams ....... 1500
+[2022-05-18 09:21:22.913413] interp_func ................ <function lin_interp at 0x7f8a366b1160>
+[2022-05-18 09:21:22.913439] log_interval ............... 100
+[2022-05-18 09:21:22.913447] lr ......................... 0.001
+[2022-05-18 09:21:22.913452] lr_decay_style ............. constant
+[2022-05-18 09:21:22.913458] masked_lm .................. False
+[2022-05-18 09:21:22.913464] max_k ...................... None
+[2022-05-18 09:21:22.913471] max_num_mc_samples ......... 100000
+[2022-05-18 09:21:22.913477] max_num_queries ............ 1000
+[2022-05-18 09:21:22.913482] min_num_mc_samples ......... 10000
+[2022-05-18 09:21:22.913488] min_phase_shift ............ 0
+[2022-05-18 09:21:22.913495] min_var_reduction .......... 0.1
+[2022-05-18 09:21:22.913501] min_variance ............... True
+[2022-05-18 09:21:22.913508] model_budget_filepath ...... None
+[2022-05-18 09:21:22.913513] needs_dl ................... True
+[2022-05-18 09:21:22.913519] needs_encoding ............. False
+[2022-05-18 09:21:22.913525] num_beams .................. 0.0
+[2022-05-18 09:21:22.913531] num_layers ................. 2
+[2022-05-18 09:21:22.913537] num_mc_samples ............. 100
+[2022-05-18 09:21:22.913542] num_workers ................ 0
+[2022-05-18 09:21:22.913550] optimizer .................. adam
+[2022-05-18 09:21:22.913557] proposal_func .............. <function lm_proposal at 0x7f8a366ab160>
+[2022-05-18 09:21:22.913562] rnn_type ................... LSTM
+[2022-05-18 09:21:22.913567] save_epochs ................ 1
+[2022-05-18 09:21:22.913575] seed ....................... 42
+[2022-05-18 09:21:22.913580] seq_len .................... 15
+[2022-05-18 09:21:22.913586] shuffle .................... True
+[2022-05-18 09:21:22.913592] store_intermediate_lbs ..... True
+[2022-05-18 09:21:22.913598] sub_estimates .............. []
+[2022-05-18 09:21:22.913604] tau_a_excl_terms ........... []
+[2022-05-18 09:21:22.913610] tau_b_excl_terms ........... []
+[2022-05-18 09:21:22.913616] terms_of_interest .......... []
+[2022-05-18 09:21:22.913621] text_dict .................. None
+[2022-05-18 09:21:22.913627] top_k ...................... 0
+[2022-05-18 09:21:22.913632] top_p ...................... 0
+[2022-05-18 09:21:22.913638] total_seq_len .............. 20
+[2022-05-18 09:21:22.913644] train_data_pct ............. 0.9
+[2022-05-18 09:21:22.913650] train_epochs ............... 40
+[2022-05-18 09:21:22.913656] use_gpt2 ................... False
+[2022-05-18 09:21:22.913662] val_data_pct ............... 0.01
+[2022-05-18 09:21:22.913672] val_metrics ................ ['accuracy']
+[2022-05-18 09:21:22.913677] valid_epochs ............... 1
+[2022-05-18 09:21:22.913686] variance_epsilon ........... 5e-06
+[2022-05-18 09:21:22.913691] vocab_size ................. 98
+[2022-05-18 09:21:22.913699] warmup_pct ................. 0.01
+[2022-05-18 09:21:22.913705] weight_decay ............... 0.0
+==================================================
+[2022-05-18 09:21:22.915361] | Dataset: moocs | Temperature: 0.01 |Sample type: temperature_ablation | Num samples: 1000 | Hist length 11 | Total Seq Length 15 | Pseudo GT: False | Model Budget: True
+
+....................................................................................................
+==================================================
+ * Pseudo GT
+==================================================
+[2022-05-18 09:22:48.162583] | Dataset: moocs | Temperature: 0.01 |Sample type: temperature_ablation | Num samples: 1000 | Hist length 11 | Total Seq Length 15 | Pseudo GT: False | Model Budget: True
+
+....................................................................................................
+==================================================
+ * Beam search
+==================================================
+/home/showalte/research/prob_seq_queries/data/beam_search_is_hybrid/moocs/val_dl/val-dl_moocs_beam-search-is-hybrid_11h_15s_1000mc_1000q.pkl
+[2022-05-18 09:29:29.790749] | Dataset: moocs | Temperature 0.01 | Sample type: temperature_ablation | Num Beams: 0.8 | Hist length 11 | Total Seq Length 15
+
+....................................................................................................
+==================================================
+[2022-05-18 09:30:28.582602] | Dataset: moocs | Temperature: 0.1 |Sample type: temperature_ablation | Num samples: 1000 | Hist length 11 | Total Seq Length 15 | Pseudo GT: False | Model Budget: True
+
+....................................................................................................
+==================================================
+ * Pseudo GT
+==================================================
+[2022-05-18 09:32:12.726728] | Dataset: moocs | Temperature: 0.1 |Sample type: temperature_ablation | Num samples: 1000 | Hist length 11 | Total Seq Length 15 | Pseudo GT: False | Model Budget: True
+
+....................................................................................................
+==================================================
+ * Beam search
+==================================================
+/home/showalte/research/prob_seq_queries/data/beam_search_is_hybrid/moocs/val_dl/val-dl_moocs_beam-search-is-hybrid_11h_15s_1000mc_1000q.pkl
+[2022-05-18 09:51:59.734282] | Dataset: moocs | Temperature 0.1 | Sample type: temperature_ablation | Num Beams: 0.8 | Hist length 11 | Total Seq Length 15
+
+....................................................................................................
+==================================================
+[2022-05-18 09:52:57.531007] | Dataset: moocs | Temperature: 0.5 |Sample type: temperature_ablation | Num samples: 1000 | Hist length 11 | Total Seq Length 15 | Pseudo GT: False | Model Budget: True
+
+....................................................................................................
+==================================================
+ * Pseudo GT
+==================================================
+[2022-05-18 09:53:44.970055] | Dataset: moocs | Temperature: 0.5 |Sample type: temperature_ablation | Num samples: 1000 | Hist length 11 | Total Seq Length 15 | Pseudo GT: False | Model Budget: True
+
+....................................................................................................
+==================================================
+ * Beam search
+==================================================
+/home/showalte/research/prob_seq_queries/data/beam_search_is_hybrid/moocs/val_dl/val-dl_moocs_beam-search-is-hybrid_11h_15s_1000mc_1000q.pkl
+[2022-05-18 10:37:58.834034] | Dataset: moocs | Temperature 0.5 | Sample type: temperature_ablation | Num Beams: 0.8 | Hist length 11 | Total Seq Length 15
+
+....................................................................................................
+==================================================
+[2022-05-18 10:38:31.931830] | Dataset: moocs | Temperature: 0.75 |Sample type: temperature_ablation | Num samples: 1000 | Hist length 11 | Total Seq Length 15 | Pseudo GT: False | Model Budget: True
+
+....................................................................................................
+==================================================
+ * Pseudo GT
+==================================================
+[2022-05-18 10:39:09.227517] | Dataset: moocs | Temperature: 0.75 |Sample type: temperature_ablation | Num samples: 1000 | Hist length 11 | Total Seq Length 15 | Pseudo GT: False | Model Budget: True
+
+....................................................................................................
+==================================================
+ * Beam search
+==================================================
+/home/showalte/research/prob_seq_queries/data/beam_search_is_hybrid/moocs/val_dl/val-dl_moocs_beam-search-is-hybrid_11h_15s_1000mc_1000q.pkl
+[2022-05-18 11:22:08.052539] | Dataset: moocs | Temperature 0.75 | Sample type: temperature_ablation | Num Beams: 0.8 | Hist length 11 | Total Seq Length 15
+
+....................................................................................................
+==================================================
+[2022-05-18 11:22:23.769211] | Dataset: moocs | Temperature: 1 |Sample type: temperature_ablation | Num samples: 1000 | Hist length 11 | Total Seq Length 15 | Pseudo GT: False | Model Budget: True
+
+....................................................................................................
+==================================================
+ * Pseudo GT
+==================================================
+[2022-05-18 11:22:41.025012] | Dataset: moocs | Temperature: 1 |Sample type: temperature_ablation | Num samples: 1000 | Hist length 11 | Total Seq Length 15 | Pseudo GT: False | Model Budget: True
+
+....................................................................................................
+==================================================
+ * Beam search
+==================================================
+/home/showalte/research/prob_seq_queries/data/beam_search_is_hybrid/moocs/val_dl/val-dl_moocs_beam-search-is-hybrid_11h_15s_1000mc_1000q.pkl
+[2022-05-18 11:45:59.448462] | Dataset: moocs | Temperature 1 | Sample type: temperature_ablation | Num Beams: 0.8 | Hist length 11 | Total Seq Length 15
+
+....................................................................................................
+==================================================
+[2022-05-18 11:46:13.383265] | Dataset: moocs | Temperature: 1.25 |Sample type: temperature_ablation | Num samples: 1000 | Hist length 11 | Total Seq Length 15 | Pseudo GT: False | Model Budget: True
+
+....................................................................................................
+==================================================
+ * Pseudo GT
+==================================================
+[2022-05-18 11:46:29.211541] | Dataset: moocs | Temperature: 1.25 |Sample type: temperature_ablation | Num samples: 1000 | Hist length 11 | Total Seq Length 15 | Pseudo GT: False | Model Budget: True
+
+....................................................................................................
+==================================================
+ * Beam search
+==================================================
+/home/showalte/research/prob_seq_queries/data/beam_search_is_hybrid/moocs/val_dl/val-dl_moocs_beam-search-is-hybrid_11h_15s_1000mc_1000q.pkl
+[2022-05-18 12:06:51.008873] | Dataset: moocs | Temperature 1.25 | Sample type: temperature_ablation | Num Beams: 0.8 | Hist length 11 | Total Seq Length 15
+
+....................................................................................................
+==================================================
+[2022-05-18 12:07:04.966809] | Dataset: moocs | Temperature: 1.75 |Sample type: temperature_ablation | Num samples: 1000 | Hist length 11 | Total Seq Length 15 | Pseudo GT: False | Model Budget: True
+
+....................................................................................................
+==================================================
+ * Pseudo GT
+==================================================
+[2022-05-18 12:07:20.937987] | Dataset: moocs | Temperature: 1.75 |Sample type: temperature_ablation | Num samples: 1000 | Hist length 11 | Total Seq Length 15 | Pseudo GT: False | Model Budget: True
+
+....................................................................................................
+==================================================
+ * Beam search
+==================================================
+/home/showalte/research/prob_seq_queries/data/beam_search_is_hybrid/moocs/val_dl/val-dl_moocs_beam-search-is-hybrid_11h_15s_1000mc_1000q.pkl
+[2022-05-18 12:20:10.084109] | Dataset: moocs | Temperature 1.75 | Sample type: temperature_ablation | Num Beams: 0.8 | Hist length 11 | Total Seq Length 15
+
+....................................................................................................
+==================================================
+[2022-05-18 12:20:24.072886] | Dataset: moocs | Temperature: 2 |Sample type: temperature_ablation | Num samples: 1000 | Hist length 11 | Total Seq Length 15 | Pseudo GT: False | Model Budget: True
+
+....................................................................................................
+==================================================
+ * Pseudo GT
+==================================================
+[2022-05-18 12:20:40.083482] | Dataset: moocs | Temperature: 2 |Sample type: temperature_ablation | Num samples: 1000 | Hist length 11 | Total Seq Length 15 | Pseudo GT: False | Model Budget: True
+
+....................................................................................................
+==================================================
+ * Beam search
+==================================================
+/home/showalte/research/prob_seq_queries/data/beam_search_is_hybrid/moocs/val_dl/val-dl_moocs_beam-search-is-hybrid_11h_15s_1000mc_1000q.pkl
+[2022-05-18 12:29:12.937618] | Dataset: moocs | Temperature 2 | Sample type: temperature_ablation | Num Beams: 0.8 | Hist length 11 | Total Seq Length 15
+
+....................................................................................................
+==================================================
+[2022-05-18 12:29:26.942803] | Dataset: moocs | Temperature: 3 |Sample type: temperature_ablation | Num samples: 1000 | Hist length 11 | Total Seq Length 15 | Pseudo GT: False | Model Budget: True
+
+....................................................................................................
+==================================================
+ * Pseudo GT
+==================================================
+[2022-05-18 12:29:43.173739] | Dataset: moocs | Temperature: 3 |Sample type: temperature_ablation | Num samples: 1000 | Hist length 11 | Total Seq Length 15 | Pseudo GT: False | Model Budget: True
+
+....................................................................................................
+==================================================
+ * Beam search
+==================================================
+/home/showalte/research/prob_seq_queries/data/beam_search_is_hybrid/moocs/val_dl/val-dl_moocs_beam-search-is-hybrid_11h_15s_1000mc_1000q.pkl
+[2022-05-18 12:31:55.289154] | Dataset: moocs | Temperature 3 | Sample type: temperature_ablation | Num Beams: 0.8 | Hist length 11 | Total Seq Length 15
+
+....................................................................................................
+==================================================
+[2022-05-18 12:32:09.262189] | Dataset: moocs | Temperature: 4 |Sample type: temperature_ablation | Num samples: 1000 | Hist length 11 | Total Seq Length 15 | Pseudo GT: False | Model Budget: True
+
+....................................................................................................
+==================================================
+ * Pseudo GT
+==================================================
+[2022-05-18 12:32:25.384137] | Dataset: moocs | Temperature: 4 |Sample type: temperature_ablation | Num samples: 1000 | Hist length 11 | Total Seq Length 15 | Pseudo GT: False | Model Budget: True
+
+....................................................................................................
+==================================================
+ * Beam search
+==================================================
+/home/showalte/research/prob_seq_queries/data/beam_search_is_hybrid/moocs/val_dl/val-dl_moocs_beam-search-is-hybrid_11h_15s_1000mc_1000q.pkl
+[2022-05-18 12:34:10.260160] | Dataset: moocs | Temperature 4 | Sample type: temperature_ablation | Num Beams: 0.8 | Hist length 11 | Total Seq Length 15
+
+....................................................................................................
+==================================================
+[2022-05-18 12:34:24.186699] | Dataset: moocs | Temperature: 5 |Sample type: temperature_ablation | Num samples: 1000 | Hist length 11 | Total Seq Length 15 | Pseudo GT: False | Model Budget: True
+
+....................................................................................................
+==================================================
+ * Pseudo GT
+==================================================
+[2022-05-18 12:34:40.474878] | Dataset: moocs | Temperature: 5 |Sample type: temperature_ablation | Num samples: 1000 | Hist length 11 | Total Seq Length 15 | Pseudo GT: False | Model Budget: True
+
+....................................................................................................
+==================================================
+ * Beam search
+==================================================
+/home/showalte/research/prob_seq_queries/data/beam_search_is_hybrid/moocs/val_dl/val-dl_moocs_beam-search-is-hybrid_11h_15s_1000mc_1000q.pkl
+[2022-05-18 12:36:24.541102] | Dataset: moocs | Temperature 5 | Sample type: temperature_ablation | Num Beams: 0.8 | Hist length 11 | Total Seq Length 15
+
+....................................................................................................
+==================================================
+[2022-05-18 12:36:38.678779] | Dataset: moocs | Temperature: 10 |Sample type: temperature_ablation | Num samples: 1000 | Hist length 11 | Total Seq Length 15 | Pseudo GT: False | Model Budget: True
+
+....................................................................................................
+==================================================
+ * Pseudo GT
+==================================================
+[2022-05-18 12:36:55.029276] | Dataset: moocs | Temperature: 10 |Sample type: temperature_ablation | Num samples: 1000 | Hist length 11 | Total Seq Length 15 | Pseudo GT: False | Model Budget: True
+
+....................................................................................................
+==================================================
+ * Beam search
+==================================================
+/home/showalte/research/prob_seq_queries/data/beam_search_is_hybrid/moocs/val_dl/val-dl_moocs_beam-search-is-hybrid_11h_15s_1000mc_1000q.pkl
+[2022-05-18 12:38:40.341683] | Dataset: moocs | Temperature 10 | Sample type: temperature_ablation | Num Beams: 0.8 | Hist length 11 | Total Seq Length 15
+
+....................................................................................................
+==================================================

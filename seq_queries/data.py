@@ -24,18 +24,24 @@ def load_flashy_apps(data_path, args):
 
     np.random.seed(int(time.time())%2**32)
     comms = [3,14,16,23,30,39,44,40,41,51,60,73,74,79,81,82,84]
-    social_media = [18,19,33,34,47,52,55,57,67,78]
+    all_social_media = [18,19,33,34,78,52,55,57,67]
 
 
-    all_comm = [[40, 73, 40, 82, 60, 40, 51, 82, 40, 79],
-                 [81, 16, 3, 79, 3, 41, 74, 44, 30, 74]]
-    mid = [[57, 19, 52, 34, 52, 14, 81, 44, 51, 60],
-            [81, 44, 40, 81, 73, 52, 57, 55, 33, 57],]
+    seq_size = 20
+    num_samples = 10
+    bank = comms + all_social_media
+    data = []
+    for i in range(num_samples):
+        pivot =np.random.randint(0,seq_size)
+        fhalf = np.random.choice(comms,pivot).tolist()
+        shalf = np.random.choice(all_social_media,seq_size-pivot).tolist()
+        sample = fhalf + shalf
+        random.shuffle(sample)
+        data.append(sample)
 
-    few_social = [[34, 47, 67, 18, 81, 74, 16, 41, 16, 74]]
-    all_social = [[57, 34, 19, 52, 52, 34, 52, 19, 19, 34],
- [57, 55, 67, 57, 47, 19, 47, 57, 67, 67]]
-    data = all_comm + few_social + mid + all_social
+        # data.append(np.random.choice(bank,seq_size).tolist())
+
+
     text_dict['vocab_size'] = 88
     text_dict['text'] = data
     # text_dict['vocab'] = vocab
@@ -45,8 +51,8 @@ def load_flashy_apps(data_path, args):
     text_dict['samples'] = data
     text_dict['id_to_char'] = None
     text_dict['char_to_id'] = None
-    text_dict['social_media'] = social_media
-    text_dict['comms'] =comms
+    text_dict['social_media'] = comms
+    text_dict['comms'] =all_social_media
     return text_dict
 
 def load_flashy_gpt_data(data_path, args):

@@ -87,6 +87,7 @@ def load_GPT2_query_lm(device):
         if hidden_states is not None:
             if isinstance(hidden_states,tuple):
                 # Need to split up hidden states
+                # (num_splits, (num_layers, (2)))
                 hidden_states = list(zip(*[
                     zip(*(torch.split(h[0],max_batch_size), torch.split(h[1],max_batch_size)))
                      for h in hidden_states]))
@@ -114,6 +115,9 @@ def load_GPT2_query_lm(device):
 
         layer_hiddens = []
         for layer_data in zip(*step_outputs):
+            # (num_layer, (2))
+            # Take manageable input and feed it through this with different batch sizes
+            # Then, compare the outputs
             layer_data= list(zip(*layer_data))
             layer_hiddens.append(
                 (torch.cat(layer_data[0],dim=0).cpu(),

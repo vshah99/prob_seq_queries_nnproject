@@ -32,24 +32,23 @@ from seq_queries.experiments import sample_dynamic_target_token, prep_experiment
 #   Function-Class Declaration
 #################################################################################
 
-device=6
-sub_estimates = [10,100,1000,5000]
+device=3
+sub_estimates = [10,30,50,100,300, 500,1000,3000,5000,10000]
 folders = ["beam_search_is_hybrid"]
-# datasets = ['shakespeare','moocs','amazon','apps']
-datasets = ['wikitext']
-# datasets = ['shakespeare']
-max_num_queries = 25
+datasets = ['amazon']
+# datasets = ['wikitext']
+max_num_queries = 1000
 config_path = "config/testing/sample.yaml"
 lengths = {
 
     # Long hybrid
-    "moocs":[(h,15) for h in [9]],
-    "amazon":[(h,15) for h in [9]],
-    "apps":[(h,15) for h in [9]],
-    "shakespeare": [(h,20) for h in [14]],
+    "moocs":[(h,15) for h in [5,9,13]],
+    "amazon":[(h,15) for h in [5,9,13]],
+    "apps":[(h,15) for h in [5,9,13]],
+    "shakespeare": [(h,20) for h in [10,14,18]],
 
     # # Short hybrid
-    "wikitext":[(h,15) for h in [11]],
+    "wikitext":[(h,15) for h in [13]],
     # "moocs":[(h,15) for h in reversed(range(12,14,1))],
     # "amazon":[(h,15) for h in reversed(range(12,14,1))],
     # "apps":[(h,15) for h in reversed(range(12,14,1))],

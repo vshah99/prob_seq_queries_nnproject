@@ -76,4 +76,37 @@
 ==================================================
 [2022-05-18 08:21:34.359262] | Dataset: apps | Sample type: pseudo_gt | Num samples: None | Hist length 5 | Total Seq Length 15 | Pseudo GT: True | Model Budget: False
 
-.........
+....................................................................................................
+==================================================
+[2022-05-18 09:07:26.910962] | Dataset: apps | Sample type: pseudo_gt | Num samples: None | Hist length 6 | Total Seq Length 15 | Pseudo GT: True | Model Budget: False
+
+....................................................................................................
+==================================================
+[2022-05-18 09:39:48.812967] | Dataset: apps | Sample type: pseudo_gt | Num samples: None | Hist length 7 | Total Seq Length 15 | Pseudo GT: True | Model Budget: False
+
+....................................................................................................
+==================================================
+[2022-05-18 10:09:00.702536] | Dataset: apps | Sample type: pseudo_gt | Num samples: None | Hist length 8 | Total Seq Length 15 | Pseudo GT: True | Model Budget: False
+
+....................................................................................................
+==================================================
+[2022-05-18 10:32:24.227064] | Dataset: apps | Sample type: pseudo_gt | Num samples: None | Hist length 9 | Total Seq Length 15 | Pseudo GT: True | Model Budget: False
+
+....................................................................................................
+==================================================
+[2022-05-18 10:52:53.692810] | Dataset: apps | Sample type: pseudo_gt | Num samples: None | Hist length 10 | Total Seq Length 15 | Pseudo GT: True | Model Budget: False
+
+....................................................................................................
+==================================================
+[2022-05-18 11:08:26.302402] | Dataset: apps | Sample type: pseudo_gt | Num samples: None | Hist length 11 | Total Seq Length 15 | Pseudo GT: True | Model Budget: False
+
+....................................................................................................
+==================================================
+[2022-05-18 11:22:18.720426] | Dataset: apps | Sample type: pseudo_gt | Num samples: None | Hist length 12 | Total Seq Length 15 | Pseudo GT: True | Model Budget: False
+
+....................................................................................................
+==================================================
+[2022-05-18 11:30:06.263278] | Dataset: apps | Sample type: pseudo_gt | Num samples: None | Hist length 13 | Total Seq Length 15 | Pseudo GT: True | Model Budget: False
+
+....................................................................................................
+==================================================

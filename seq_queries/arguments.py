@@ -159,6 +159,7 @@ def sampling_args(parser):
     group.add_argument("--variance_epsilon", type=float, default=5e-6, help="Variance threshold to stop sampling for pseudo ground truth")
     group.add_argument("--model_budget_filepath", type=str, default=None, help="Filepath to extract model budgets for another run (usually hybrid file for imp. samp.)")
     group.add_argument("--store_intermediate_lbs", type=_str2bool,default=True,help="Store intermediate lower bounds.")
+    group.add_argument("--frequentist_test", type=_str2bool,default=False,help="Check frequentist statistics for flashy query")
     group.add_argument("--max_num_queries", type=int, default=None, help="Maximum numbers of queries to take (for faster experiments)")
     group.add_argument("--top_k", type=int, default=1, help="Top k beams/samples to take")
     group.add_argument("--top_p", type=_int_or_float, default=1, help="Top p coverage to take")

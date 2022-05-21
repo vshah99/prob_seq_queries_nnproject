@@ -34,10 +34,10 @@ from seq_queries.experiments import sample_dynamic_target_token, prep_experiment
 #   Function-Class Declaration
 #################################################################################
 
-device=1
-sub_estimates = [10,100,1000,10000]
+device=6
+sub_estimates = [10,100,1000]
 folders = ["flashy"]
-datasets = ['flashy_apps'] #'shakespeare'
+datasets = ['flashy_gpt2'] #'shakespeare'
 config_path = "config/testing/sample.yaml"
 
 for dataset_name in datasets:
@@ -62,6 +62,8 @@ for dataset_name in datasets:
         args = copy.deepcopy(prep_dict['args'])
         args.estimate_type = mc_estimate
         args.use_gpt2 = True
+        args.flashy=True
+        # args.frequentist_test=True
         args.proposal_func = lm_proposal
         args.sub_estimates = sub_estimates
         args.num_mc_samples = args.sub_estimates[-1]
@@ -71,7 +73,7 @@ for dataset_name in datasets:
         estimates = flashy_query(args, val_dl, model)
         os.makedirs(f"data/{folder}/{dataset_name}/val_dl/",exist_ok=True)
         estimates['metadata']['text_dict']['text'] = None
-        args.sub_estimates = sub_estimates
+        args.sub_estimates = None
         args.num_mc_samples = sub_estimates[-1]
 
         # for e,d in estimates.items():

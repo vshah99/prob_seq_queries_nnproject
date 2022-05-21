@@ -34,12 +34,15 @@ from seq_queries.experiments import sample_dynamic_target_token, prep_experiment
 
 device=3
 folders = ["beam_search"]
-# datasets = ['shakespeare','moocs','apps', 'amazon']#'shakespeare'
-datasets = ['wikitext']
+datasets = ['shakespeare','moocs','apps', 'amazon']#'shakespeare'
+# datasets = ['wikitext']
 num_mc_samples = 5000
-model_budget = True
+num_beams = 10000
+model_budget = False
 max_num_queries=100
 config_path = "config/testing/sample.yaml"
+steps = [5]
+shake_steps = [10]
 lengths_coverage = {
 
     # Long GT
@@ -48,10 +51,10 @@ lengths_coverage = {
     # "amazon":[(5,15,0.8),(8,15,0.8),(11,15,0.8)],
     # "apps":[(5,15,0.8),(8,15,0.8),(11,15,0.8)],
     # "shakespeare":[(10,20,0.8),(12,20,0.8),(16,20,0.8)],
-    "moocs":[(h,15,0.8) for h in [9]],
-    "amazon":[(h,15,0.8) for h in [9]],
-    "apps":[(h,15,0.8) for h in [9]],
-    "shakespeare": [(h,20,0.8) for h in [14]],
+    "moocs":[(h,15,num_beams) for h in steps],
+    "amazon":[(h,15,num_beams) for h in steps],
+    "apps":[(h,15,num_beams) for h in steps],
+    "shakespeare": [(h,20,num_beams) for h in shake_steps],
 
     # # Regular GT
     "wikitext":[(11,15,0.8)],
@@ -98,7 +101,7 @@ for dataset_name in datasets:
             args.min_variance = False
             args.hist_len = hist_len
             args.total_seq_len = total_seq_len
-            args.num_beams = float(coverage)
+            args.num_beams = coverage
 
             if model_budget:
                 args.model_budget_filepath = (f"/home/showalte/research/prob_seq_queries/" +
@@ -122,10 +125,10 @@ for dataset_name in datasets:
             estimates['metadata']['text_dict']['text'] = None
             args.num_beams = float(coverage)
 
-            # for e,d in estimates.items():
-            #     if isinstance(d, (torch.Tensor, torch.LongTensor)):
-            #         print(e, d.shape)
-            # sys.exit(1)
+            for e,d in estimates.items():
+                if isinstance(d, (torch.Tensor, torch.LongTensor)):
+                    print(e, d.shape)
+            sys.exit(1)
 
 
             write_pkl(estimates,

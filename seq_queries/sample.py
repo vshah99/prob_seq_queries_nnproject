@@ -77,14 +77,15 @@ def lm_proposal(hists, seq_len, model, vocab_size, excluded_terms,
         proposal_logits = torch.log_softmax(top_k_top_p_filtering(proposal_logits/temperature, top_k=top_k, top_p=top_p), dim=-1)
         logits = torch.log_softmax(logits, dim=-1)
 
-        last_sample = torch.distributions.Categorical(logits=proposal_logits).sample().unsqueeze(-1)
-        proposal_log_prob += torch.gather(proposal_logits, dim=-1, index=last_sample).squeeze()
-        model_log_prob += torch.gather(logits, dim=-1, index=last_sample).squeeze()
-
         if isinstance(model_log_prob,float) and isinstance(proposal_log_prob,float):
             intermediate_query_probs.append(logits.exp())
         else: intermediate_query_probs.append((logits + model_log_prob.unsqueeze(-1)
                                                - proposal_log_prob.unsqueeze(-1)).exp().cpu())
+
+        last_sample = torch.distributions.Categorical(logits=proposal_logits).sample().unsqueeze(-1)
+        proposal_log_prob += torch.gather(proposal_logits, dim=-1, index=last_sample).squeeze()
+        model_log_prob += torch.gather(logits, dim=-1, index=last_sample).squeeze()
+
         entropy_probs.append(-proposal_log_prob)
         samples.append(last_sample)
 
@@ -98,7 +99,7 @@ def lm_proposal(hists, seq_len, model, vocab_size, excluded_terms,
     model_log_prob += torch.gather(logits, dim=-1, index=last_sample).squeeze(-1)
     entropy_probs.append(-proposal_log_prob)
 
-    samples = torch.cat((samples + [torch.ones_like(samples[0])*excluded_terms[0]]), dim=-1)
+    samples = torch.cat(samples, dim=-1)
     return {
         "proposal_log_prob": proposal_log_prob.unsqueeze(-1),
         "model_log_prob": model_log_prob.unsqueeze(-1),
@@ -150,6 +151,7 @@ def mc_pseudo_gt(hist, num_mc_samples, seq_len, model, excluded_terms, proposal_
 
             temp_out_dict['sample_estimates'].append(term_log_prob.exp().cpu())
             temp_out_dict['intermediate_query_probs'].append(sample_out['intermediate_query_probs'].cpu())
+
             model_iters += model.model_iters
 
         for item in cat_list:
@@ -180,9 +182,14 @@ def mc_pseudo_gt(hist, num_mc_samples, seq_len, model, excluded_terms, proposal_
 def mc_estimate(hist, num_mc_samples, seq_len, model, excluded_terms, proposal_func,
                 vocab_size, batch_size=128,temperature=1, top_k=0, top_p=0.0, device='cpu',
                 cat_list = ['sample_estimates','entropy_probs', 'intermediate_query_probs'],
-                sub_estimates=None,**kwargs):
+                flashy =False,frequentist_test=False,sub_estimates=None,**kwargs):
     model.model_iters = 0
     model_iters = 0
+    print(frequentist_test)
+    if frequentist_test:
+        target_terms = excluded_terms
+        excluded_terms = []
+    print(excluded_terms)
     assert(len(hist.shape) == 1)  # (hist_seq_len), Only conditions on a single history
     # assert(len(excluded_terms) == 1) # For most experiments
     out_dict = defaultdict(list)
@@ -205,19 +212,35 @@ def mc_estimate(hist, num_mc_samples, seq_len, model, excluded_terms, proposal_f
 
         out_dict['sample_estimates'].append(term_log_prob.exp().cpu())
         out_dict['entropy_probs'].append(sample_out['entropy_probs'].cpu())
+        out_dict['samples'].append(sample_out['samples'].cpu())
         out_dict['intermediate_query_probs'].append(sample_out['intermediate_query_probs'].cpu())
         out_dict['num_mc_samples'] = torch.LongTensor(sub_estimates)
+
+        # if flashy and frequentist_test:
+        #     samples = sample_out['samples']
+        #     if 'sample_counts' not in out_dict:
+        #         out_dict['sample_counts'] = torch.zeros(seq_len)
+        #     new_cnts = [samples==i for i in target_terms]
+        #     new_cnts = torch.stack(new_cnts,dim=0).any(dim=0).long()
+        #     # List of indices, now we need to count them up
+        #     first_occs = torch.argmax(new_cnts[new_cnts.sum(dim=-1) > 0],dim=-1)
+        #     inds, cnt_additions = torch.unique(first_occs,return_counts=True)
+        #     out_dict['sample_counts'][inds] += cnt_additions.cpu()
+
         model_iters += model.model_iters
         # print(remaining_samples)
 
     # out_dict['entropy_probs'] =
     for item in cat_list:
         out_dict[item] = torch.cat(out_dict[item],dim=0)
+    out_dict['samples'] = torch.cat(out_dict['samples'],dim=0)
 
     out_dict['entropy_probs'] = out_dict['entropy_probs'].mean(dim=0)
     out_dict['intermediate_query_probs'] = torch.cat((out_dict['intermediate_query_probs'],
                                                       out_dict['sample_estimates'].unsqueeze(1))
-                                                     ,dim=1).mean(dim=0).unsqueeze(0)
+                                                     ,dim=1)
+    out_dict['sample_estimate_var'] = out_dict['intermediate_query_probs'][...,excluded_terms].sum(dim=-1).var(dim=0)
+    out_dict['intermediate_query_probs'] = out_dict['intermediate_query_probs'].mean(dim=0).unsqueeze(0)
     if sub_estimates:
         # (samples x vocab) -> (sub-estimates x vocab)
         out_dict['sample_estimates'] = torch.stack(
@@ -225,18 +248,18 @@ def mc_estimate(hist, num_mc_samples, seq_len, model, excluded_terms, proposal_f
             [out_dict['sample_estimates'][:s].mean(dim=0).flatten()
              for s in sorted(sub_estimates)
         ]).squeeze()
-        out_dict['sample_estimate_var'] = torch.stack(
-            # (vocab)
-            [out_dict['sample_estimates'][:s].var(dim=0).flatten()
-             for s in sorted(sub_estimates)
-        ]).squeeze()
+        # out_dict['sample_estimate_var'] = torch.stack(
+        #     # (vocab)
+        #     [out_dict['sample_estimates'][:s].var(dim=0).flatten()
+        #      for s in sorted(sub_estimates)
+        # ]).squeeze()
         out_dict['model_iters'] = torch.LongTensor(
             [sub_est * seq_len for sub_est in sorted(sub_estimates)]
         )
 
     else:
         out_dict['model_iters'] = torch.LongTensor([model_iters])
-        out_dict['sample_estimate_var'] =torch.var(out_dict['sample_estimates'],dim=0)
+        # out_dict['sample_estimate_var'] =torch.var(out_dict['sample_estimates'],dim=0)
         out_dict['sample_estimate_mean'] =out_dict['sample_estimates'].mean(dim=0)
     return out_dict
 
@@ -323,6 +346,9 @@ def tree_is_estimate_attn(
             proposal_logits[..., excluded_terms] = -float('inf')
             logits, proposal_logits = torch.log_softmax(logits, dim=-1), torch.log_softmax(proposal_logits, dim=-1)
             last_token = torch.distributions.Categorical(logits=proposal_logits).sample()
+
+            # TODO: Issue here? check the shape
+            # (vocab)
             log_q += proposal_logits[...,last_token].squeeze()
             log_p += logits[...,last_token].squeeze()
 
@@ -362,6 +388,7 @@ def tree_is_estimate_attn(
         dist_estimate = dist_estimate.mean(dim=0)
         dist_est_var = dist_estimate.var(dim=0)
 
+    assert bs_lower_bound.shape == dist_estimate.shape
     return {
         'bs_lower_bound':bs_lower_bound,
         'is_estimates':dist_estimate,
@@ -589,8 +616,8 @@ def beam_search_lower_bound(hist, num_beams, seq_len, model, excluded_terms,
                 rnn_args = rnn_args[..., seq_inds, :]
 
         num_beams_over_time.append(cur_log_probs.shape[0])
-        if bs_ablation and num_beams_over_time[-1] >= bs_ablation_max_beams:
-            break
+        # if bs_ablation and num_beams_over_time[-1] >= bs_ablation_max_beams:
+        #     break
 
     logits, states = model.get_next_probs(beams, rnn_args=rnn_args, device=device, return_logits=True,
                                         max_batch_size=batch_size)
