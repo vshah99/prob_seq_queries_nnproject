@@ -167,7 +167,6 @@ class BeamSearchSampleTree(object):
         if len(self.depth_sizes) <= depth:
             self.depth_sizes.append(0)
         self.depth_sizes[depth] += 1
-        # Probably don't need this
         self.depth_dict[depth].append(node)
 
     def _respect_bs_support(

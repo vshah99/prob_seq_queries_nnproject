@@ -34,15 +34,14 @@ from seq_queries.experiments import sample_dynamic_target_token, prep_experiment
 #################################################################################
 
 device=1
-# sub_estimates = [10,30,50,100,300, 500,1000,3000,5000,10000]
-sub_estimates = [10,100,1000]
+sub_estimates = [10,30,50,100,300, 500,1000,3000,5000,10000]
+# sub_estimates = [10,100,1000]
 model_budget = True
 pseudo_gt = False
-max_num_queries = 100
+max_num_queries = 1000
 folders = ["importance_sampling"] if not pseudo_gt else ['pseudo_gt']
-# datasets = ['amazon'] #'shakespeare'
-# datasets = ['shakespeare'] #'shakespeare'
-datasets = ['wikitext'] #'shakespeare'
+datasets = ['shakespeare','apps','moocs','amazon'] #'shakespeare'
+# datasets = ['wikitext'] #'shakespeare'
 config_path = "config/testing/sample.yaml"
 
 pseudo_gt_lengths = {
@@ -60,7 +59,7 @@ lengths = {
     "moocs":[(h,15) for h in [5,9,13]],
     "amazon":[(h,15) for h in [9,13]],
     "apps":[(h,15) for h in [5,9,13]],
-    "shakespeare": [(h,20) for h in [10,14,18]],
+    "shakespeare": [(h,20) for h in [18,10,14]],
     # "moocs":[(h,15) for h in [11,8,5]],
     # "amazon":[(h,15) for h in [11,8,5]],
     # "apps":[(h,15) for h in [11,8,5]],

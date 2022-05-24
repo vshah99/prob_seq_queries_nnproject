@@ -76,6 +76,8 @@ def prep_experiment(
             "data_path": "/srv/disk00/samshow/amazon/amazon_text_dict.pkl",
             "hidden_size": 512,
             "seq_len": 15,
+            "tau_a_excl_terms":[2,3,9,10], # Household and Vehicle
+            "tau_b_excl_terms":[17,19,25,28], # Digital Entertainment
             "vocab_size": 30,
             "val_data_pct": 0.0001,
             "needs_dl":True,
@@ -96,6 +98,8 @@ def prep_experiment(
             "data_path": "data/apps/lsapp.tsv",
             "hidden_size": 512,
             "seq_len": 15,
+            "tau_a_excl_terms":[3,14,16,23,30,39,44,40,41,51,60,73,74,79,81,82,84], # Communication
+            "tau_b_excl_terms":[18,19,33,34,47,78,52,55,57,67], # Social Media
             "vocab_size": 88,
             "val_data_pct": 0.001,
             "needs_dl":True,
@@ -105,6 +109,8 @@ def prep_experiment(
             "data_path": "data/moocs/mooc.csv",
             "hidden_size": 128,
             "seq_len": 15,
+            "tau_a_excl_terms":[13,8,21,7],
+            "tau_b_excl_terms":[51,33,16,27,15,24,53],
             "vocab_size": 98,
             "val_data_pct": 0.01,
             "needs_dl":True,
@@ -114,6 +120,8 @@ def prep_experiment(
             "data_path": "data/shakespeare/shakespeare_input.txt",
             "hidden_size": 128,
             "seq_len": 100,
+            "tau_a_excl_terms":[18,46], # E
+            "tau_b_excl_terms":[43,48,49,52,63,15,20,21,24,35], # B,G,H,K,V
             "vocab_size": 68,
             "val_data_pct": 0.05,
             "needs_dl":True,
@@ -175,31 +183,28 @@ def tau_ab_inf_horizon_query(
     args,
     dataloader,
     model=None,
-    sample_artifacts=["sample_estimates",'sample_estimate_var','sample_estimate_mean','model_iters','num_mc_samples'],
-    hybrid_artifacts=["bs_lower_bound",'is_estimates','sample_estimates','model_iters',
+    sample_artifacts=["sample_estimates",'sample_estimate_var','sample_estimate_mean','model_iters','num_mc_samples',
+                      'intermediate_query_probs'],
+    hybrid_artifacts=["bs_lower_bound",'is_estimates','sample_estimates','model_iters','intermediate_query_probs',
                       'sample_estimate_var','sample_estimate_mean','num_beams','num_mc_samples'],
     search_artifacts=['true_coverage','restricted_coverage','num_beams', 'model_iters',
                       'bs_lower_bound','intermediate_lbs'],
  ):
 
     args.model = model; print();
-    args.proposal_func=lm_proposal_tau_ab
     output = {}
     artifact_store_roster = {
-        "beam_search_is_hybrid": hybrid_artifacts,
         "beam_search_lower_bound":search_artifacts,
         "mc_estimate":sample_artifacts,
         "mc_pseudo_gt":sample_artifacts,
     }
+
     def _add_output(key, data,output=output):
         if key not in output: output[key] = []
-        if isinstance(data, dict):
-            output_data = [data]
-        else:
-            output_data =[db[key] for db in data]
+        output_data =[db[key] for db in data]
         if not isinstance(output_data[0], (torch.Tensor, torch.LongTensor)):
             output_data =[torch.Tensor(db[key]) for db in data]
-        output[key].append(output_data)
+        output[key] += output_data
 
     def _consolidate_output(key,output=output):
         if isinstance(output[key],(torch.Tensor, torch.LongTensor)):
@@ -208,30 +213,43 @@ def tau_ab_inf_horizon_query(
               (len(output[key][0].shape) == 2 and
                ((args.sub_estimates) or
                (key =='intermediate_lbs')))):
-            output[key] = torch.stack(
-                [torch.stack(data).squeeze()
-                 for data in output[key]]
-            )
-        elif len(output[key][0].shape) > 1:
-            output[key] = torch.stack(
-                [torch.cat(data).squeeze()
-                 for data in output[key]]
-            )
+            output[key] = torch.stack(output[key]).squeeze()
+        elif len(output[key][0].shape) >= 1:
+            output[key] = torch.cat(output[key])
 
-    all_excluded_terms = args.excluded_terms_list;
     artifacts = artifact_store_roster[args.estimate_type.__name__]
-    for i,sample in tqdm(enumerate(sample_list), disable=args.disable_tqdm):
-        for k in args.k_range:
-            data_list = []
+    artifacts += ['tau_a_estimates','tau_b_estimates']
+    args.excluded_terms = args.tau_a_excl_terms + args.tau_b_excl_terms
+    for dbatch in tqdm(dataloader, disable=args.disable_tqdm):
+        data_list = []
+        data_batch =[dbatch[i,:args.hist_len] for i in range(dbatch.shape[0])]
 
-            if (args.disable_tqdm):
+        for i in range(dbatch.shape[0]):
+            if (args.use_gpt2 and
+                args.disable_tqdm):
                 print(f"[{datetime.now()}] - {i}",flush=True)
-            args.seq_len = args.total_seq_len - args.hist_len
-            args.excluded_terms = all_excluded_terms[i]
+            elif i%10 == 0 and args.disable_tqdm:
+                print(".",end="",flush=True)
+            sample = data_batch[i]
+            args.seq_len = 30
 
             kwargs = vars(args)
             sample_output =args.estimate_type(sample,**kwargs)
-            # print(" - ", sample_output['sample_estimates'][-1,args.excluded_terms[0]].item())
+            # (samples, seq_len, vocab)
+            # print(args.excluded_terms,args.tau_a_excl_terms, args.tau_b_excl_terms)
+            if args.estimate_type.__name__ == 'beam_search_lower_bound':
+                intermediate_query_probs = sample_output['intermediate_lbs']
+            else:
+                intermediate_query_probs = sample_output['intermediate_query_probs'].squeeze(0)
+            # intermediate_query_probs = torch.cumsum(
+            #     intermediate_query_probs.squeeze(0),dim=0).squeeze()
+            # sample_output['tau_a_estimates'] = torch.gather(
+            #     intermediate_query_probs, -1,
+            #     torch.tensor([args.tau_a_excl_terms]*(args.max_k+1))).squeeze().sum(dim=-1)
+            # sample_output['tau_b_estimates'] = torch.gather(
+            #     intermediate_query_probs, -1,
+            #     torch.tensor([args.tau_b_excl_terms]*(args.max_k+1))).squeeze().sum(dim=-1)
+
             data_list.append(sample_output)
 
         print("",flush=True)
@@ -246,7 +264,6 @@ def tau_ab_inf_horizon_query(
 
     args.model = None
     output['metadata'] = vars(args)
-    output['excluded_terms'] = all_excluded_terms
     return output
 
 
@@ -406,6 +423,8 @@ def sample_dynamic_target_token(
             output[key] = torch.cat(output[key])
 
     model_budget = None; model_budget_name = ""; model_budget_i =0
+    if args.frequentist_test:
+        artifact_store_roster['mc_estimate'].append('frequentist_estimates')
     if args.model_budget_filepath:
         model_budget_file = read_pkl(args.model_budget_filepath)
         model_budget = model_budget_file['model_iters']
