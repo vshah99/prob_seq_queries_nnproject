@@ -240,31 +240,12 @@ class BeamSearchSampleTree(object):
         if self.uses_attention:
             # (seq_len, (num_layers, (2, (samps, heads, seq, shape))))
             layer_hiddens = []
-            # print(len(attns))
-            # print(len(attns[0]))
-            # print(len(attns[0][0]))
-            # print(attns[0][0][0].shape)
-
             for seq_data in zip(*attns):
-                # # (seq_len, (2, (tensor))
-                # print(len(seq_data))
-                # print(len(seq_data[0]))
-                # print(seq_data[0][0].shape)
                 layer_data= list(zip(*seq_data))
-                # (2, (seq_len, (tensor))
-                # print(len(layer_data))
-                # print(len(layer_data[0]))
-                # print(layer_data[0][0].shape)
-                # sys.exit(1)
                 layer_hiddens.append(
                     (torch.cat(layer_data[0],dim=-2),
                     torch.cat(layer_data[1],dim=-2)))
 
             hidden_state = tuple(layer_hiddens)
-            # print(len(hidden_state))
-            # print(len(hidden_state[0]))
-            # print(hidden_state[0][0].shape)
-            # print()
-            # sys.exit(1)
         else: hidden_state = cur_node.hidden_state
         return log_p_total, log_q_total, hidden_state, depth, next_step, sample

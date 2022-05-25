@@ -60,7 +60,6 @@ def uniform_proposal(hists, seq_len, model, vocab_size, excluded_terms,
 def lm_proposal(hists, seq_len, model, vocab_size, excluded_terms,
                 batch_size=128,device='cpu',top_k=0, top_p=1.0, temperature=1.0,  **kwargs):
     assert(len(hists.shape) == 2)
-    # print(hists.shape,seq_len)
 
     proposal_log_prob, model_log_prob = 0.0, 0.0
     intermediate_query_probs = []; entropy_probs = []
@@ -97,7 +96,6 @@ def lm_proposal(hists, seq_len, model, vocab_size, excluded_terms,
     # Use this for frequentist statistics
     last_sample = torch.distributions.Categorical(logits=logits).sample().unsqueeze(-1)
     # batch (batch_size) (1 if in excluded terms else 0)
-    # print(proposal_log_prob.shape,last_sample)
     proposal_log_prob += torch.gather(logits, dim=-1, index=last_sample).squeeze(-1)
     model_log_prob += torch.gather(logits, dim=-1, index=last_sample).squeeze(-1)
     entropy_probs.append(-proposal_log_prob)
@@ -162,11 +160,8 @@ def mc_pseudo_gt(hist, num_mc_samples, seq_len, model, excluded_terms, proposal_
             out_dict[item] = torch.cat(temp_out_dict[item],dim=0)
 
 
-        samp_est_var = min((out_dict['sample_estimates'][:,excluded_terms[0]].var()/
-                            out_dict['sample_estimates'].shape[0]),
-                           (out_dict['intermediate_query_probs'][...,excluded_terms[0]].var()/
-                            out_dict['intermediate_query_probs'].shape[0]).min(),
-                           )
+        samp_est_var = min(out_dict['sample_estimates'][:,excluded_terms[0]].var(),
+                           out_dict['intermediate_query_probs'][...,excluded_terms[0]].var().min())
         remaining_samples = var_check_interval
 
     out_dict['num_mc_samples'] = torch.LongTensor([total_samples]*out_dict['intermediate_query_probs'].shape[-2])
@@ -360,7 +355,6 @@ def tree_is_estimate_attn(
         if sub_estimates and (i+1) in sub_estimates:
             model_iters.append(total_model_iters)
         for _ in range(depth_reached,seq_len+1):
-            # print(rnn_args[0][0].shape)
 
             logits, rnn_args = model.get_next_probs(
                 # Unsqueeze 2x since a single token [1,1]
@@ -384,8 +378,6 @@ def tree_is_estimate_attn(
             # where should last bit go?
 
         # Compute final distributions for estimate
-        ##TODO: Validate - double check hidden state
-        #print(rnn_args[0][0].shape)
         next_log_dist, _ = model.get_next_probs(
             last_token.unsqueeze(-1).unsqueeze(-1),
             rnn_args,

@@ -154,8 +154,6 @@ def prep_experiment(
     args.dataset = name
     text_dict= load_roster[name](args.data_path,args)
     args.text_dict = text_dict
-    # print(text_dict['char_to_id'],flush=True)
-    # print("====="*10)
     if args.needs_dl:
         train_dl, val_dl, test_dl = process_roster[name](
             text_dict, args,
@@ -236,7 +234,6 @@ def tau_ab_inf_horizon_query(
             kwargs = vars(args)
             sample_output =args.estimate_type(sample,**kwargs)
             # (samples, seq_len, vocab)
-            # print(args.excluded_terms,args.tau_a_excl_terms, args.tau_b_excl_terms)
             if args.estimate_type.__name__ == 'beam_search_lower_bound':
                 intermediate_query_probs = sample_output['intermediate_lbs']
             else:
