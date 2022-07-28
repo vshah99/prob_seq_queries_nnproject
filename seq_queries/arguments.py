@@ -147,6 +147,7 @@ def sampling_args(parser):
     group.add_argument("--estimate_type", type=_str2estimate,default="sample", help="Get estimate type")
     group.add_argument("--proposal_func",  type=_str2proposal,default="uniform", help="Get proposal distribution for sampling")
     group.add_argument("--interp_func",  type=_str2interp_func,default="linear", help="Get inpterpolation function for search coverage")
+    group.add_argument("--query_2",  type=_str2bool,default="linear", help="Whether or not to restrict the vocabulary")
     group.add_argument("--excluded_terms", type=_str2list, default=[], help="List of excluded terms")
     group.add_argument("--excluded_terms_list", type=_str2list, default=[[]], help="List of list of excluded terms (one list per sample for individual queries)")
     group.add_argument("--tau_a_excl_terms", type=_str2list, default=[], help="List of terms of interest for Tau a")

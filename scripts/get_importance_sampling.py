@@ -35,37 +35,35 @@ from seq_queries.experiments import sample_dynamic_target_token, prep_experiment
 
 device=1
 sub_estimates = [10,30,50,100,300, 500,1000,3000,5000,10000]
+sub_estimates = [10,30,50,100,300]
 # sub_estimates = [10,100,1000]
-model_budget = True
+model_budget = False
 pseudo_gt = False
 max_num_queries = 1000
+query_2 = True
 folders = ["importance_sampling"] if not pseudo_gt else ['pseudo_gt']
-datasets = ['shakespeare','apps','moocs','amazon'] #'shakespeare'
+if query_2: folders = ["query2_importance_sampling_ablation"]
+datasets = ['moocs','shakespeare','apps','moocs','amazon'] #'shakespeare'
 # datasets = ['wikitext'] #'shakespeare'
 config_path = "config/testing/sample.yaml"
 
 pseudo_gt_lengths = {
-    "moocs":[(h,15) for h in range(5,14,1)],
-    "amazon":[(h,15) for h in range(5,14,1)],
-    "apps":[(h,15) for h in range(5,14,1)],
-    "shakespeare": [(h,20) for h in range(10,19,1)],
-    # "wikitext":[(h,15) for h in reversed(range(11,14,1))],
-    "wikitext":[(11,15)],
+    # "moocs":[(h,15) for h in range(5,14,1)],
+    # "amazon":[(h,15) for h in range(5,14,1)],
+    # "apps":[(h,15) for h in range(5,14,1)],
+    # "shakespeare": [(h,20) for h in range(10,19,1)],
+    # "wikitext":[(11,15)],
 }
+
 lengths = {
 
     # # Long lengths
     # "wikitext":[(h,15) for h in reversed(range(12,14,1))],
-    "moocs":[(h,15) for h in [5,9,13]],
+    "moocs":[(10,h) for h in [20,35,50]],
     "amazon":[(h,15) for h in [9,13]],
     "apps":[(h,15) for h in [5,9,13]],
-    "shakespeare": [(h,20) for h in [18,10,14]],
-    # "moocs":[(h,15) for h in [11,8,5]],
-    # "amazon":[(h,15) for h in [11,8,5]],
-    # "apps":[(h,15) for h in [11,8,5]],
-    # "shakespeare": [(h,20) for h in [16,12,10]],
-    # "wikitext":[(h,15) for h in reversed(range(11,14,1))],
-    "wikitext":[(11,15)],
+    "shakespeare": [(10,h) for h in [20,35,50]],
+    # "wikitext":[(11,15)],
 
     # # Short lengths
     # "wikitext":[(h,15) for h in reversed(range(12,14,1))],
@@ -95,6 +93,7 @@ for dataset_name in datasets:
     args.text_dict = None
     print_args(vars(args))
     args.text_dict = text_dict
+    args.query_2 = query_2
     print("====="*10)
 
     for folder in folders:
@@ -135,10 +134,10 @@ for dataset_name in datasets:
             args.sub_estimates = sub_estimates
             args.num_mc_samples = sub_estimates[-1]
 
-            # for e,d in estimates.items():
-            #     if isinstance(d, (torch.Tensor, torch.LongTensor)):
-            #         print(e, d.shape)
-            # sys.exit(1)
+            for e,d in estimates.items():
+                if isinstance(d, (torch.Tensor, torch.LongTensor)):
+                    print(e, d.shape)
+            sys.exit(1)
 
             write_pkl(estimates,
             f"data/{folder}/{dataset_name}/val_dl/val-dl_{dataset_name}_{folder.replace('_','-')}_" +

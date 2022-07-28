@@ -436,7 +436,8 @@ def sample_dynamic_target_token(
     artifacts = artifact_store_roster[args.estimate_type.__name__]
     for dbatch in tqdm(dataloader, disable=args.disable_tqdm):
         data_list = []
-        all_excluded_terms.append(dbatch[:,args.total_seq_len].cpu())
+        if not args.query_2:
+            all_excluded_terms.append(dbatch[:,args.total_seq_len].cpu())
         data_batch =[dbatch[i,:args.hist_len] for i in range(dbatch.shape[0])]
 
         for i in range(dbatch.shape[0]):
@@ -447,7 +448,9 @@ def sample_dynamic_target_token(
                 print(".",end="",flush=True)
             sample = data_batch[i]
             args.seq_len = args.total_seq_len - args.hist_len
-            args.excluded_terms = [dbatch[i,args.total_seq_len].cpu().item()]
+            if not args.query_2:
+                args.excluded_terms = [dbatch[i,args.total_seq_len].cpu().item()]
+            else: args.excluded_terms = []
 
             if args.model_budget_filepath:
                 if args.estimate_type.__name__ == "mc_estimate":
@@ -488,7 +491,8 @@ def sample_dynamic_target_token(
 
     args.model = None
     output['metadata'] = vars(args)
-    output['excluded_terms'] = torch.cat(all_excluded_terms,dim=0).cpu()
+    if not args.query_2:
+        output['excluded_terms'] = torch.cat(all_excluded_terms,dim=0).cpu()
     return output
 
 #######################################################################
