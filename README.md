@@ -68,11 +68,11 @@ If you find out work helpful in your own research, please cite our paper with th
 @inproceedings{boyd2022query,
   author={Boyd, Alex  and Showalter, Sam  and Mandt, Stephan and Smyth, Padhraic},
   title={Predictive Querying for Autoregressive Neural Sequence Models},
-  booktitle={booktitle={Advances in Neural Information Processing Systems},},
+  booktitle={Advances in Neural Information Processing Systems},
   year={2022},
 }
 ```
 
-## Issues and further discussions
+## Reaching Out
 
-Please create an issue for code-related questions. For more in-depth discussion, free feel to email at alexjb@uci.edu
+Please create an issue for code-related questions. For more in-depth discussion, free feel to email us at alexjb@uci.edu

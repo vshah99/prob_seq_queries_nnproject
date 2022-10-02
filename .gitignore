@@ -130,6 +130,6 @@ dmypy.json
 
 # Data and model folders
 data/
-models/
+# models/
 output/
 
