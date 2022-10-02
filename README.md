@@ -1,4 +1,4 @@
-# Predictive Querying for Neural Autoregressive Sequence Models
+# Predictive Querying for Autoregressive Neural Sequence Models
 
 This project is for the paper: _Predictive Querying for Autoregressive Neural Sequence Models_, published in NeurIPs 2022.
 
