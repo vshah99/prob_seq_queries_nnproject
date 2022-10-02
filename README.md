@@ -57,7 +57,7 @@ To provide a general guide to the codebase, we have outlined the main folders/fi
   + `entropy_ablation.py`
   + `temperature_ablation.py`
   + `train/*` - All training scripts
-- `data/` and `models/` - Where data and models should be placed, with some data already present. The code assumes each dataset will be present inside of a folder with its corresponding name. The names we utilized are **apps**, **amazon**, **moocs**, **shakespeare**, and **wikitext**. Due to size constraints, we only include copies of the shakespeare and moocs datasets.
+- `data/` and `models/` - Where data and models should be placed, with pre-trained model checkpoints already present. The code assumes each dataset will be present inside of a folder with its corresponding name. The names we utilized are **apps**, **amazon**, **moocs**, **shakespeare**, and **wikitext**. 
 
 ## Experimentation
 
@@ -65,7 +65,7 @@ All of our experimentation, including model training, query estimation, and all 
 
 The paragraph above assumes that you wish to run a custom set of experiments with our software. If this is not the case, please refer to the many pre-made scripts in the `scripts/` folder for guidance and edit those as necessary. These can be run simply with `python scripts/{sample_script}.py` and is our recommended means of running this code.
 
-## For bibtex citations
+## For Bibtex Citations
 If you find out work helpful in your own research, please cite our paper with the following:
 
 ```
