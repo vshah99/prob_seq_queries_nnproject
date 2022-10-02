@@ -15,6 +15,10 @@ Our experiments make use of 5 datasets. Links for downloading these files can be
 - [Shakespeare](http://cs.stanford.edu/people/karpathy/char-rnn/shakespeare_input.txt)
 - [Wikitext-v2](https://huggingface.co/datasets/wikitext/viewer/wikitext-2-v1/test)
 
+### Models
+
+We include the checkpoints of the trained models we utilized in our experiments. Those can be found in the `models/` directory under the corresponding dataset name. 
+
 ### Required Packages
 
 Our code requires the following packages:
