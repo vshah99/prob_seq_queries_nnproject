@@ -131,11 +131,12 @@ def load_GPT2_query_lm(device):
 
 
 
-
-
 def explore_gpt2(batch_size = 16,
               device=0,
               **kwargs):
+    """
+    Test functions for GPT2
+    """
     samples = [
         "in my opinion, ",
         "to clarify ",
@@ -153,23 +154,7 @@ def explore_gpt2(batch_size = 16,
 
     data = []
     for s in samples:
-        print(s,tokenizer.encode(s))
+        # print(s,tokenizer.encode(s))
         data.append(tokenizer.encode(s))
-
-    for r in res:
-        print(r,tokenizer.encode(r))
-
-    print(data)
-    data =[[259, 616, 4459, 11, 220], [1462, 18282, 220], [2188],
-           [5303, 11, 616, 1438, 318, 220], [3003, 318, 220], [40, 836, 470, 220],[1136]]
-    # Punctuation: [30,13,0,26]
-    # tokenizer.decode([20526])
-
-# res = explore_gpt2()
-
-
-#################################################################################
-# Collator (just used for dataset collection)
-#################################################################################
-
+    return data
 

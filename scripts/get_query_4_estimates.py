@@ -49,7 +49,7 @@ lengths = {
     "moocs":[(h,15) for h in [10]],
     "amazon":[(h,15) for h in [10]],
     "apps":[(h,15) for h in [10]],
-    "shakespeare": [(h,20) for h in [10]],
+    "shakespeare":[(h,15) for h in [10]],
 
 }
 

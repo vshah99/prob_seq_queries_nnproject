@@ -39,9 +39,9 @@ datasets = ['shakespeare','apps','amazon','moocs']
 config_path = "config/testing/sample.yaml"
 lengths = {
     "moocs":[(13,15),(12,15)],
-    "amazon":[(13,15),(12,15)],#,(11,15)],
+    "amazon":[(13,15),(12,15)],
     "apps": [(13,15),(12,15)],
-    "shakespeare": [(18,20),(17,20)],
+    "shakespeare":[(13,15),(12,15)],
 }
 
 for dataset_name in datasets:

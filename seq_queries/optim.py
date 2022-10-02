@@ -23,7 +23,6 @@ class LRScheduler(torch.optim.lr_scheduler._LRScheduler):
         "constant": lambda x: 1.0,
         "linear": lambda x: 1.0 - x,
         "cosine": lambda x: 0.5 * (1 + math.cos(math.pi * x)),
-        #"exponential": lambda x: pass,
     }
 
     def __init__(self, optimizer, start_lr, warmup_iter, num_iters, decay_style, args):
@@ -82,9 +81,6 @@ class LRScheduler(torch.optim.lr_scheduler._LRScheduler):
             group['lr'] = new_lr
 
         mult = self.get_loss_mult()
-
-        # self.args.loss_beta = mult * self.true_beta
-        # self.args.loss_lambda = mult * self.true_lambda
 
     def state_dict(self):
         sd = {

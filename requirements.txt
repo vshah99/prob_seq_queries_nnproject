@@ -1,1 +1,9 @@
-
+torch
+numpy
+pandas
+transformers
+argparse
+yaml
+json
+matplotlib
+searborn

@@ -51,7 +51,7 @@ lengths = {
     "moocs":[(h,15) for h in reversed(range(12,14,1))],
     "amazon":[(h,15) for h in reversed(range(12,14,1))],
     "apps":[(h,15) for h in reversed(range(12,14,1))],
-    "shakespeare": [(h,20) for h in reversed(range(17,19,1))]
+    "shakespeare":[(h,15) for h in reversed(range(12,14,1))],
 
 }
 
@@ -69,6 +69,7 @@ for dataset_name in datasets:
     prep_dict['args'].text_dict['text'] = None
     args = prep_dict['args']
     args.sub_estimates = sub_estimates
+    args.long_seq_ablation=False
     args.intermediate_seqs = intermediate_seqs
     val_dl = prep_dict['val_dl']
     model = prep_dict['model']

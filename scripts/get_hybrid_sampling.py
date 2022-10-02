@@ -43,7 +43,7 @@ lengths = {
     "moocs":[(h,15) for h in reversed(range(12,14,1))],
     "amazon":[(h,15) for h in reversed(range(12,14,1))],
     "apps":[(h,15) for h in reversed(range(12,14,1))],
-    "shakespeare": [(h,20) for h in reversed(range(17,19,1))],
+    "shakespeare":[(h,15) for h in reversed(range(12,14,1))],
 }
 
 for dataset_name in datasets:

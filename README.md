@@ -1,7 +1,6 @@
 # Predictive Querying for Neural Autoregressive Sequence Models
 
 
-
 ## Setup
 
 Our experiments make use of 5 datasets. Links for downloading these files can be found below. After downloading, place the files in the `/data` folder. MOOCs and Shakespeare are included in the supplemental materials as a reference.

@@ -138,12 +138,12 @@ def training_args(parser):
 
 def evaluation_args(parser):
     group = parser.add_argument_group("Evaluation specification arguments.")
-    #group.add_argument("--", type=, default=, help="")pin_test_memory
 
 def sampling_args(parser):
     group = parser.add_argument_group("Sampling specification arguments.")
     group.add_argument("--hist_len", type=int, default=10, help="Length of conditioning context for sequence")
     group.add_argument("--total_seq_len", type=int, default=15, help="List[int] or int for total sequence lengths")
+    group.add_argument("--long_seq_ablation", type=_str2bool, default=False, help="Long sequences ablation")
     group.add_argument("--estimate_type", type=_str2estimate,default="sample", help="Get estimate type")
     group.add_argument("--proposal_func",  type=_str2proposal,default="uniform", help="Get proposal distribution for sampling")
     group.add_argument("--interp_func",  type=_str2interp_func,default="linear", help="Get inpterpolation function for search coverage")

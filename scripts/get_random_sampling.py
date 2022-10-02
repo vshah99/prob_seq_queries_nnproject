@@ -39,7 +39,6 @@ model_budget = True
 max_num_queries=1000
 folders = ["random_sampling"]
 datasets = ['shakespeare',"amazon","apps",'moocs'] #'shakespeare'
-# datasets = ['wikitext'] #'shakespeare'
 config_path = "config/testing/sample.yaml"
 lengths = {
 

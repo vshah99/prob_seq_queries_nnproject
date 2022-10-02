@@ -37,8 +37,7 @@ device=2
 sub_estimates = [10,100,1000]
 max_num_queries = 500
 folders = ["entropy_ablation"]
-# datasets = ['shakespeare','moocs','apps','amazon'] #'shakespeare'
-datasets = ['wikitext'] #'shakespeare'
+datasets = ['shakespeare','moocs','apps','amazon']
 config_path = "config/testing/sample.yaml"
 
 lengths = {
@@ -46,7 +45,7 @@ lengths = {
     "amazon":[(5,15)],
     "wikitext":[(5,15)],
     "apps":[(5,15)],
-    "shakespeare": [(10,20)],
+    "shakespeare": [(5,15)],
 }
 
 for dataset_name in datasets:

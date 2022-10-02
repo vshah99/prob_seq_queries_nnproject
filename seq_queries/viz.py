@@ -48,30 +48,18 @@ def plot_search_vs_sample_relative(gt_data_path, samp_data_path_imp, hist_len,se
                  "imp_samp":samp_data_imp['sample_estimates'],
                  "hybrid_samp":None if not samp_data_path_rand else samp_data_rand['sample_estimates'],}
     excluded_terms = gt_data['excluded_terms']
-    # Check if it is a dictionary
-    # for key,data in data_dict.items():
-    #     if isinstance(data,dict):
-    #         data_dict[key] = data['sample_estimates']
-
-    # print(data_dict['gt_data'].shape, data_dict['imp_samp'].shape)
 
     for i in range(num_plots):
-        # data = read_pkl(paths[i])
         ref = np.arange(0,1,0.01)
-        # axs[i//plot_cols][i%plot_cols].scatter(data_dict['gt_data'], data_dict['imp_samp'][:,:sample_sizes[i]].mean(axis = -1), color = "blue", label = "importance")
-        # imp_diff =np.abs(data_dict['imp_samp'][:,i]-data_dict['gt_data'])
-        # hybrid_diff =np.abs(data_dict['hybrid_samp'][:,i]-data_dict['gt_data'])
         imp_vec =torch.gather(data_dict['imp_samp'][:,i],1,gt_data['excluded_terms'].unsqueeze(-1)).squeeze().numpy()
         axs[i//plot_cols][i%plot_cols].scatter(data_dict['gt_data'].numpy(), imp_vec, color = "blue", label = "importance")
         axs[i//plot_cols][i%plot_cols].plot(list(ref),list(ref),linestyle="dashed", color = "red",linewidth=2)
         if samp_data_path_rand:
-            # axs[i//plot_cols][i%plot_cols].scatter(data_dict['gt_data'], data_dict['rand_samp'][:,:sample_sizes[i]].mean(axis = -1), color = "green", label = "random")
             hybrid_vec =torch.gather(data_dict['hybrid_samp'][:,i],1,gt_data['excluded_terms'].unsqueeze(-1)).squeeze().numpy()
             axs[i//plot_cols][i%plot_cols].scatter(data_dict['gt_data'].numpy(), hybrid_vec, color = "green", label = "hybrid")
         axs[i//plot_cols][i%plot_cols].set_title(title.format(sample_sizes[i]))
         axs[i//plot_cols][i%plot_cols].legend()
-        if ylim:
-            axs[i//plot_cols][i%plot_cols].set_ylim(ylim)
+        if ylim: axs[i//plot_cols][i%plot_cols].set_ylim(ylim)
 
     fig.supxlabel(f"{search_type} Query probability: {hist_len}h-{seq_len}s")
     fig.supylabel("Query estimates v. ground truth")
@@ -92,20 +80,11 @@ def plot_search_vs_sample(gt_data_path, samp_data_path_imp, hist_len,seq_len, nu
     data_dict = {"gt_data":torch.gather(gt_data['dist_lower_bound'],1,gt_data['excluded_terms'].unsqueeze(-1)).squeeze(),
                  "imp_samp":samp_data_imp['sample_estimates'],
                  "rand_samp":None if not samp_data_path_rand else samp_data_rand['hybrid_bs_is_estimate'],}
-    # Check if it is a dictionary
-    # for key,data in data_dict.items():
-    #     if isinstance(data,dict):
-    #         data_dict[key] = data['sample_estimates']
-
-    # print(data_dict['gt_data'].shape, data_dict['imp_samp'].shape)
 
     for i in range(num_plots):
-        # data = read_pkl(paths[i])
         ref = np.arange(0,1,0.01)
-        # axs[i//plot_cols][i%plot_cols].scatter(data_dict['gt_data'], data_dict['imp_samp'][:,:sample_sizes[i]].mean(axis = -1), color = "blue", label = "importance")
         axs[i//plot_cols][i%plot_cols].scatter(data_dict['gt_data'], data_dict['imp_samp'][:,i], color = "blue", label = "importance")
         if samp_data_path_rand:
-            # axs[i//plot_cols][i%plot_cols].scatter(data_dict['gt_data'], data_dict['rand_samp'][:,:sample_sizes[i]].mean(axis = -1), color = "green", label = "random")
             axs[i//plot_cols][i%plot_cols].scatter(data_dict['gt_data'], data_dict['rand_samp'][:,i], color = "green", label = "hybrid")
         axs[i//plot_cols][i%plot_cols].set_title(title.format(sample_sizes[i]))
         axs[i//plot_cols][i%plot_cols].plot(list(ref),list(ref),linestyle="dashed", color = "red",linewidth=2)
@@ -159,7 +138,6 @@ def plot_search_vs_sample_mae(
     mc_ests = abs(gt_data[:, np.newaxis] - mc_ests)
 
     ax.fill_between(np.arange(1, total_samples+1), y1=imp_ests.mean(axis=0)-imp_ests.std(axis=0), y2=imp_ests.mean(axis=0)+imp_ests.std(axis=0), color="blue", alpha=0.3)
-#    ax.fill_between(np.arange(1, total_samples+1), y1=mc_ests.mean(axis=0)-mc_ests.std(axis=0), y2=mc_ests.mean(axis=0)+mc_ests.std(axis=0), color="green", alpha=0.3)
 
     ax.plot(np.arange(1, total_samples+1), imp_ests.mean(axis=0), color = "blue", label="importance")
     ax.plot(np.arange(1, total_samples+1), mc_ests.mean(axis=0), color = "green", label="random")
@@ -175,9 +153,6 @@ def plot_search_vs_sample_mae(
     mc_ests = abs(gt_data[:, np.newaxis] - mc_ests) / gt_data[:, np.newaxis]
 
     ax.fill_between(np.arange(1, total_samples+1), y1=imp_ests.mean(axis=0)-imp_ests.std(axis=0), y2=imp_ests.mean(axis=0)+imp_ests.std(axis=0), color="blue", alpha=0.3)
-#    ax.fill_between(np.arange(1, total_samples+1), y1=mc_ests.mean(axis=0)-mc_ests.std(axis=0), y2=mc_ests.mean(axis=0)+mc_ests.std(axis=0), color="green", alpha=0.3)
-
-
     ax.plot(np.arange(1, total_samples+1), imp_ests.mean(axis=0), color = "blue", label="importance")
     ax.plot(np.arange(1, total_samples+1), mc_ests.mean(axis=0), color = "green", label="random")
     ax.set_ylabel("Mean Relative Absolute Error")

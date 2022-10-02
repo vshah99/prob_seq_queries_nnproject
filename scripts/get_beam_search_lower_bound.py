@@ -34,41 +34,20 @@ from seq_queries.experiments import sample_dynamic_target_token, prep_experiment
 
 device=0
 folders = ["beam_search"]
-datasets = ['shakespeare','moocs','apps', 'amazon']#'shakespeare'
-# datasets = ['wikitext']
+datasets = ['shakespeare','moocs','apps', 'amazon']
 num_mc_samples = 10000
 sub_estimates = [10,30,50,100,300, 500,1000,3000,5000,10000]
 num_beams = 0.8
-model_budget = True
+model_budget = False
 max_num_queries=1000
 config_path = "config/testing/sample.yaml"
-steps = [5,9,13]
-shake_steps = [10,14,18]
 lengths_coverage = {
 
-    # Long GT
-    # "wikitext":[(13,15,0.8),(12,15,0.8),(11,15,0.8)],
-    # "moocs":[(5,15,0.8),(8,15,0.8),(11,15,0.8)],
-    # "amazon":[(5,15,0.8),(8,15,0.8),(11,15,0.8)],
-    # "apps":[(5,15,0.8),(8,15,0.8),(11,15,0.8)],
-    # "shakespeare":[(10,20,0.8),(12,20,0.8),(16,20,0.8)],
-    "moocs":[(h,15,num_beams) for h in steps],
-    "amazon":[(h,15,num_beams) for h in steps],
-    "apps":[(h,15,num_beams) for h in steps],
-    "shakespeare": [(h,20,num_beams) for h in shake_steps],
-
-    # # Regular GT
-    "wikitext":[(11,15,0.8)],
-    # "moocs":[(13,15,0.98), (12,15,0.98)],
-    # "amazon":[(12,15,0.98),(13,15,0.98), (11,15,0.98)],
-    # "apps":[(13,15,0.98), (12,15,0.98)],
-    # "shakespeare":[(18,20,0.98), (17,20,0.98)],
-
     # Beam search gt
-    # "moocs":[(11,15,0.9),(10,15,0.9),(9,15,0.9),(8,15,0.9)],
-    # "amazon":[(11,15,0.9),(10,15,0.9),(9,15,0.9),(8,15,0.9),(7,15,0.80)],
-    # "apps":[(13,15,0.98),(12,15,0.92), (11,15,0.9),(10,15,0.85)],
-    # "shakespeare":[(16,20,0.9),(15,20,0.9),(14,20,0.9),(13,20,0.85)],
+    "moocs":[(11,15,0.9)],
+    "amazon":[(11,15,0.9)],
+    "apps":[(11,15,0.9)],
+    "shakespeare":[(11,15,0.9)],
 }
 
 for dataset_name in datasets:
@@ -94,7 +73,7 @@ for dataset_name in datasets:
     for folder in folders:
         for hist_len,total_seq_len,coverage in len_info:
             args = copy.deepcopy(prep_dict['args'])
-            args.num_mc_samples = num_mc_samples # For reading from hybrid correctly
+            args.num_mc_samples = num_mc_samples
             args.estimate_type = beam_search_lower_bound
             args.proposal_func = lm_proposal
             args.use_gpt2 = (dataset_name == 'wikitext')
@@ -137,21 +116,4 @@ for dataset_name in datasets:
             f"{args.hist_len}h_{args.total_seq_len}s_{args.num_mc_samples}mc" +
             f"{'_' + 'model-budget' if model_budget else f'_{args.num_beams}b'}" +
             f"{f'_{max_num_queries}q' if max_num_queries else ''}.pkl")
-
             print("====="*10)
-
-
-
-
-
-#################################################################################
-#   Main Method
-#################################################################################
-
-# for e,d in estimates.items():
-#     if isinstance(d, (torch.Tensor, torch.LongTensor)):
-#         print(e, d.shape)
-# sys.exit(1)
-
-
-

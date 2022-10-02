@@ -38,7 +38,7 @@ sub_estimates = [10,30,50,100,300, 500,1000,3000,5000,10000]
 model_budget = True
 max_num_queries = 1000
 folders = ["frequentist_estimates"]
-datasets = ['shakespeare','apps','moocs','amazon'] #'shakespeare'
+datasets = ['shakespeare','apps','moocs','amazon']
 config_path = "config/testing/sample.yaml"
 
 lengths = {
@@ -46,8 +46,7 @@ lengths = {
     "moocs":[(h,15) for h in [5,9,13]],
     "amazon":[(h,15) for h in [5,9,13]],
     "apps":[(h,15) for h in [5,9,13]],
-    "shakespeare": [(h,20) for h in [10,14,18]],
-    "wikitext":[(11,15)],
+    "shakespeare": [(h,15) for h in [5,9,13]],
 }
 
 for dataset_name in datasets:

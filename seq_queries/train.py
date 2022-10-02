@@ -12,15 +12,12 @@ from tqdm import tqdm
 from seq_queries.optim import get_optimizer, get_lr_scheduler
 from seq_queries.utils import print_log, set_random_seed
 from seq_queries.model import get_model
-# from seq_queries.data import load_text, process_data
 from seq_queries.arguments import get_args
 
 
 def forward_pass(args, batch, model):
     if args.cuda:
         batch = batch.to(args.device)
-        # batch = {k:v.to(args.device) for k,v in batch.items()}
-
     # Forward Pass
     return model.graded_forward(batch, val_metrics=args.val_metrics)
 

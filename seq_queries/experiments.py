@@ -76,8 +76,6 @@ def prep_experiment(
             "data_path": "/srv/disk00/samshow/amazon/amazon_text_dict.pkl",
             "hidden_size": 512,
             "seq_len": 15,
-            "tau_a_excl_terms":[2,3,9,10], # Household and Vehicle
-            "tau_b_excl_terms":[17,19,25,28], # Digital Entertainment
             "vocab_size": 30,
             "val_data_pct": 0.0001,
             "needs_dl":True,
@@ -88,7 +86,6 @@ def prep_experiment(
             "data_path": "data/apps/lsapp.tsv",
             "hidden_size": 512,
             "fixed_seq_len": 100,
-            "excluded_terms":[3,14,16,23,30,39,44,40,41,51,60,73,74,79,81,82,84] +[18,19,33,34,47,78,52,55,57,67],
             "vocab_size": 88,
             "val_data_pct": 0.001,
             "needs_dl":False,
@@ -98,8 +95,6 @@ def prep_experiment(
             "data_path": "data/apps/lsapp.tsv",
             "hidden_size": 512,
             "seq_len": 15,
-            "tau_a_excl_terms":[3,14,16,23,30,39,44,40,41,51,60,73,74,79,81,82,84], # Communication
-            "tau_b_excl_terms":[18,19,33,34,47,78,52,55,57,67], # Social Media
             "vocab_size": 88,
             "val_data_pct": 0.001,
             "needs_dl":True,
@@ -109,8 +104,6 @@ def prep_experiment(
             "data_path": "data/moocs/mooc.csv",
             "hidden_size": 128,
             "seq_len": 15,
-            "tau_a_excl_terms":[13,8,21,7],
-            "tau_b_excl_terms":[51,33,16,27,15,24,53],
             "vocab_size": 98,
             "val_data_pct": 0.01,
             "needs_dl":True,
@@ -120,8 +113,6 @@ def prep_experiment(
             "data_path": "data/shakespeare/shakespeare_input.txt",
             "hidden_size": 128,
             "seq_len": 100,
-            "tau_a_excl_terms":[18,46], # E
-            "tau_b_excl_terms":[43,48,49,52,63,15,20,21,24,35], # B,G,H,K,V
             "vocab_size": 68,
             "val_data_pct": 0.05,
             "needs_dl":True,
@@ -238,14 +229,14 @@ def tau_ab_inf_horizon_query(
                 intermediate_query_probs = sample_output['intermediate_lbs']
             else:
                 intermediate_query_probs = sample_output['intermediate_query_probs'].squeeze(0)
-            # intermediate_query_probs = torch.cumsum(
-            #     intermediate_query_probs.squeeze(0),dim=0).squeeze()
-            # sample_output['tau_a_estimates'] = torch.gather(
-            #     intermediate_query_probs, -1,
-            #     torch.tensor([args.tau_a_excl_terms]*(args.max_k+1))).squeeze().sum(dim=-1)
-            # sample_output['tau_b_estimates'] = torch.gather(
-            #     intermediate_query_probs, -1,
-            #     torch.tensor([args.tau_b_excl_terms]*(args.max_k+1))).squeeze().sum(dim=-1)
+            intermediate_query_probs = torch.cumsum(
+                intermediate_query_probs.squeeze(0),dim=0).squeeze()
+            sample_output['tau_a_estimates'] = torch.gather(
+                intermediate_query_probs, -1,
+                torch.tensor([args.tau_a_excl_terms]*(args.max_k+1))).squeeze().sum(dim=-1)
+            sample_output['tau_b_estimates'] = torch.gather(
+                intermediate_query_probs, -1,
+                torch.tensor([args.tau_b_excl_terms]*(args.max_k+1))).squeeze().sum(dim=-1)
 
             data_list.append(sample_output)
 
@@ -323,12 +314,9 @@ def flashy_query(
     for i,sample in tqdm(enumerate(args.text_dict['text']),
                          disable=args.disable_tqdm):
         sample = torch.LongTensor(sample)
-        print(sample)
-        print(args.excluded_terms)
-        # print(sample,args.vocab_size)
-        # if args.dataset == "flashy_apps":
-        #     args.excluded_terms = list(set(range(args.vocab_size)) - set([sample[0].item()]))
-        #     all_excluded_terms.append(torch.LongTensor(args.excluded_terms))
+        if args.dataset == "flashy_apps":
+            args.excluded_terms = list(set(range(args.vocab_size)) - set([sample[0].item()]))
+            all_excluded_terms.append(torch.LongTensor(args.excluded_terms))
 
         if (args.use_gpt2 and
             args.disable_tqdm):
@@ -339,8 +327,6 @@ def flashy_query(
 
         kwargs = vars(args)
         sample_output =args.estimate_type(sample,**kwargs)
-        print(sample_output['samples'].shape)
-            # print(" - ", sample_output['sample_estimates'][-1,args.excluded_terms[0]].item())
         data_list.append(sample_output)
 
         print("",flush=True)
@@ -372,7 +358,7 @@ def sample_dynamic_target_token(
     dataloader,
     model=None,
     sample_artifacts=["sample_estimates",'sample_estimate_var','sample_estimate_mean','entropy_probs',
-                      'model_iters','num_mc_samples','intermediate_query_probs','efficiency'],
+                      'model_iters','num_mc_samples','intermediate_query_probs'],
     hybrid_artifacts=["bs_lower_bound",'is_estimates','sample_estimates','model_iters',
                       'sample_estimate_var','sample_estimate_mean','num_beams','num_mc_samples'],
     search_artifacts=['true_coverage','restricted_coverage','num_beams', 'model_iters',
@@ -427,10 +413,6 @@ def sample_dynamic_target_token(
         model_budget = model_budget_file['model_iters']
     elif 'num_mc_samples' in hybrid_artifacts:
         hybrid_artifacts.remove('num_mc_samples')
-        # sample_artifacts.remove('num_mc_samples')
-    # if (args.estimate_type.__name__ != "mc_pseudo_gt"
-    #     and 'num_mc_samples' in sample_artifacts):
-    #     sample_artifacts.remove('num_mc_samples')
 
     all_excluded_terms = [];
     artifacts = artifact_store_roster[args.estimate_type.__name__]
@@ -471,28 +453,24 @@ def sample_dynamic_target_token(
             kwargs = vars(args)
             sample_output =args.estimate_type(sample,**kwargs)
 
-            # Ablation for importance sampling long sequences
-            intermediate_query_probs = sample_output['intermediate_query_probs']
-            intermediate_sub_estimates = intermediate_query_probs[...,args.intermediate_seqs,:]
-            sample_output['intermediate_query_probs'] = torch.stack([
-                intermediate_sub_estimates[:,:samp].mean(dim=1)
-                for samp in args.sub_estimates
-            ] + [intermediate_sub_estimates.mean(dim=1)],dim=1)
-            assert (sample_output['intermediate_query_probs'].shape[1] == len(args.sub_estimates)+1 and
-                    sample_output['intermediate_query_probs'].shape[2] == len(args.intermediate_seqs)),\
-                "Error: Expected {} sub estimates and {} intermediate sequences but got: sub estimates {} and seq {}".format(
-                    len(args.sub_estimates)+1, len(args.intermediate_seqs),
-                    sample_output['intermediate_query_probs'].shape[1],
-                    sample_output['intermediate_query_probs'].shape[2],
-                )
+            if args.long_seq_ablation:
+                # Ablation for importance sampling long sequences
+                intermediate_query_probs = sample_output['intermediate_query_probs']
+                intermediate_sub_estimates = intermediate_query_probs[...,args.intermediate_seqs,:]
+                sample_output['intermediate_query_probs'] = torch.stack([
+                    intermediate_sub_estimates[:,:samp].mean(dim=1)
+                    for samp in args.sub_estimates
+                ] + [intermediate_sub_estimates.mean(dim=1)],dim=1)
+                assert (sample_output['intermediate_query_probs'].shape[1] == len(args.sub_estimates)+1 and
+                        sample_output['intermediate_query_probs'].shape[2] == len(args.intermediate_seqs)),\
+                    "Error: Expected {} sub estimates and {} intermediate sequences but got: sub estimates {} and seq {}".format(
+                        len(args.sub_estimates)+1, len(args.intermediate_seqs),
+                        sample_output['intermediate_query_probs'].shape[1],
+                        sample_output['intermediate_query_probs'].shape[2],
+                    )
 
-            # print("========"*5)
-            # print(sample_output['num_mc_samples'])
-            # print(" - ", sample_output['sample_estimates'][-1,args.excluded_terms[0]].item())
             data_list.append(sample_output)
             model_budget_i += 1
-            # if i > 10:
-            #     break
 
         print("",flush=True)
         assert args.estimate_type.__name__ in artifact_store_roster,\
@@ -637,8 +615,6 @@ def beam_search_ablation(
 
             kwargs = vars(args)
             sample_output =args.estimate_type(sample,**kwargs)
-            # print(sample_output['num_mc_samples'])
-            # print(" - ", sample_output['sample_estimates'][-1,args.excluded_terms[0]].item())
             data_list.append(sample_output)
 
         print("",flush=True)

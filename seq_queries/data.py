@@ -17,15 +17,9 @@ from .utils import read_pkl, write_pkl, write_json, read_json
 def load_flashy_apps(data_path, args):
     text_dict = {}
 
-    # text, vocab = prepare_mobile_app_data_by_user(args.data_path, args.seq_len)
-    # vocab.add("<BOS>")  # beginning of sequence
-    # char_to_id = {v:i for i,v in enumerate(sorted(list(vocab)))}
-    # id_to_char = {i:v for v,i in char_to_id.items()}
-
     np.random.seed(int(time.time())%2**32)
     comms = [3,14,16,23,30,39,44,40,41,51,60,73,74,79,81,82,84]
     all_social_media = [18,19,33,34,78,52,55,57,67]
-
 
     seq_size = 20
     num_samples = 10
@@ -39,14 +33,9 @@ def load_flashy_apps(data_path, args):
         random.shuffle(sample)
         data.append(sample)
 
-        # data.append(np.random.choice(bank,seq_size).tolist())
-
 
     text_dict['vocab_size'] = 88
     text_dict['text'] = data
-    # text_dict['vocab'] = vocab
-    # text_dict['id_to_char'] = id_to_char
-    # text_dict['char_to_id'] = char_to_id
     text_dict['vocab'] = None
     text_dict['samples'] = data
     text_dict['id_to_char'] = None

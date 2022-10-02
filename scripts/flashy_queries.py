@@ -62,7 +62,6 @@ for dataset_name in datasets:
         args.estimate_type = mc_estimate
         args.use_gpt2 = True
         args.flashy=True
-        # args.frequentist_test=True
         args.proposal_func = lm_proposal
         args.sub_estimates = sub_estimates
         args.num_mc_samples = args.sub_estimates[-1]
