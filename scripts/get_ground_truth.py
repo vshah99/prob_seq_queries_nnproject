@@ -79,14 +79,3 @@ for dataset_name in datasets:
                     f"data/{folder}/{dataset_name}/val_dl/val-dl_{dataset_name}_{folder.replace('_','-')}_{args.hist_len}h_{args.total_seq_len}s.pkl")
             estimates=None
             print("====="*10)
-
-
-
-
-
-#################################################################################
-#   Main Method
-#################################################################################
-
-
-

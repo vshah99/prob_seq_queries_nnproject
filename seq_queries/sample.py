@@ -123,7 +123,7 @@ def mc_pseudo_gt(hist, num_mc_samples, seq_len, model, excluded_terms, proposal_
     # _set_random_seed(int(time.time()) %2**32)
     model.model_iters = 0
     assert(len(hist.shape) == 1)  # (hist_seq_len), Only conditions on a single history
-    assert(len(excluded_terms) == 1) # For most experiments
+    assert(len(excluded_terms) == 0) # For most experiments, this will be 1. For Q2 it is zero
     temp_out_dict = defaultdict(list)
     out_dict = defaultdict(list)
     samp_est_var = 1.0 # Some general seeding
@@ -159,9 +159,8 @@ def mc_pseudo_gt(hist, num_mc_samples, seq_len, model, excluded_terms, proposal_
         for item in cat_list:
             out_dict[item] = torch.cat(temp_out_dict[item],dim=0)
 
-
-        samp_est_var = min(out_dict['sample_estimates'][:,excluded_terms[0]].var(),
-                           out_dict['intermediate_query_probs'][...,excluded_terms[0]].var().min())
+        samp_est_var = max(out_dict['sample_estimates'].var(dim=0).max(),
+                           out_dict['intermediate_query_probs'].var(dim=0).max(dim=0).values.max())
         remaining_samples = var_check_interval
 
     out_dict['num_mc_samples'] = torch.LongTensor([total_samples]*out_dict['intermediate_query_probs'].shape[-2])
@@ -169,7 +168,24 @@ def mc_pseudo_gt(hist, num_mc_samples, seq_len, model, excluded_terms, proposal_
     out_dict['sample_estimate_var'] =torch.var(out_dict['sample_estimates'],dim=0)
     out_dict['intermediate_query_probs'] = torch.cat((out_dict['intermediate_query_probs'],
                                                       out_dict['sample_estimates'].unsqueeze(1))
-                                                     ,dim=1).mean(dim=0).unsqueeze(0)
+                                                     ,dim=1).unsqueeze(0)
+    means =out_dict['intermediate_query_probs'].mean(dim=1)
+    means_squared = (out_dict['intermediate_query_probs']**2).mean(dim=1)
+    # print(means.min(), means.max())
+    # print(means_squared.min(), means_squared.max())
+    bern_var = means * (1-means)
+    # print(bern_var.min(),bern_var.max())
+    query_var = means_squared - (means**2)
+    query_var[query_var <=0] = 1e-8
+    # print(query_var.min(),query_var.max())
+    # print(bern_var.shape, query_var.shape)
+    out_dict['efficiency'] = (bern_var/query_var)
+    print(out_dict['efficiency'].shape)
+    sys.exit(1)
+    # print(efficiency.shape)
+    # print(efficiency.min(), torch.median(efficiency,dim=1), efficiency.max())
+    # sys.exit(1)
+    # print(out_dict['intermediate_query_probs'].shape)
     out_dict['sample_estimates'] =out_dict['sample_estimates'].mean(dim=0)
     return out_dict
 

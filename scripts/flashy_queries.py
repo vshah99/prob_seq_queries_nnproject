@@ -1,4 +1,3 @@
-
 #################################################################################
 #
 #             Project Title:  Flashy queries
@@ -86,15 +85,3 @@ for dataset_name in datasets:
         f"{args.num_mc_samples}mc.pkl")
         estimates=None
         print("====="*10)
-
-
-#################################################################################
-#   Main Method
-#################################################################################
-
-
-
-# for e,d in estimates.items():
-#     if isinstance(d, (torch.Tensor, torch.LongTensor)):
-#         print(e, d.shape)
-# sys.exit(1)

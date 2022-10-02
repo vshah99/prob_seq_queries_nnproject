@@ -40,7 +40,6 @@ sub_estimates = [10,100,1000]
 model_budget = True
 max_num_queries = 1000
 folders = ["temperature_ablation"]
-# datasets = ['shakespeare','moocs','apps','amazon'] #'shakespeare'
 datasets = ['shakespeare','apps','amazon','moocs']
 config_path = "config/testing/sample.yaml"
 beams = {
@@ -53,20 +52,10 @@ beams = {
 temperatures = [0.01,0.1,0.5,0.75,1,1.25,1.75,2,3,4,5,10]
 lengths = {
 
-    # # Long lengths
-    # "wikitext":[(h,15) for h in reversed(range(12,14,1))],
     "moocs":[(11,15)],
     "amazon":[(11,15)],
-    "shakespeare":[(16,20)],
-    # "amazon":[(h,15) for h in [11,8,5]],
-    "apps":[(h,15) for h in [11]],
-
-    # # Short lengths
-    # "wikitext":[(h,15) for h in reversed(range(12,14,1))],
-    # "moocs":[(h,15) for h in reversed(range(12,14,1))],
-    # "amazon":[(h,15) for h in reversed(range(12,14,1))],
-    # "apps":[(h,15) for h in reversed(range(12,14,1))],
-    # "shakespeare": [(h,20) for h in reversed(range(17,19,1))]
+    "shakespeare":[(11,15)],
+    "apps":[(11,15)],
 
 }
 
@@ -199,7 +188,6 @@ for dataset_name in datasets:
                 #         print(e, d.shape)
                 # sys.exit(1)
 
-
                 write_pkl(estimates,
                 f"data/{folder}/{dataset_name}/val_dl/val-dl_{dataset_name}_{folder.replace('_','-')}_" +
                 f"{args.hist_len}h_{args.total_seq_len}s_{temp:03}t_{args.num_mc_samples}mc" +
@@ -207,17 +195,3 @@ for dataset_name in datasets:
                 f"{f'_{max_num_queries}q' if max_num_queries else ''}.pkl")
 
                 print("====="*10)
-
-
-
-
-#################################################################################
-#   Main Method
-#################################################################################
-
-
-
-# for e,d in estimates.items():
-#     if isinstance(d, (torch.Tensor, torch.LongTensor)):
-#         print(e, d.shape)
-# sys.exit(1)

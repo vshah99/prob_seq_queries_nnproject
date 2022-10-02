@@ -46,14 +46,10 @@ estimate_type = beam_search_lower_bound
 
 lengths = {
 
-    # # Long lengths
-    # "wikitext":[(h,15) for h in reversed(range(12,14,1))],
-    # Only need to set the history length
     "moocs":[(h,15) for h in [10]],
     "amazon":[(h,15) for h in [10]],
     "apps":[(h,15) for h in [10]],
     "shakespeare": [(h,20) for h in [10]],
-    "wikitext":[(11,15)],
 
 }
 

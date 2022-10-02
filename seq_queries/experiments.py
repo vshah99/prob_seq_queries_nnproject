@@ -182,7 +182,7 @@ def tau_ab_inf_horizon_query(
     dataloader,
     model=None,
     sample_artifacts=["sample_estimates",'sample_estimate_var','sample_estimate_mean','model_iters','num_mc_samples',
-                      'intermediate_query_probs'],
+                      'intermediate_query_probs','efficiency'],
     hybrid_artifacts=["bs_lower_bound",'is_estimates','sample_estimates','model_iters','intermediate_query_probs',
                       'sample_estimate_var','sample_estimate_mean','num_beams','num_mc_samples'],
     search_artifacts=['true_coverage','restricted_coverage','num_beams', 'model_iters',
@@ -372,7 +372,7 @@ def sample_dynamic_target_token(
     dataloader,
     model=None,
     sample_artifacts=["sample_estimates",'sample_estimate_var','sample_estimate_mean','entropy_probs',
-                      'model_iters','num_mc_samples','intermediate_query_probs'],
+                      'model_iters','num_mc_samples','intermediate_query_probs','efficiency'],
     hybrid_artifacts=["bs_lower_bound",'is_estimates','sample_estimates','model_iters',
                       'sample_estimate_var','sample_estimate_mean','num_beams','num_mc_samples'],
     search_artifacts=['true_coverage','restricted_coverage','num_beams', 'model_iters',
@@ -469,15 +469,30 @@ def sample_dynamic_target_token(
                     assert isinstance(args.num_beams,int),"Num beams for model budget has to be an int"
 
             kwargs = vars(args)
-            # print(model_budget[model_budget_i])
-            # print(args.sub_estimates)
-            # print(args.num_mc_samples)
             sample_output =args.estimate_type(sample,**kwargs)
+
+            # Ablation for importance sampling long sequences
+            intermediate_query_probs = sample_output['intermediate_query_probs']
+            intermediate_sub_estimates = intermediate_query_probs[...,args.intermediate_seqs,:]
+            sample_output['intermediate_query_probs'] = torch.stack([
+                intermediate_sub_estimates[:,:samp].mean(dim=1)
+                for samp in args.sub_estimates
+            ] + [intermediate_sub_estimates.mean(dim=1)],dim=1)
+            assert (sample_output['intermediate_query_probs'].shape[1] == len(args.sub_estimates)+1 and
+                    sample_output['intermediate_query_probs'].shape[2] == len(args.intermediate_seqs)),\
+                "Error: Expected {} sub estimates and {} intermediate sequences but got: sub estimates {} and seq {}".format(
+                    len(args.sub_estimates)+1, len(args.intermediate_seqs),
+                    sample_output['intermediate_query_probs'].shape[1],
+                    sample_output['intermediate_query_probs'].shape[2],
+                )
+
             # print("========"*5)
             # print(sample_output['num_mc_samples'])
             # print(" - ", sample_output['sample_estimates'][-1,args.excluded_terms[0]].item())
             data_list.append(sample_output)
             model_budget_i += 1
+            # if i > 10:
+            #     break
 
         print("",flush=True)
         assert args.estimate_type.__name__ in artifact_store_roster,\

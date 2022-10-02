@@ -103,19 +103,3 @@ for dataset_name in datasets:
             f"{f'_{max_num_queries}q' if max_num_queries else ''}.pkl")
 
             print("====="*10)
-
-
-
-
-
-#################################################################################
-#   Main Method
-#################################################################################
-
-# for e,d in estimates.items():
-#     if isinstance(d, (torch.Tensor, torch.LongTensor)):
-#         print(e, d.shape)
-# sys.exit(1)
-
-
-

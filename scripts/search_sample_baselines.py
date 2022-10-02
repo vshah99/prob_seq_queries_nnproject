@@ -20,9 +20,6 @@ import numpy as np
 import torch
 from collections import defaultdict
 
-# from experiments.train.shakespeare import main as shakespeare_main
-# from experiments.train.stacks import main as stacks_main
-
 from seq_queries.sample import sample
 from seq_queries.model import get_model
 from seq_queries.data import load_amazon_data, process_amazon_data, load_app_data, process_app_data
@@ -40,15 +37,6 @@ if __name__ == "__main__":
     # dataset_name = "amazon"
     dataset_name = "apps"
     args = get_args(manual_config="scripts/search_sample_baselines.yaml")
-
-    # Amazon
-
-    # # Mobile app data
-    # text_dict= load_app_data(args.data_path)
-    # args.text_dict = text_dict
-    # print(text_dict['char_to_id'],flush=True)
-    # print("====="*10,flush=True)
-    # train_dl, val_dl, test_dl = process_app_data(text_dict, args)
 
     model = get_model(args)
     if args.checkpoint_path:
@@ -86,12 +74,4 @@ if __name__ == "__main__":
         os.makedirs(f"data/ground_truth/{dataset_name}/val_dl/",exist_ok=True)
         write_pkl(estimates,f"data/ground_truth/{dataset_name}/val_dl/val-dl_ground-truth_{args.hist_len}h_{args.total_seq_len}s_exc-dynamic.pkl")
         print("====="*10)
-
-        # sequence length
-        # vocabulary size
-        # total sequence length
-        # hist length
-
-
-
 

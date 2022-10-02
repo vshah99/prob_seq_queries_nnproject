@@ -35,7 +35,6 @@ from seq_queries.experiments import sample_dynamic_target_token, prep_experiment
 
 device=1
 sub_estimates = [10,30,50,100,300, 500,1000,3000,5000,10000]
-# sub_estimates = [10,100,1000]
 model_budget = True
 max_num_queries = 1000
 folders = ["frequentist_estimates"]
@@ -44,8 +43,6 @@ config_path = "config/testing/sample.yaml"
 
 lengths = {
 
-    # # Long lengths
-    # "wikitext":[(h,15) for h in reversed(range(12,14,1))],
     "moocs":[(h,15) for h in [5,9,13]],
     "amazon":[(h,15) for h in [5,9,13]],
     "apps":[(h,15) for h in [5,9,13]],
@@ -124,15 +121,3 @@ for dataset_name in datasets:
             f"{f'_{max_num_queries}q' if max_num_queries else ''}.pkl")
             estimates=None
             print("====="*10)
-
-
-#################################################################################
-#   Main Method
-#################################################################################
-
-
-
-# for e,d in estimates.items():
-#     if isinstance(d, (torch.Tensor, torch.LongTensor)):
-#         print(e, d.shape)
-# sys.exit(1)

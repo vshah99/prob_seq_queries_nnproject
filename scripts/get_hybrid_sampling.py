@@ -35,24 +35,15 @@ from seq_queries.experiments import sample_dynamic_target_token, prep_experiment
 device=3
 sub_estimates = [10,30,50,100,300, 500,1000,3000,5000,10000]
 folders = ["beam_search_is_hybrid"]
-datasets = ['amazon']
-# datasets = ['wikitext']
+datasets = ['shakespeare','moocs','apps','amazon']
 max_num_queries = 1000
 config_path = "config/testing/sample.yaml"
 lengths = {
-
-    # Long hybrid
-    "moocs":[(h,15) for h in [5,9,13]],
-    "amazon":[(h,15) for h in [5,9,13]],
-    "apps":[(h,15) for h in [5,9,13]],
-    "shakespeare": [(h,20) for h in [10,14,18]],
-
-    # # Short hybrid
-    "wikitext":[(h,15) for h in [13]],
-    # "moocs":[(h,15) for h in reversed(range(12,14,1))],
-    # "amazon":[(h,15) for h in reversed(range(12,14,1))],
-    # "apps":[(h,15) for h in reversed(range(12,14,1))],
-    # "shakespeare": [(h,20) for h in reversed(range(17,19,1))],
+    "wikitext":[(h,15) for h in reversed(range(12,14,1))],
+    "moocs":[(h,15) for h in reversed(range(12,14,1))],
+    "amazon":[(h,15) for h in reversed(range(12,14,1))],
+    "apps":[(h,15) for h in reversed(range(12,14,1))],
+    "shakespeare": [(h,20) for h in reversed(range(17,19,1))],
 }
 
 for dataset_name in datasets:
@@ -109,18 +100,3 @@ for dataset_name in datasets:
                     f"{f'_{args.max_num_queries}q' if args.max_num_queries else ''}.pkl")
             estimates=None
             print("====="*10)
-
-
-
-
-
-#################################################################################
-#   Main Method
-#################################################################################
-
-
-# for e,d in estimates.items():
-#     if isinstance(d, (torch.Tensor, torch.LongTensor)):
-#         print(e, d.shape)
-# sys.exit(1)
-

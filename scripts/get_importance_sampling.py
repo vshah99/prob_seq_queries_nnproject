@@ -21,7 +21,6 @@ import numpy as np
 import torch
 from collections import defaultdict
 
-
 from seq_queries.model import get_model
 from seq_queries.arguments import get_args, print_args
 from seq_queries.train import load_checkpoint
@@ -33,50 +32,32 @@ from seq_queries.experiments import sample_dynamic_target_token, prep_experiment
 #   Function-Class Declaration
 #################################################################################
 
-device=1
+device=0
 sub_estimates = [10,30,50,100,300, 500,1000,3000,5000,10000]
-sub_estimates = [10,30,50,100,300]
-# sub_estimates = [10,100,1000]
+intermediate_seqs = list(range(2,16))
 model_budget = False
-pseudo_gt = False
+pseudo_gt = True
 max_num_queries = 1000
 query_2 = True
 folders = ["importance_sampling"] if not pseudo_gt else ['pseudo_gt']
-if query_2: folders = ["query2_importance_sampling_ablation"]
-datasets = ['moocs','shakespeare','apps','moocs','amazon'] #'shakespeare'
-# datasets = ['wikitext'] #'shakespeare'
+if query_2: folders = ["efficiency_ablation"]
+datasets = ['shakespeare','apps','moocs','amazon']
 config_path = "config/testing/sample.yaml"
-
-pseudo_gt_lengths = {
-    # "moocs":[(h,15) for h in range(5,14,1)],
-    # "amazon":[(h,15) for h in range(5,14,1)],
-    # "apps":[(h,15) for h in range(5,14,1)],
-    # "shakespeare": [(h,20) for h in range(10,19,1)],
-    # "wikitext":[(11,15)],
-}
 
 lengths = {
 
-    # # Long lengths
-    # "wikitext":[(h,15) for h in reversed(range(12,14,1))],
-    "moocs":[(10,h) for h in [20,35,50]],
-    "amazon":[(h,15) for h in [9,13]],
-    "apps":[(h,15) for h in [5,9,13]],
-    "shakespeare": [(10,h) for h in [20,35,50]],
-    # "wikitext":[(11,15)],
-
-    # # Short lengths
-    # "wikitext":[(h,15) for h in reversed(range(12,14,1))],
-    # "moocs":[(h,15) for h in reversed(range(12,14,1))],
-    # "amazon":[(h,15) for h in reversed(range(12,14,1))],
-    # "apps":[(h,15) for h in reversed(range(12,14,1))],
-    # "shakespeare": [(h,20) for h in reversed(range(17,19,1))]
+    # Short lengths
+    "wikitext":[(h,15) for h in reversed(range(12,14,1))],
+    "moocs":[(h,15) for h in reversed(range(12,14,1))],
+    "amazon":[(h,15) for h in reversed(range(12,14,1))],
+    "apps":[(h,15) for h in reversed(range(12,14,1))],
+    "shakespeare": [(h,20) for h in reversed(range(17,19,1))]
 
 }
 
 for dataset_name in datasets:
-    len_info = (lengths[dataset_name] if not pseudo_gt
-            else pseudo_gt_lengths[dataset_name])
+    len_info = lengths[dataset_name]
+
     print("====="*10)
     print(f"* Running for dataset {dataset_name}")
     print("====="*10)
@@ -87,6 +68,8 @@ for dataset_name in datasets:
                                 extra_args=extra_args)
     prep_dict['args'].text_dict['text'] = None
     args = prep_dict['args']
+    args.sub_estimates = sub_estimates
+    args.intermediate_seqs = intermediate_seqs
     val_dl = prep_dict['val_dl']
     model = prep_dict['model']
     text_dict = args.text_dict
@@ -100,13 +83,10 @@ for dataset_name in datasets:
         for hist_len,total_seq_len in len_info:
             args = copy.deepcopy(prep_dict['args'])
             args.estimate_type = mc_pseudo_gt if pseudo_gt else mc_estimate
-            if dataset_name == "apps":
-                args.variance_epsilon = 1e-8
-            else: args.variance_epsilon = 1e-7
-            args.max_num_mc_samples = 100000
+            args.variance_epsilon = 1e-7
+            args.max_num_mc_samples = 10000
             args.use_gpt2 = (dataset_name == 'wikitext')
             args.proposal_func = lm_proposal
-            args.sub_estimates = sub_estimates if not pseudo_gt else None
             args.num_mc_samples = args.sub_estimates[-1] if not pseudo_gt else None
             args.hist_len = hist_len
             args.total_seq_len = total_seq_len
@@ -125,7 +105,6 @@ for dataset_name in datasets:
                     print("====="*10)
                     continue
 
-
             print("[{}] | Dataset: {} | Sample type: {} | Num samples: {} | Hist length {} | Total Seq Length {} | Pseudo GT: {} | Model Budget: {}"\
                   .format(datetime.now(),dataset_name,folder,args.num_mc_samples,args.hist_len,args.total_seq_len, pseudo_gt, model_budget))
             estimates = sample_dynamic_target_token(args, val_dl, model)
@@ -134,10 +113,10 @@ for dataset_name in datasets:
             args.sub_estimates = sub_estimates
             args.num_mc_samples = sub_estimates[-1]
 
-            for e,d in estimates.items():
-                if isinstance(d, (torch.Tensor, torch.LongTensor)):
-                    print(e, d.shape)
-            sys.exit(1)
+            # for e,d in estimates.items():
+            #     if isinstance(d, (torch.Tensor, torch.LongTensor)):
+            #         print(e, d.shape)
+            # sys.exit(1)
 
             write_pkl(estimates,
             f"data/{folder}/{dataset_name}/val_dl/val-dl_{dataset_name}_{folder.replace('_','-')}_" +
@@ -146,15 +125,3 @@ for dataset_name in datasets:
             f"{f'_{max_num_queries}q' if max_num_queries else ''}.pkl")
             estimates=None
             print("====="*10)
-
-
-#################################################################################
-#   Main Method
-#################################################################################
-
-
-
-# for e,d in estimates.items():
-#     if isinstance(d, (torch.Tensor, torch.LongTensor)):
-#         print(e, d.shape)
-# sys.exit(1)

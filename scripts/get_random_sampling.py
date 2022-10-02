@@ -43,24 +43,12 @@ datasets = ['shakespeare',"amazon","apps",'moocs'] #'shakespeare'
 config_path = "config/testing/sample.yaml"
 lengths = {
 
-    # # Long lengths
-    # "wikitext":[(h,15) for h in reversed(range(12,14,1))],
-    # "moocs":[(h,15) for h in [11,8,5]],
-    # "amazon":[(h,15) for h in [11,8,5]],
-    # "apps":[(h,15) for h in [11,8,5]],
-    # "shakespeare": [(h,20) for h in [16,12,10]],
-    "moocs":[(h,15) for h in [5,9,13]],
-    "amazon":[(h,15) for h in [5,9,13]],
-    "apps":[(h,15) for h in [5,9,13]],
-    "shakespeare": [(h,20) for h in [10,14,18]],
-    "wikitext":[(11,15)],
-
-    # # Short lengths
-    # "wikitext":[(h,15) for h in reversed(range(12,14,1))],
-    # "moocs":[(h,15) for h in reversed(range(12,14,1))],
-    # "amazon":[(h,15) for h in reversed(range(12,14,1))],
-    # "apps":[(h,15) for h in reversed(range(12,14,1))],
-    # "shakespeare": [(h,20) for h in reversed(range(17,19,1))]
+    # Short lengths
+    "wikitext":[(h,15) for h in reversed(range(12,14,1))],
+    "moocs":[(h,15) for h in reversed(range(12,14,1))],
+    "amazon":[(h,15) for h in reversed(range(12,14,1))],
+    "apps":[(h,15) for h in reversed(range(12,14,1))],
+    "shakespeare": [(h,15) for h in reversed(range(12,14,1))]
 
 }
 
@@ -125,10 +113,8 @@ for dataset_name in datasets:
             write_pkl(estimates,
             f"data/{folder}/{dataset_name}/val_dl/val-dl_{dataset_name}_{folder.replace('_','-')}_" +
             f"{args.hist_len}h_{args.total_seq_len}s_{args.num_mc_samples}mc" +
-            f"{'_' + 'model-budget' if args.model_budget_filepath else '_pgt' if pseudo_gt else ''}" +
+            f"{'_' + 'model-budget' if args.model_budget_filepath else ''}" +
             f"{f'_{max_num_queries}q' if max_num_queries else ''}.pkl")
-
-            estimates=None
             print("====="*10)
 
 
