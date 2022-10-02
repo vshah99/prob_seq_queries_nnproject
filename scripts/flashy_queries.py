@@ -15,7 +15,8 @@ import sys
 import copy
 from datetime import datetime
 
-sys.path.insert(1, '/home/showalte/research/prob_seq_queries/')
+ROOT =os.path.abspath(os.path.join(__file__,"../../"))
+sys.path.insert(1,ROOT)
 
 import numpy as np
 import torch
@@ -37,7 +38,7 @@ device=6
 sub_estimates = [10,100,1000]
 folders = ["flashy"]
 datasets = ['flashy_gpt2'] #'shakespeare'
-config_path = "config/testing/sample.yaml"
+config_path = "config/sample.yaml"
 
 for dataset_name in datasets:
     print("====="*10)

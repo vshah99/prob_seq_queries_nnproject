@@ -99,7 +99,7 @@ def general_args(parser):
     group.add_argument("--cuda", type=_str2bool,default=True, help="Convert model and data to GPU.")
     group.add_argument("--device_num", type=int, default=0, help="Should cuda be enabled, this is the GPU id to use.")
     group.add_argument("--data_path",  type=str, default="./data/imdb.txt", help="Path to training data file.")
-    group.add_argument("--dataset_phase_shift_path",  type=str, default="/srv/disk00/samshow/amazon/amazon_phase_trans.pkl", help="Dataset phase shift path for user behavior data")
+    group.add_argument("--dataset_phase_shift_path",  type=str, default="data/amazon/amazon_phase_trans.pkl", help="Dataset phase shift path for user behavior data")
     group.add_argument("--min_phase_shift",  type=int, default=0, help="Minimum number of phase shifts needed in each sequence")
     group.add_argument("--train_data_pct", type=float, default=0.9, help="Percent of data used for training.")
     group.add_argument("--val_data_pct", type=float, default=0.05, help="Percent of data used for validation.")

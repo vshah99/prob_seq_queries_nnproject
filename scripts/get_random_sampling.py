@@ -15,7 +15,8 @@ import sys
 import copy
 from datetime import datetime
 
-sys.path.insert(1, '/home/showalte/research/prob_seq_queries/')
+ROOT =os.path.abspath(os.path.join(__file__,"../../"))
+sys.path.insert(1,ROOT)
 
 import numpy as np
 import torch
@@ -39,7 +40,7 @@ model_budget = True
 max_num_queries=1000
 folders = ["random_sampling"]
 datasets = ['shakespeare',"amazon","apps",'moocs'] #'shakespeare'
-config_path = "config/testing/sample.yaml"
+config_path = "config/sample.yaml"
 lengths = {
 
     # Short lengths
@@ -83,7 +84,7 @@ for dataset_name in datasets:
             args.total_seq_len = total_seq_len
 
             if model_budget:
-                args.model_budget_filepath = (f"/home/showalte/research/prob_seq_queries/" +
+                args.model_budget_filepath = (f"{ROOT}" +
                                             f"data/beam_search_is_hybrid/{dataset_name}/val_dl/val-dl_" +
                     f"{dataset_name}_beam-search-is-hybrid_{args.hist_len}h_{args.total_seq_len}s_{args.num_mc_samples}mc" +
                     f"{f'_{max_num_queries}q' if max_num_queries else ''}.pkl")

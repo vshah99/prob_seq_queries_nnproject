@@ -15,7 +15,8 @@ import sys
 import copy
 from datetime import datetime
 
-sys.path.insert(1, '/home/showalte/research/prob_seq_queries/')
+ROOT =os.path.abspath(os.path.join(__file__,"../../"))
+sys.path.insert(1,ROOT)
 
 import numpy as np
 import torch
@@ -37,7 +38,7 @@ sub_estimates = [10,30,50,100,300, 500,1000,3000,5000,10000]
 folders = ["beam_search_is_hybrid"]
 datasets = ['shakespeare','moocs','apps','amazon']
 max_num_queries = 1000
-config_path = "config/testing/sample.yaml"
+config_path = "config/sample.yaml"
 lengths = {
     "wikitext":[(h,15) for h in reversed(range(12,14,1))],
     "moocs":[(h,15) for h in reversed(range(12,14,1))],

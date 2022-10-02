@@ -30,6 +30,9 @@ from .data import *
 from .train import load_checkpoint, get_model
 from .utils import read_pkl, write_pkl, compute_num_beams_from_budget, set_random_seed
 
+ROOT =os.path.abspath(os.path.join(__file__,"../../"))
+
+
 #################################################################################
 #   Function-Class Declaration
 #################################################################################
@@ -72,8 +75,8 @@ def prep_experiment(
             "needs_dl":True,
         },
         "amazon": {
-            "checkpoint_path": "/home/showalte/research/prob_seq_queries/models/amazon/",
-            "data_path": "/srv/disk00/samshow/amazon/amazon_text_dict.pkl",
+            "checkpoint_path": f"{ROOT}/models/amazon/",
+            "data_path": "data/amazon/amazon_text_dict.pkl",
             "hidden_size": 512,
             "seq_len": 15,
             "vocab_size": 30,
@@ -82,7 +85,7 @@ def prep_experiment(
         },
 
         "flashy_apps": {
-            "checkpoint_path": "/home/showalte/research/prob_seq_queries/models/apps/",
+            "checkpoint_path": f"{ROOT}/models/apps/",
             "data_path": "data/apps/lsapp.tsv",
             "hidden_size": 512,
             "fixed_seq_len": 100,
@@ -91,7 +94,7 @@ def prep_experiment(
             "needs_dl":False,
         },
         "apps": {
-            "checkpoint_path": "/home/showalte/research/prob_seq_queries/models/apps/",
+            "checkpoint_path": f"{ROOT}/models/apps/",
             "data_path": "data/apps/lsapp.tsv",
             "hidden_size": 512,
             "seq_len": 15,
@@ -100,7 +103,7 @@ def prep_experiment(
             "needs_dl":True,
         },
         "moocs": {
-            "checkpoint_path": "/home/showalte/research/prob_seq_queries/models/moocs/",
+            "checkpoint_path": f"{ROOT}/models/moocs/",
             "data_path": "data/moocs/mooc.csv",
             "hidden_size": 128,
             "seq_len": 15,
@@ -109,7 +112,7 @@ def prep_experiment(
             "needs_dl":True,
         },
         "shakespeare": {
-            "checkpoint_path": "/home/showalte/research/prob_seq_queries/models/shakespeare/",
+            "checkpoint_path": f"{ROOT}/models/shakespeare/",
             "data_path": "data/shakespeare/shakespeare_input.txt",
             "hidden_size": 128,
             "seq_len": 100,

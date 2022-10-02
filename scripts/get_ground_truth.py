@@ -15,7 +15,8 @@ import sys
 import copy
 from datetime import datetime
 
-sys.path.insert(1, '/home/showalte/research/prob_seq_queries/')
+ROOT =os.path.abspath(os.path.join(__file__,"../../"))
+sys.path.insert(1,ROOT)
 
 import numpy as np
 import torch
@@ -36,7 +37,7 @@ from seq_queries.experiments import sample_dynamic_target_token, prep_experiment
 device=0
 folders = ["ground_truth"]
 datasets = ['shakespeare','apps','amazon','moocs']
-config_path = "config/testing/sample.yaml"
+config_path = "config/sample.yaml"
 lengths = {
     "moocs":[(13,15),(12,15)],
     "amazon":[(13,15),(12,15)],

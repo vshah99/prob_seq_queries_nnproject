@@ -16,14 +16,12 @@ import sys
 import copy
 import glob
 
-sys.path.insert(1, '/home/showalte/research/prob_seq_queries/')
+ROOT =os.path.abspath(os.path.join(__file__,"../../"))
+sys.path.insert(1,ROOT)
 
 import numpy as np
 import torch
 from collections import defaultdict
-
-# from experiments.train.shakespeare import main as shakespeare_main
-# from experiments.train.stacks import main as stacks_main
 
 from seq_queries.sample import sample
 from seq_queries.model import get_model
@@ -38,11 +36,11 @@ from seq_queries.experiments import sample_dynamic_target_token, prep_experiment
 
 if __name__ == "__main__":
 
-    args = get_args(manual_config="scripts/model_performance.yaml")
+    args = get_args(manual_config="config/model_performance.yaml")
 
     dataset_name = "moocs"
     device = 7
-    prep_dict = prep_experiment("scripts/model_performance.yaml",
+    prep_dict = prep_experiment("config/model_performance.yaml",
                                 dataset_name,
                                 device=device)
     args = prep_dict['args']

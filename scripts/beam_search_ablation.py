@@ -15,7 +15,8 @@ import sys
 import copy
 from datetime import datetime
 
-sys.path.insert(1, '/home/showalte/research/prob_seq_queries/')
+ROOT =os.path.abspath(os.path.join(__file__,"../../"))
+sys.path.insert(1,ROOT)
 
 import numpy as np
 import torch
@@ -36,7 +37,7 @@ device=3
 folders = ["beam_search_ablation"]
 datasets = ['shakespeare','moocs']#'shakespeare'
 max_num_queries=100
-config_path = "config/testing/sample.yaml"
+config_path = "config/sample.yaml"
 covs =[0.95,0.75,0.5]
 lengths_coverage = {
     # Long GT
