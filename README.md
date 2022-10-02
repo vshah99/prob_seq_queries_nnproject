@@ -2,8 +2,8 @@
 
 This project is for the paper: _Predictive Querying for Autoregressive Neural Sequence Models_, published in NeurIPs 2022.
 
-![Outline](img/flashy_diagram_reverse_sep.pdf)
-![Examples](img/flashy_examples.pdf)
+![Outline](img/flashy_diagram_reverse_sep.png)
+![Examples](img/flashy_examples.png)
 
 ## Setup
 
