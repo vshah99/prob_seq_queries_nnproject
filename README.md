@@ -1,14 +1,37 @@
 # Predictive Querying for Neural Autoregressive Sequence Models
 
+This project is for the paper: _Predictive Querying for Autoregressive Neural Sequence Models_, published in NeurIPs 2022.
+
+![Outline](img/flashy_diagram_reverse_sep.pdf)
+![Examples](img/flashy_examples.pdf)
 
 ## Setup
 
+### Datasets
 Our experiments make use of 5 datasets. Links for downloading these files can be found below. After downloading, place the files in the `/data` folder. MOOCs and Shakespeare are included in the supplemental materials as a reference.
 - [MOOCs](https://snap.stanford.edu/jodie/#datasets)
 - [Mobile Apps](https://ucidatalab.github.io/uci-digital-evidence/datasets/#mobile-app-usage)
 - [Amazon Reviews](https://nijianmo.github.io/amazon/)
 - [Shakespeare](http://cs.stanford.edu/people/karpathy/char-rnn/shakespeare_input.txt)
 - [Wikitext-v2](https://huggingface.co/datasets/wikitext/viewer/wikitext-2-v1/test)
+
+### Required Packages
+
+Our code requires the following packages:
+- [PyTorch](https://pytorch.org/)
+- [Scipy](https://github.com/scipy/scipy)
+- [Numpy](http://www.numpy.org/)
+- [Sklearn](https://scikit-learn.org/stable/)
+- [Pandas](https://pandas.pydata.org/)
+- [HuggingFace Transformers](https://huggingface.co/docs/transformers/index)
+- argparse (CLI)
+- yaml
+- json
+
+### Other Details 
+
+Our experiments are conducted on Ubuntu Linux 20.04 with Python 3.8.
+
 
 ## Code Structure
 
@@ -38,4 +61,18 @@ All of our experimentation, including model training, query estimation, and all 
 
 The paragraph above assumes that you wish to run a custom set of experiments with our software. If this is not the case, please refer to the many pre-made scripts in the `scripts/` folder for guidance and edit those as necessary. These can be run simply with `python scripts/{sample_script}.py` and is our recommended means of running this code.
 
+## For bibtex citations
+If you find out work helpful in your own research, please cite our paper with the following:
 
+```
+@inproceedings{boyd2022query,
+  author={Boyd, Alex  and Showalter, Sam  and Mandt, Stephan and Smyth, Padhraic},
+  title={Predictive Querying for Autoregressive Neural Sequence Models},
+  booktitle={booktitle={Advances in Neural Information Processing Systems},},
+  year={2022},
+}
+```
+
+## Issues and further discussions
+
+Please create an issue for code-related questions. For more in-depth discussion, free feel to email at alexjb@uci.edu
