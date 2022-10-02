@@ -8,7 +8,7 @@ This project is for the paper: _Predictive Querying for Autoregressive Neural Se
 ## Setup
 
 ### Datasets
-Our experiments make use of 5 datasets. Links for downloading these files can be found below. After downloading, place the files in the `/data` folder. MOOCs and Shakespeare are included in the supplemental materials as a reference.
+Our experiments make use of 5 datasets. Links for downloading these files can be found below. After downloading, place the files in the `/data` folder. 
 - [MOOCs](https://snap.stanford.edu/jodie/#datasets)
 - [Mobile Apps](https://ucidatalab.github.io/uci-digital-evidence/datasets/#mobile-app-usage)
 - [Amazon Reviews](https://nijianmo.github.io/amazon/)
@@ -17,7 +17,7 @@ Our experiments make use of 5 datasets. Links for downloading these files can be
 
 ### Models
 
-We include the checkpoints of the trained models we utilized in our experiments. Those can be found in the `models/` directory under the corresponding dataset name. 
+We include the checkpoints of the trained models we utilized in our experiments. Those can be found in the `models/` directory under the corresponding dataset folder as `model_*.pt`. 
 
 ### Required Packages
 
@@ -35,7 +35,6 @@ Our code requires the following packages:
 ### Other Details 
 
 Our experiments are conducted on Ubuntu Linux 20.04 with Python 3.8.
-
 
 ## Code Structure
 
