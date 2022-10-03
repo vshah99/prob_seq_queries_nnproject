@@ -5,7 +5,7 @@ This project is for the paper: _Predictive Querying for Autoregressive Neural Se
 ![Outline](img/flashy_diagram_reverse_sep.png)
 ![Examples](img/flashy_examples.png)
 
-An experimental analysis of the probability that a sequence will produce an end-of-sentence token at a given timstep $K$ in the future, conditioned on a partial sequence history. Open ended histories possess fair more probability mass on larger $K$ than histories that typically represent short phrases.
+An experimental analysis of the probability that a sequence will produce an end-of-sentence token at a given timstep $K$ in the future, conditioned on a partial sequence history. Open ended histories possess greater probability mass on larger values of $K$ than histories that typically represent short phrases.
 
 ## Setup
 
