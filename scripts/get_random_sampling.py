@@ -39,15 +39,15 @@ sub_estimates = [10,30,50,100,300, 500,1000,3000,5000,10000]
 model_budget = True
 max_num_queries=1000
 folders = ["random_sampling"]
-datasets = ['shakespeare',"amazon","apps",'moocs'] #'shakespeare'
+datasets = ['shakespeare'] #,"amazon","apps",'moocs'] #'shakespeare'
 config_path = "config/sample.yaml"
 lengths = {
 
     # Short lengths
-    "wikitext":[(h,15) for h in reversed(range(12,14,1))],
-    "moocs":[(h,15) for h in reversed(range(12,14,1))],
-    "amazon":[(h,15) for h in reversed(range(12,14,1))],
-    "apps":[(h,15) for h in reversed(range(12,14,1))],
+    #"wikitext":[(h,15) for h in reversed(range(12,14,1))],
+    #"moocs":[(h,15) for h in reversed(range(12,14,1))],
+    #"amazon":[(h,15) for h in reversed(range(12,14,1))],
+    #"apps":[(h,15) for h in reversed(range(12,14,1))],
     "shakespeare": [(h,15) for h in reversed(range(12,14,1))]
 
 }
